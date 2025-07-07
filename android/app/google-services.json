@@ -1,0 +1,718 @@
+{
+  "project_info": {
+    "project_number": "324152946798",
+    "project_id": "studio-67236",
+    "storage_bucket": "studio-67236.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:497704a1afa03ded15f67f",
+        "android_client_info": {
+          "package_name": "com.cscodetech.pocketporter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-kkugd85lnd93u40mghg3vs10a0gbedsi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cscodetech.pocketporter",
+            "certificate_hash": "e852f8b73a44712937e45bcd51595fbb3373d718"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:83aaa11127e536dc15f67f",
+        "android_client_info": {
+          "package_name": "com.dailymilk.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-vim72aader5kuhsvdq2i3hgmm7maaco9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dailymilk.customerapp",
+            "certificate_hash": "946dabdb3f26658af3e750b2bca4aa89fb163829"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:af59ce2939863ab615f67f",
+        "android_client_info": {
+          "package_name": "com.evently.organizer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-bp2gvbq9s21tt4ljlis58ckvf2es019e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.evently.organizer",
+            "certificate_hash": "fa56afcab2794da225c65c4e5abeb2abed724019"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:907a92bdc9f1954515f67f",
+        "android_client_info": {
+          "package_name": "com.eventlycustomerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-s6p9150rmtadssqu6djgdi0e6i4pkk63.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eventlycustomerapp",
+            "certificate_hash": "fa56afcab2794da225c65c4e5abeb2abed724019"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:f52e6ba09388454f15f67f",
+        "android_client_info": {
+          "package_name": "com.example.movers"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-un2euc9jr49mbcnpeavb652c7165a833.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.movers",
+            "certificate_hash": "4f8c0f06064d83221544a73765e31cc769f78d0c"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:d0a66ebc90e6c38715f67f",
+        "android_client_info": {
+          "package_name": "com.example.movers_lorry_owner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:3afc7b527bb4ae3d15f67f",
+        "android_client_info": {
+          "package_name": "com.goparcel.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:64ddb33d11d3697215f67f",
+        "android_client_info": {
+          "package_name": "com.goparcel.partner.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:d37d3bc56be6924815f67f",
+        "android_client_info": {
+          "package_name": "com.milkman.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ecrpngr02li0pcm49qk7c22dq609j9kg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.milkman.customerapp",
+            "certificate_hash": "e852f8b73a44712937e45bcd51595fbb3373d718"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:e1ec8e430010208f15f67f",
+        "android_client_info": {
+          "package_name": "com.milkman.deliveryapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ornkat48uklm93aprfdtn90qgdqdrkjl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.milkman.deliveryapp",
+            "certificate_hash": "e852f8b73a44712937e45bcd51595fbb3373d718"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:4ab5d6373fbb839e15f67f",
+        "android_client_info": {
+          "package_name": "com.moverslorryowner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:55ec69cb5dbd519215f67f",
+        "android_client_info": {
+          "package_name": "com.pharmafast.customerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-2p0i9q6nk0a1d91v6fbgeg718oaatpjq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pharmafast.customerapp",
+            "certificate_hash": "74d6496eafc6adcbbed940628b3c3c666f75395a"
+          }
+        },
+        {
+          "client_id": "324152946798-5kgbqpnkp8me1hg6kkt3j37q2bgnjhpf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pharmafast.customerapp",
+            "certificate_hash": "e852f8b73a44712937e45bcd51595fbb3373d718"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:5249af1783557dee15f67f",
+        "android_client_info": {
+          "package_name": "com.pharmafast.deliveryapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:a6aa3750dea2ea9715f67f",
+        "android_client_info": {
+          "package_name": "com.pharmafast.storepp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-60ol6saii9t2jaejs2plfn8g0ggvurq4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.pharmafast.storepp",
+            "certificate_hash": "946dabdb3f26658af3e750b2bca4aa89fb163829"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:3d390bf73edcaad615f67f",
+        "android_client_info": {
+          "package_name": "com.shopnest.user"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:fb1600c3d2459e1e15f67f",
+        "android_client_info": {
+          "package_name": "com.zozo.dineout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-mcng0rdvb8b66eh8vviqs0pv6ik0adep.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zozo.dineout",
+            "certificate_hash": "946dabdb3f26658af3e750b2bca4aa89fb163829"
+          }
+        },
+        {
+          "client_id": "324152946798-mmj3td3sdaq0bobqg95tktcru1ugu0em.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zozo.dineout",
+            "certificate_hash": "74d6496eafc6adcbbed940628b3c3c666f75395a"
+          }
+        },
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324152946798:android:cb8d3beabbff9e8415f67f",
+        "android_client_info": {
+          "package_name": "com.zozo.gorealestatess"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_DvOqnmIm5EnA8JCL65FaQTJBftFaU7g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "324152946798-ld353q39f3sblu050orlhiskivjihb3h.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "324152946798-5t34a1k62m6qnj1ajt37j653b9aghsm4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.dailymilk.customerapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

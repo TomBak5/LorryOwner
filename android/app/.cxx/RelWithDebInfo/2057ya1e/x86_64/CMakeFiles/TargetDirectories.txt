@@ -1,0 +1,2 @@
+/Volumes/Data/urva/MoversApps/movers_lorry_owner/android/app/.cxx/RelWithDebInfo/2057ya1e/x86_64/CMakeFiles/edit_cache.dir
+/Volumes/Data/urva/MoversApps/movers_lorry_owner/android/app/.cxx/RelWithDebInfo/2057ya1e/x86_64/CMakeFiles/rebuild_cache.dir
