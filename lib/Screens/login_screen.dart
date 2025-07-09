@@ -304,11 +304,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     const SizedBox(height: 12),
                                     ElevatedButton.icon(
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xFF1877F3),
-                                        foregroundColor: Colors.white,
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Colors.black,
+                                        side: BorderSide(color: Colors.grey.shade300),
                                         padding: EdgeInsets.symmetric(vertical: 12),
                                       ),
-                                      icon: Icon(Icons.facebook, size: 24),
+                                      icon: Icon(Icons.facebook, size: 24, color: Color(0xFF1877F3)), // Facebook blue icon
                                       label: Text('Facebook'),
                                       onPressed: () {
                                         // TODO: Implement Facebook sign-in
