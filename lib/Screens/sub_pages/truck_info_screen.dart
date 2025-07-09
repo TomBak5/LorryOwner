@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Api_Provider/api_provider.dart';
+import '../main_pages/home_page.dart';
 
 class TruckInfoScreen extends StatefulWidget {
   const TruckInfoScreen({Key? key}) : super(key: key);
@@ -141,7 +142,7 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    // TODO: Skip action
+                    Get.offAll(() => HomePage());
                   },
                   child: Text('Skip now', style: TextStyle(color: Colors.grey)),
                 ),

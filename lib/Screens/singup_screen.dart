@@ -11,6 +11,7 @@ import '../AppConstData/typographyy.dart';
 import '../Controllers/singiup_controller.dart';
 import '../models/contry_code_model.dart';
 import '../widgets/widgets.dart';
+import 'main_pages/home_page.dart';
 
 class SingUp extends StatefulWidget {
   const SingUp({super.key});
@@ -121,18 +122,27 @@ class _SingUpState extends State<SingUp> {
                                     const SizedBox(height: 10),
                                     SizedBox(height: Get.height * 0.03),
                                     // Email field
-                                    commonTextField(
+                                    TextField(
                                       controller: singUpController.emailController,
-                                      hintText: "Email Address",
-                                      keyBordType: TextInputType.text,
-                                      isValide: singUpController.emailAddress,
-                                      onTap: (value) {
-                                        if (value.isEmpty) {
-                                          singUpController.setEmailAddress(false);
-                                        } else {
-                                          singUpController.setEmailAddress(singUpController.emailController.text.isEmpty);
-                                        }
-                                      },
+                                      keyboardType: TextInputType.text, // changed for testing
+                                      onChanged: (value) { print('Email input: ' + value); },
+                                      decoration: InputDecoration(
+                                        hintText: "Email Address",
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: textGreyColor),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: textGreyColor),
+                                        ),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: textGreyColor),
+                                        ),
+                                        hintStyle: TextStyle(color: textGreyColor, fontFamily: "urbani_regular", fontSize: 14),
+                                        contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                                      ),
                                     ),
                                     const SizedBox(height: 12),
                                     // Password field
@@ -371,6 +381,13 @@ class _SingUpState extends State<SingUp> {
                                       ],
                                     ),
                                     SizedBox(height: 10),
+                                    // Skip button
+                                    TextButton(
+                                      onPressed: () {
+                                        Get.offAll(() => HomePage());
+                                      },
+                                      child: Text('Skip', style: TextStyle(color: secondaryColor, fontSize: 16)),
+                                    ),
                                     Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
