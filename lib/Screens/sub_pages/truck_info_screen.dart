@@ -11,7 +11,8 @@ class TruckInfoScreen extends StatefulWidget {
 
 class _TruckInfoScreenState extends State<TruckInfoScreen> {
   String? selectedBrand;
-  String? selectedTrailerType;
+  String? selectedTrailerTypeId;
+  Map<String, dynamic>? selectedTrailerTypeObj;
   List<Map<String, dynamic>> brands = [];
   List<Map<String, dynamic>> trailerTypes = [];
   bool isLoadingBrands = true;
@@ -93,13 +94,21 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               isLoadingTrailerTypes
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
-                      value: selectedTrailerType,
+                      value: selectedTrailerTypeId,
                       hint: Text('Select trailer type'),
                       items: trailerTypes.map((t) => DropdownMenuItem(
                         value: t['id'].toString(),
                         child: Text(t['trailer_type'] ?? ''),
                       )).toList(),
-                      onChanged: (val) => setState(() => selectedTrailerType = val),
+                      onChanged: (val) {
+                        setState(() {
+                          selectedTrailerTypeId = val;
+                          selectedTrailerTypeObj = trailerTypes.firstWhere(
+                            (t) => t['id'].toString() == val,
+                            orElse: () => {},
+                          );
+                        });
+                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -108,12 +117,11 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               const SizedBox(height: 28),
               Text('Trailer information', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               const SizedBox(height: 10),
-              // TODO: Display dimensions based on selected brand/type
-              _infoRow('Length:', '28 ft – 53 ft (8.5 m – 16.2 m)'),
-              _infoRow('Width:', '8.5 ft (2.6 m)'),
-              _infoRow('Height:', '8 ft – 9.5 ft (2.4 m – 2.9 m)'),
-              _infoRow('Weight Capacity:', 'Up to 45,000 lbs (20,412 kg)'),
-              _infoRow('Common Uses:', 'General freight, packaged goods, non-perishable items.'),
+              _infoRow('Length:', selectedTrailerTypeObj?['length'] ?? '—'),
+              _infoRow('Width:', selectedTrailerTypeObj?['width'] ?? '—'),
+              _infoRow('Height:', selectedTrailerTypeObj?['height'] ?? '—'),
+              _infoRow('Weight Capacity:', selectedTrailerTypeObj?['weight_capacity'] ?? '—'),
+              _infoRow('Common Uses:', selectedTrailerTypeObj?['common_uses'] ?? '—'),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
