@@ -21,6 +21,7 @@ import '../models/transaction_model.dart';
 import '../models/transport_profile_model.dart';
 import '../models/privacy_policy_model.dart';
 import '../widgets/widgets.dart';
+import 'package:http/http.dart' as http;
 
 String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
 
@@ -696,6 +697,28 @@ class ApiProvider {
     );
 
     return response.data;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchVehicleBrands() async {
+    final response = await http.get(Uri.parse("${basUrlApi}list_vehicle_brand.php"));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data["status"] == true) {
+        return List<Map<String, dynamic>>.from(data["brands"]);
+      }
+    }
+    return [];
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTrailerTypes() async {
+    final response = await http.get(Uri.parse("${basUrlApi}list_trailer_type.php"));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data["status"] == true) {
+        return List<Map<String, dynamic>>.from(data["trailer_types"]);
+      }
+    }
+    return [];
   }
 
 }

@@ -102,12 +102,15 @@ class SingUpController extends GetxController implements GetxService {
       var dataaa = value;
       if (dataaa["Result"] == "true") {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString("tempUserData", "");
         String decodeData = jsonEncode(dataaa["UserLogin"]);
         await prefs.setString("userData", decodeData);
         // OneSignal.shared.sendTag("owner_id", dataaa["UserLogin"]["id"]);
         OneSignal.User.addTagWithKey("user_id", dataaa["UserLogin"]["id"]);
-        Get.offAllNamed(Routes.landingPage);
+        if (userRole == 'driver') {
+          Get.offAllNamed(Routes.truckInfo);
+        } else {
+          Get.offAllNamed(Routes.landingPage);
+        }
         setIsLoading(false);
         showCommonToast(dataaa["ResponseMsg"]);
       } else {

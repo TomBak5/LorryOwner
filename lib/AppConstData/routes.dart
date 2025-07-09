@@ -18,6 +18,7 @@ import '../Screens/sub_pages/attach_lorry.dart';
 import '../Screens/sub_pages/findload.dart';
 import '../Screens/sub_pages/nearload.dart';
 import '../Screens/sub_pages/verify_indentity.dart';
+import '../Screens/sub_pages/truck_info_screen.dart';
 
 class Routes {
   static String splashScreen = '/';
@@ -38,6 +39,7 @@ class Routes {
   static String nearLoad = "/NearLoad";
   static String attachLorry = "/AttachLorry";
   static String notification = "/Notification";
+  static const String truckInfo = '/truckInfo';
 }
 
 final getpage = [
@@ -112,5 +114,9 @@ final getpage = [
   GetPage(
     name: Routes.notification,
     page: () => const Notification(),
+  ),
+  GetPage(
+    name: Routes.truckInfo,
+    page: () => const TruckInfoScreen(),
   ),
 ];

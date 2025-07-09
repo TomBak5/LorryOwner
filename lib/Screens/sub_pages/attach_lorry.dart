@@ -26,6 +26,12 @@ class AttachLorry extends StatefulWidget {
 class _AttachLorryState extends State<AttachLorry> {
   HomePageController homePageController = Get.put(HomePageController());
 
+  // Add state for brands and trailer types
+  List<Map<String, dynamic>> brands = [];
+  List<Map<String, dynamic>> trailerTypes = [];
+  String? selectedBrand;
+  String? selectedTrailerType;
+
   @override
   void dispose() {
     super.dispose();
@@ -104,6 +110,17 @@ class _AttachLorryState extends State<AttachLorry> {
         .getVehicleList(uid: homePageController.userData.id ?? '')
         .then((value) {
       attachLorryController.getDataFromApi(value: value);
+    });
+    // Fetch brands and trailer types
+    ApiProvider().fetchVehicleBrands().then((data) {
+      setState(() {
+        brands = data;
+      });
+    });
+    ApiProvider().fetchTrailerTypes().then((data) {
+      setState(() {
+        trailerTypes = data;
+      });
     });
   }
 
@@ -413,115 +430,52 @@ class _AttachLorryState extends State<AttachLorry> {
                               style: Typographyy.headLine.copyWith(fontSize: 15),
                             ),
                             const SizedBox(height: 20),
-                            attachLorryController.isLoading
-                                ? GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: 5,
-                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisExtent: 100,
-                                      crossAxisSpacing: 10,
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: commonSimmer(height: 100, width: 100),
-                                      );
-                                    },
-                                  )
-                                : GridView.builder(
-                                    physics: NeverScrollableScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: attachLorryController.vehicleList.vehicleData.length,
-                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                      crossAxisCount: 2,
-                                      mainAxisExtent: 100,
-                                      crossAxisSpacing: 10,
-                                    ),
-                                    itemBuilder: (context, index) {
-                                      return InkWell(
-                                        onTap: () {
-                                          if (attachLorryController.numberTonnes.text.isNotEmpty) {
-                                            if (int.parse(attachLorryController.vehicleList.vehicleData[index].maxWeight) >= int.parse(attachLorryController.numberTonnes.text.trim())) {
-                                              attachLorryController.vehicleID = attachLorryController.vehicleList.vehicleData[index].id;
-                                              debugPrint("=========== vehicleId ======= ${attachLorryController.vehicleID}");
-                                              attachLorryController.setSelectVehicle(index);
-                                            } else {
-                                              showCommonToast("it is not possible to choose a larry with a your load capacity");
-                                            }
-                                          } else {
-                                            showCommonToast("Frist Enter Number of Tonnes");
-                                          }
-                                        },
-                                        child: Container(
-                                          height: 120,
-                                          width: 150,
-                                          padding: EdgeInsets.all(8),
-                                          decoration: BoxDecoration(
-                                            color:(int.parse("${attachLorryController.vehicleID}") == index + 1
-                                                    ? priMaryColor.withOpacity(0.05)
-                                                    : Colors.transparent),
-                                            borderRadius: BorderRadius.circular(12),
-                                            border: Border.all(
-                                              color:(int.parse("${attachLorryController.vehicleID}") == index + 1
-                                                    ? priMaryColor
-                                                    : Colors.grey.withOpacity(0.3)),
-                                            ),
-                                          ),
-                                          margin: const EdgeInsets.symmetric(vertical: 8),
-                                          child: Row(
-                                            children: [
-                                              Image.network(
-                                                "$basUrl${attachLorryController.vehicleList.vehicleData[index].img}",
-                                                height: 65,
-                                                width: 65,
-                                                errorBuilder: (context, error, stackTrace) {
-                                                  return commonSimmer(height: 58, width: 58);
-                                                },
-                                                loadingBuilder: (context, child, loadingProgress) {
-                                                  return (loadingProgress == null)
-                                                      ? child
-                                                      : commonSimmer(height: 58, width: 58);
-                                                },
-                                              ),
-                                              const SizedBox(width: 8),
-                                              Flexible(
-                                                child: Column(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(
-                                                      "${attachLorryController.vehicleList.vehicleData[index].title}",
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        fontFamily: fontFamilyBold,
-                                                        color: textBlackColor,
-                                                      ),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                    ),
-                                                    const SizedBox(height: 5),
-                                                    Text(
-                                                      "${attachLorryController.vehicleList.vehicleData[index].minWeight} - ${attachLorryController.vehicleList.vehicleData[index].maxWeight} ${"Tonnes".tr}",
-                                                      style: TextStyle(
-                                                        color: textBlackColor,
-                                                        fontSize: 11,
-                                                        fontFamily: fontFamilyRegular,
-                                                      ),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
+                            // Brand Dropdown
+                            Text(
+                              "Select Brand",
+                              style: Typographyy.headLine.copyWith(fontSize: 15),
+                            ),
+                            const SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              value: selectedBrand,
+                              hint: Text('Select Brand'),
+                              items: brands.map((brand) {
+                                return DropdownMenuItem<String>(
+                                  value: brand['id'].toString(),
+                                  child: Text(brand['brand_name']),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedBrand = value;
+                                });
+                              },
+                            ),
                             const SizedBox(height: 20),
+                            // Trailer Type Dropdown
+                            Text(
+                              "Select Trailer Type",
+                              style: Typographyy.headLine.copyWith(fontSize: 15),
+                            ),
+                            const SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              value: selectedTrailerType,
+                              hint: Text('Select Trailer Type'),
+                              items: trailerTypes.map((type) {
+                                return DropdownMenuItem<String>(
+                                  value: type['id'].toString(),
+                                  child: Text(type['trailer_type']),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedTrailerType = value;
+                                });
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            // The vehicle grid/list and its loading shimmer are removed.
+                            // Only the new dropdowns for brand and trailer type remain for selection.
                             Row(
                               children: [
                                 Expanded(
@@ -530,18 +484,20 @@ class _AttachLorryState extends State<AttachLorry> {
                                     onTapp: () {
                                       debugPrint("======= lorrynumber ====== ${attachLorryController.lorrynumber.text}");
                                       debugPrint("====== numberTonnes ====== ${attachLorryController.numberTonnes.text}");
-                                      debugPrint("======= vehicleID ======== ${attachLorryController.vehicleID}");
+                                      debugPrint("======= selectedBrand ====== $selectedBrand");
+                                      debugPrint("======= selectedTrailerType ====== $selectedTrailerType");
                                       if (attachLorryController.lorrynumber.text.isNotEmpty && attachLorryController.numberTonnes.text.isNotEmpty) {
-                                        if (attachLorryController.vehicleID.isNotEmpty && attachLorryController.selectVehicle != -1) {
+                                        if (selectedBrand != null && selectedTrailerType != null) {
+                                          // Pass selectedBrand and selectedTrailerType to the next screen or save as needed
                                           Get.to(
                                             AttachLorry1(
                                               lorryNumber: attachLorryController.lorrynumber.text,
                                               numberOfTonnes: attachLorryController.numberTonnes.text,
-                                              vehicleId: attachLorryController.vehicleID,
+                                              vehicleId: selectedBrand!, // non-nullable, safe due to null check
                                             ),
                                           );
                                         } else {
-                                          showCommonToast("Select Vehicle".tr);
+                                          showCommonToast("Select Brand and Trailer Type".tr);
                                         }
                                       } else {
                                         if (attachLorryController.lorrynumber.text.isEmpty) {
