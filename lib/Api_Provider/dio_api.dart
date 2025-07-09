@@ -6,6 +6,11 @@ class Api {
   final Dio _dio = Dio();
   Api() {
     _dio.options.baseUrl = basUrl;
+    // Add the X-API-KEY header globally
+    _dio.options.headers.addAll({
+      'X-API-KEY': 'cscodetech',
+      'Content-Type': 'application/json',
+    });
     _dio.interceptors.add(
         PrettyDioLogger(
         requestBody: true,

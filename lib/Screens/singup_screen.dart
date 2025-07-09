@@ -23,17 +23,25 @@ class _SingUpState extends State<SingUp> {
   SingUpController singUpController = Get.put(SingUpController());
   late ContryCodeModel countryCodeList;
   bool isloading = true;
+  bool hasError = false;
+  String errorMessage = '';
 
   bool baa = false;
 
   @override
   void initState() {
     super.initState();
-
     ApiProvider().getCountryCode().then((value) {
       setState(() {
         countryCodeList = value;
         isloading = false;
+        hasError = false;
+      });
+    }).catchError((e) {
+      setState(() {
+        isloading = false;
+        hasError = true;
+        errorMessage = 'Failed to load country codes. Please try again later.';
       });
     });
   }
@@ -50,7 +58,41 @@ class _SingUpState extends State<SingUp> {
       builder: (singUpController) {
         return isloading
             ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-            : SafeArea(
+            : hasError
+                ? Scaffold(
+                    body: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(errorMessage, style: TextStyle(color: Colors.red)),
+                          SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                isloading = true;
+                                hasError = false;
+                              });
+                              ApiProvider().getCountryCode().then((value) {
+                                setState(() {
+                                  countryCodeList = value;
+                                  isloading = false;
+                                  hasError = false;
+                                });
+                              }).catchError((e) {
+                                setState(() {
+                                  isloading = false;
+                                  hasError = true;
+                                  errorMessage = 'Failed to load country codes. Please try again later.';
+                                });
+                              });
+                            },
+                            child: Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : SafeArea(
                 child: Scaffold(
                   body: Stack(
                     alignment: Alignment.bottomCenter,
@@ -73,89 +115,12 @@ class _SingUpState extends State<SingUp> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "Getting Started!".tr,
+                                      "Truck buddy",
                                       style: Typographyy.headLine.copyWith(fontSize: 20),
                                     ),
                                     const SizedBox(height: 10),
-                                    Text(
-                                      "Seems you are new here, Let’s set up your profile.".tr,
-                                      style: Typographyy.titleText,
-                                      textAlign: TextAlign.center,
-                                    ),
                                     SizedBox(height: Get.height * 0.03),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: DropdownButtonFormField(
-                                            menuMaxHeight: 300,
-                                            decoration: InputDecoration(
-                                              hintText: 'Code',
-                                              contentPadding: EdgeInsets.all(12),
-                                              hintStyle: TextStyle(fontSize: 14),
-                                              border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                                borderSide: BorderSide(color: textGreyColor),
-                                              ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                                borderSide: BorderSide( color: textGreyColor),
-                                              ),
-                                              disabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                                borderSide: BorderSide(color: textGreyColor),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(12),
-                                                borderSide: BorderSide(color: textGreyColor),
-                                              ),
-                                            ),
-                                            dropdownColor: Colors.white,
-                                            onChanged: (newValue) {
-                                              singUpController.countryData(newValue);
-                                            },
-                                            value: singUpController.countryCode,
-                                            items: countryCodeList.countryCode.map<DropdownMenuItem>((m) {
-                                              return DropdownMenuItem(
-                                                value: m.ccode,
-                                                child: Text(m.ccode),
-                                              );
-                                            }).toList(),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          flex: 2,
-                                          child: commonTextField(
-                                            controller: singUpController.mobileController,
-                                            hintText: "Mobile Number",
-                                            keyBordType: TextInputType.number,
-                                            isValide: singUpController.isMobileNumber,
-                                            onTap: (value) {
-                                              if (value.isEmpty) {
-                                                singUpController.setIsMobileNumber(false);
-                                              } else {
-                                                singUpController.setIsMobileNumber(singUpController.mobileController.text.isEmpty);
-                                              }
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 12),
-                                    commonTextField(
-                                      controller: singUpController.fullNameController,
-                                      hintText: "Full Name",
-                                      keyBordType: TextInputType.text,
-                                      isValide: singUpController.isFullName,
-                                      onTap: (value) {
-                                        if (value.isEmpty) {
-                                          singUpController.setIsFullName(false);
-                                        } else {
-                                          singUpController.setIsFullName(singUpController.fullNameController.text.isEmpty);
-                                        }
-                                      },
-                                    ),
-                                    SizedBox(height: 12),
+                                    // Email field
                                     commonTextField(
                                       controller: singUpController.emailController,
                                       hintText: "Email Address",
@@ -170,6 +135,7 @@ class _SingUpState extends State<SingUp> {
                                       },
                                     ),
                                     const SizedBox(height: 12),
+                                    // Password field
                                     TextField(
                                       onChanged: (value) {
                                         if (value.isEmpty) {
@@ -245,48 +211,133 @@ class _SingUpState extends State<SingUp> {
                                         ),
                                       ),
                                     ),
+                                    const SizedBox(height: 12),
+                                    // Confirm Password field
+                                    TextField(
+                                      controller: singUpController.confirmPasswordController,
+                                      obscureText: singUpController.isConfirmPasswordShow,
+                                      style: TextStyle(
+                                        color: textBlackColor,
+                                        fontFamily: "urbani_regular",
+                                        fontSize: 16,
+                                      ),
+                                      decoration: InputDecoration(
+                                        suffixIcon: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              singUpController.isConfirmPasswordShow = !singUpController.isConfirmPasswordShow;
+                                            });
+                                          },
+                                          child: SvgPicture.asset(
+                                            singUpController.isConfirmPasswordShow
+                                                ? "assets/icons/eye-off.svg"
+                                                : "assets/icons/eye-2.svg",
+                                            color: textGreyColor,
+                                          ),
+                                        ),
+                                        hintText: "Confirm Password",
+                                        contentPadding: EdgeInsets.all(15),
+                                        hintStyle: TextStyle(
+                                          color: textGreyColor,
+                                          fontFamily: "urbani_regular",
+                                          fontSize: 16,
+                                        ),
+                                        border: OutlineInputBorder(
+                                          borderSide: BorderSide(color: textGreyColor),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: textGreyColor),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        disabledBorder: OutlineInputBorder(
+                                          borderSide: BorderSide(color: textGreyColor),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Role selector (Driver/Dispatcher)
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Select account type',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: textGreyColor,
+                                        ),
+                                      ),
+                                    ),
                                     SizedBox(height: 10),
                                     Row(
                                       children: [
-                                        SizedBox(
-                                          height: 20,
-                                          width: 30,
-                                          child: Checkbox(
-                                            activeColor: secondaryColor,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(3),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () => singUpController.setSelectedRole('dispatcher'),
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: singUpController.selectedRole == 'dispatcher' ? Colors.white : Colors.transparent,
+                                                border: Border.all(
+                                                  color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
+                                                  width: 2,
+                                                ),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.account_circle_outlined, color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor),
+                                                  SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Dispatcher',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (singUpController.selectedRole == 'dispatcher')
+                                                    Icon(Icons.check_circle, color: secondaryColor)
+                                                ],
+                                              ),
                                             ),
-                                            value: singUpController.istreamAndCondition,
-                                            onChanged: (value) {
-                                              singUpController.setIstreamAndCondition();
-                                            },
                                           ),
                                         ),
-                                        SizedBox(width: 8),
-                                        Flexible(
-                                          child: RichText(
-                                            text: TextSpan(
-                                              children: [
-                                                TextSpan(
-                                                  text: "By creating an account, you agree to our ",
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontFamily: "urbani_regular",
-                                                    fontWeight: FontWeight.w400,
-                                                    color: textGreyColor,
-                                                    height: 1.7,
-                                                  ),
+                                        SizedBox(width: 12),
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: () => singUpController.setSelectedRole('driver'),
+                                            child: Container(
+                                              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                                              decoration: BoxDecoration(
+                                                color: singUpController.selectedRole == 'driver' ? Colors.white : Colors.transparent,
+                                                border: Border.all(
+                                                  color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor,
+                                                  width: 2,
                                                 ),
-                                                TextSpan(
-                                                  text: "Term and Conditions",
-                                                  style: TextStyle(
-                                                    fontSize: 13,
-                                                    fontFamily: "urbani_regular",
-                                                    fontWeight: FontWeight.w700,
-                                                    color: secondaryColor,
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  Icon(Icons.local_shipping_outlined, color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor),
+                                                  SizedBox(width: 8),
+                                                  Expanded(
+                                                    child: Text(
+                                                      'Driver',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w600,
+                                                        color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor,
+                                                      ),
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                  if (singUpController.selectedRole == 'driver')
+                                                    Icon(Icons.check_circle, color: secondaryColor)
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -299,22 +350,20 @@ class _SingUpState extends State<SingUp> {
                                           child: commonButton(
                                             title: "Sign up",
                                             onTapp: () {
+                                              print("Sign Up button pressed");
                                               initPlatformState();
-                                              if (singUpController.fullNameController.text.isNotEmpty && singUpController.emailController.text.isNotEmpty && singUpController.mobileController.text.isNotEmpty && singUpController.passwordController.text.isNotEmpty) {
+                                              if (singUpController.emailController.text.isNotEmpty && singUpController.passwordController.text.isNotEmpty && singUpController.confirmPasswordController.text.isNotEmpty) {
                                                 singUpController.setIsLoading(true);
                                                 singUpController.getDataFromApi(context);
                                               }
                                               if (singUpController.emailController.text.isEmpty) {
                                                 singUpController.setEmailAddress(true);
                                               }
-                                              if (singUpController.mobileController.text.isEmpty) {
-                                                singUpController.setIsMobileNumber(true);
-                                              }
-                                              if (singUpController.fullNameController.text.isEmpty) {
-                                                singUpController.setIsFullName(true);
-                                              }
                                               if (singUpController.passwordController.text.isEmpty) {
                                                 singUpController.setPassWord(true);
+                                              }
+                                              if (singUpController.confirmPasswordController.text.isEmpty) {
+                                                // Optionally, add a method to handle confirm password validation
                                               }
                                             },
                                           ),

@@ -43,9 +43,9 @@ class _VerifyIdentityState extends State<VerifyIdentity> {
   @override
   void initState() {
     super.initState();
-    verifyIdentityController.statsCode = homePageController.userData.isVerify;
+    verifyIdentityController.statsCode = homePageController.userData.isVerify ?? '';
     verifyIdentityController.setStatus(
-      setStatus(homePageController.userData.isVerify),
+      setStatus(homePageController.userData.isVerify ?? ''),
     );
   }
 
@@ -502,7 +502,7 @@ class _VerifyIdentityState extends State<VerifyIdentity> {
                 if (verifyIdentityController.statsCode == "4") {
                   ImageUploadApi().upLoadDox(
                     image: verifyIdentityController.listOfImages[0]["gallery"][0],
-                    uid: homePageController.userData.id,
+                    uid: homePageController.userData.id ?? '',
                     image1: verifyIdentityController.listOfImages[0]["gallery"][1],
                     imageSelfie: null,
                     status: verifyIdentityController.status,
@@ -512,7 +512,7 @@ class _VerifyIdentityState extends State<VerifyIdentity> {
                 } else if (verifyIdentityController.statsCode == "5") {
                   ImageUploadApi()
                       .upLoadDox(
-                    uid: homePageController.userData.id,
+                    uid: homePageController.userData.id ?? '',
                     imageSelfie: verifyIdentityController.listOfImages[0]["camera"][0],
                     status: verifyIdentityController.status,
                   ).then((value) {
@@ -522,7 +522,7 @@ class _VerifyIdentityState extends State<VerifyIdentity> {
                   print("IMAGE ${verifyIdentityController.listOfImages[0]["gallery"][0]}");
                   ImageUploadApi().upLoadDox(
                     image: verifyIdentityController.listOfImages[0]["gallery"][0],
-                    uid: homePageController.userData.id,
+                    uid: homePageController.userData.id ?? '',
                     image1: verifyIdentityController.listOfImages[0]["gallery"][1],
                     imageSelfie: verifyIdentityController.listOfImages[0]["camera"][0],
                     status: verifyIdentityController.status,

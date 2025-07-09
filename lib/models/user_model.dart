@@ -6,30 +6,30 @@ import 'dart:convert';
 
 UserModel userModelFromJson(String str) => UserModel.fromJson(json.decode(str));
 
-String userModelToJson(UserModel data) => json.encode(data.toJson());
+String userModelToJson(UserModel? data) => json.encode(data?.toJson());
 
 class UserModel {
-  UserLogin userLogin;
-  String responseCode;
-  String result;
-  String responseMsg;
+  UserLogin? userLogin;
+  String? responseCode;
+  String? result;
+  String? responseMsg;
 
   UserModel({
-    required this.userLogin,
-    required this.responseCode,
-    required this.result,
-    required this.responseMsg,
+    this.userLogin,
+    this.responseCode,
+    this.result,
+    this.responseMsg,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        userLogin: UserLogin.fromJson(json["UserLogin"]),
-        responseCode: json["ResponseCode"],
-        result: json["Result"],
-        responseMsg: json["ResponseMsg"],
+        userLogin: json["UserLogin"] != null ? UserLogin.fromJson(json["UserLogin"]) : null,
+        responseCode: json["ResponseCode"]?.toString(),
+        result: json["Result"]?.toString(),
+        responseMsg: json["ResponseMsg"]?.toString(),
       );
 
   Map<String, dynamic> toJson() => {
-        "UserLogin": userLogin.toJson(),
+        "UserLogin": userLogin?.toJson(),
         "ResponseCode": responseCode,
         "Result": result,
         "ResponseMsg": responseMsg,
@@ -37,53 +37,56 @@ class UserModel {
 }
 
 class UserLogin {
-  String id;
-  String name;
-  String email;
-  String mobile;
-  String password;
-  DateTime rdate;
-  String status;
-  String ccode;
+  String? id;
+  String? name;
+  String? email;
+  String? mobile;
+  String? password;
+  DateTime? rdate;
+  String? status;
+  String? ccode;
   dynamic proPic;
   dynamic identityDocument;
   dynamic selfie;
-  String isVerify;
+  String? isVerify;
   dynamic rejectComment;
-  String commission;
+  String? commission;
+  String? userRole; // Add user role field
 
   UserLogin({
-    required this.id,
-    required this.name,
-    required this.email,
-    required this.mobile,
-    required this.password,
-    required this.rdate,
-    required this.status,
-    required this.ccode,
-    required this.proPic,
-    required this.identityDocument,
-    required this.selfie,
-    required this.isVerify,
-    required this.rejectComment,
-    required this.commission,
+    this.id,
+    this.name,
+    this.email,
+    this.mobile,
+    this.password,
+    this.rdate,
+    this.status,
+    this.ccode,
+    this.proPic,
+    this.identityDocument,
+    this.selfie,
+    this.isVerify,
+    this.rejectComment,
+    this.commission,
+    this.userRole, // Add to constructor
   });
 
   factory UserLogin.fromJson(Map<String, dynamic> json) => UserLogin(
-        id: json["id"],
-        name: json["name"],
-        email: json["email"],
-        mobile: json["mobile"],
-        password: json["password"],
-        rdate: DateTime.parse(json["rdate"]),
-        status: json["status"],
-        ccode: json["ccode"],
+        id: json["id"]?.toString() ?? '',
+        name: json["name"]?.toString() ?? '',
+        email: json["email"]?.toString() ?? '',
+        mobile: json["mobile"]?.toString() ?? '',
+        password: json["password"]?.toString() ?? '',
+        rdate: json["rdate"] != null && json["rdate"] != '' ? DateTime.tryParse(json["rdate"]) : null,
+        status: json["status"]?.toString() ?? '',
+        ccode: json["ccode"]?.toString() ?? '',
         proPic: json["pro_pic"],
         identityDocument: json["identity_document"],
         selfie: json["selfie"],
-        isVerify: json["is_verify"],
+        isVerify: json["is_verify"]?.toString() ?? '',
         rejectComment: json["reject_comment"],
-        commission: json["commission"],
+        commission: json["commission"]?.toString() ?? '',
+        userRole: json["user_role"]?.toString() ?? "driver", // Default to driver if not provided
       );
 
   Map<String, dynamic> toJson() => {
@@ -92,7 +95,7 @@ class UserLogin {
         "email": email,
         "mobile": mobile,
         "password": password,
-        "rdate": rdate.toIso8601String(),
+        "rdate": rdate?.toIso8601String(),
         "status": status,
         "ccode": ccode,
         "pro_pic": proPic,
@@ -101,5 +104,6 @@ class UserLogin {
         "is_verify": isVerify,
         "reject_comment": rejectComment,
         "commission": commission,
+        "user_role": userRole, // Add to JSON
       };
 }

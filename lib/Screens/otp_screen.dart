@@ -205,6 +205,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                           ccode: tempdatafromlocal["ccode"],
                                           pass: tempdatafromlocal["password"],
                                           reff: tempdatafromlocal["refercode"],
+                                          userRole: tempdatafromlocal["userRole"] ?? "driver",
                                         );
                                         setState(() {
                                           isLoading = false;

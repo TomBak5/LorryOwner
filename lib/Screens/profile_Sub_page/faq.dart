@@ -25,7 +25,7 @@ class _FaqState extends State<Faq> {
   @override
   void initState() {
     super.initState();
-    ApiProvider().faq(uid: homePageController.userData.id).then((value) {
+    ApiProvider().faq(uid: homePageController.userData.id ?? '').then((value) {
       setState(() {
         data = value;
         isLoading = false;

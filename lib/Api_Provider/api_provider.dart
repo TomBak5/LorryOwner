@@ -26,13 +26,16 @@ String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
 
 class ApiProvider {
   final api = Api();
-  Map<String, String> header = {'Content-Type': 'application/json'};
-  String basUrlApi = "lorry_api/";
+  Map<String, String> header = {'Content-Type': 'application/json', 'X-API-KEY': 'cscodetech'};
+  String basUrlApi = "http://truckbuddy.sprendimai.ai/Api/";
 
 //!- - - - - country_code - - - - - !//
   Future<ContryCodeModel> getCountryCode() async {
     debugPrint("======url=== ${basUrlApi}country_code.php");
-    var response = await api.sendRequest.get("${basUrlApi}country_code.php");
+    var response = await api.sendRequest.get(
+      "${basUrlApi}country_code.php",
+      options: Options(headers: header),
+    );
     return ContryCodeModel.fromJson(response.data);
   }
 
@@ -82,6 +85,18 @@ class ApiProvider {
     return response.data;
   }
 
+  // Email/password login for new UI
+  Future loginUserWithEmail({required String email, required String password}) async {
+    Map body = {"mobile": email, "password": password};
+    var response = await api.sendRequest.post(
+      "${basUrlApi}login_user.php",
+      data: body,
+    );
+    debugPrint("============ Login (email) body ========= $body");
+    debugPrint("========== Login (email) response ======= ${response.data}");
+    return response.data;
+  }
+
 //?- - - - - Forget Password - - - - - !//
   Future forgetPassword(
       {required String mobile,
@@ -105,22 +120,49 @@ class ApiProvider {
       required String cCode,
       required String email,
       required String password,
-      required String referCode}) async {
+      required String referCode,
+      required String userRole}) async {
     Map body = {
       "name": name,
       "mobile": mobile,
       "ccode": cCode,
       "email": email,
       "password": password,
-      "refercode": referCode
+      "refercode": referCode,
+      "user_role": userRole,
     };
 
-    var respons = await api.sendRequest.post(
-      "${basUrlApi}reg_user.php",
-      data: body,
-    );
-
-    return respons.data;
+    try {
+      var respons = await api.sendRequest.post(
+        "${basUrlApi}reg_user.php",
+        data: body,
+        options: Options(headers: header),
+      );
+      // Print/log the raw response for debugging
+      debugPrint('Raw reg_user.php response:');
+      debugPrint(respons.data.toString());
+      if (respons.data == null || respons.data.toString().trim().isEmpty) {
+        debugPrint('Empty response from reg_user.php');
+        return {'error': 'Empty response from server'};
+      }
+      try {
+        if (respons.data is Map) return respons.data;
+        return jsonDecode(respons.data);
+      } catch (e) {
+        debugPrint('Failed to parse JSON from reg_user.php: $e');
+        return {'error': 'Invalid JSON from server', 'raw': respons.data};
+      }
+    } catch (e, stack) {
+      debugPrint('Dio error in registerUser: $e');
+      if (e is DioError) {
+        debugPrint('DioError type: \\${e.type}');
+        debugPrint('DioError response: \\${e.response}');
+        debugPrint('DioError data: \\${e.response?.data}');
+        debugPrint('DioError request: \\${e.requestOptions}');
+      }
+      debugPrint('Stack trace: $stack');
+      return {'error': 'Dio error', 'exception': e.toString()};
+    }
   }
 
 //?- - - - - Edit Profile - - - - - !//
@@ -149,11 +191,35 @@ class ApiProvider {
 //?- - - - - HomePage Api - - - - - !//
   Future homePageApi({required String uid}) async {
     Map body = {"owner_id": uid};
-    var response = await api.sendRequest.post(
-      "${basUrlApi}home_page.php",
-      data: jsonEncode(body),
-    );
-    return response.data;
+    try {
+      var response = await api.sendRequest.post(
+        "${basUrlApi}home_page.php",
+        data: jsonEncode(body),
+      );
+      debugPrint('Raw home_page.php response:');
+      debugPrint(response.data.toString());
+      if (response.data == null || response.data.toString().trim().isEmpty) {
+        debugPrint('Empty response from home_page.php');
+        return {'error': 'Empty response from server'};
+      }
+      try {
+        if (response.data is Map) return response.data;
+        return jsonDecode(response.data);
+      } catch (e) {
+        debugPrint('Failed to parse JSON from home_page.php: $e');
+        return {'error': 'Invalid JSON from server', 'raw': response.data};
+      }
+    } catch (e, stack) {
+      debugPrint('Dio error in homePageApi: $e');
+      if (e is DioError) {
+        debugPrint('DioError type: \\${e.type}');
+        debugPrint('DioError response: \\${e.response}');
+        debugPrint('DioError data: \\${e.response?.data}');
+        debugPrint('DioError request: \\${e.requestOptions}');
+      }
+      debugPrint('Stack trace: $stack');
+      return {'error': 'Dio error', 'exception': e.toString()};
+    }
   }
 
 //!- - - - - Privacy Policy - - - - - !//
@@ -306,7 +372,7 @@ class ApiProvider {
 //?- - - - - VehicleList - - - - - !//
   Future getVehicleList({required String uid}) async {
     var respons = await api.sendRequest.post(
-      "$basUrlApi/vehicle_list.php",
+      "${basUrlApi}vehicle_list.php",
       data: jsonEncode({
         "uid": uid,
       }),
@@ -319,7 +385,8 @@ class ApiProvider {
   Future<StateListModel> getstatList({required String ownerId}) async {
     Map body = {"owner_id": ownerId};
     var response = await api.sendRequest.post(
-      "${basUrlApi}statelist.php",
+      // Use the correct path for statelist.php
+      "http://truckbuddy.sprendimai.ai/lorry_api/statelist.php",
       data: jsonEncode(body),
     );
     return StateListModel.fromJson(response.data);
@@ -461,7 +528,7 @@ class ApiProvider {
       {required String uid, required String loadId}) async {
     Map body = {"owner_id": uid, "load_id": loadId};
     var respons = await api.sendRequest.post(
-      "$basUrlApi/book_details.php",
+      "${basUrlApi}book_details.php",
       data: jsonEncode(body),
     );
 

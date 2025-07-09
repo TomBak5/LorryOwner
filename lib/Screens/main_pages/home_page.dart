@@ -35,9 +35,9 @@ class _HomePageState extends State<HomePage> {
     homePageController.getDataFromLocalData().then((value) {
       if (value.toString().isNotEmpty) {
         // OneSignal.User.addTags({"userid": homePageController.userData.id,});
-        homePageController.getHomePageData(uid: homePageController.userData.id);
+        homePageController.getHomePageData(uid: homePageController.userData.id ?? '');
       }
-      homePageController.setIcon(homePageController.verification12(homePageController.userData.isVerify));
+      homePageController.setIcon(homePageController.verification12(homePageController.userData.isVerify ?? ''));
       ManagePageCalling().setLogin(false);
     });
     ManagePageCalling().setLogin(false);

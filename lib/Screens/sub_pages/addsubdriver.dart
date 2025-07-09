@@ -299,36 +299,34 @@ class _AddsubdriverState extends State<Addsubdriver> {
                                     Expanded(
                                       child: DropdownButtonFormField(
                                         menuMaxHeight: 300,
-                                        validator: (value) {
-                                          if (addSubdriverCont.phone.text.isEmpty) {
-                                            return "";
-                                          }
-                                          return null;
-                                        },
                                         decoration: InputDecoration(
                                           hintText: 'Code',
                                           contentPadding: EdgeInsets.all(12),
                                           hintStyle: TextStyle(fontSize: 14),
                                           border: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          disabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: textGreyColor),
                                           ),
                                           enabledBorder: OutlineInputBorder(
-                                            borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: textGreyColor),
+                                          ),
+                                          disabledBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide(color: textGreyColor),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                            borderSide: BorderSide( color: textGreyColor),
                                           ),
                                         ),
                                         dropdownColor: Colors.white,
                                         onChanged: (newValue) {
                                           setState(() {
-                                            addSubdriverCont.ccode = newValue!;
+                                            countryCode = newValue!;
                                           });
                                         },
-                                        value: addSubdriverCont.ccode,
+                                        value: countryCodeList.countryCode.any((m) => m.ccode == countryCode) ? countryCode : null,
                                         items: countryCodeList.countryCode.map<DropdownMenuItem>((m) {
                                           return DropdownMenuItem(
                                             value: m.ccode,

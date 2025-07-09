@@ -99,11 +99,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                             child: DropdownButtonFormField(
                                               menuMaxHeight: 300,
                                               decoration: InputDecoration(
-                                                hintText: 'Code'.tr,
+                                                hintText: 'Code',
                                                 contentPadding: EdgeInsets.all(12),
-                                                hintStyle: const TextStyle(
-                                                  fontSize: 14,
-                                                ),
+                                                hintStyle: TextStyle(fontSize: 14),
                                                 border: OutlineInputBorder(
                                                   borderRadius: BorderRadius.circular(12),
                                                   borderSide: BorderSide(color: textGreyColor),
@@ -118,7 +116,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                                 ),
                                                 focusedBorder: OutlineInputBorder(
                                                   borderRadius: BorderRadius.circular(12),
-                                                  borderSide: BorderSide(color: textGreyColor),
+                                                  borderSide: BorderSide( color: textGreyColor),
                                                 ),
                                               ),
                                               dropdownColor: Colors.white,
@@ -127,7 +125,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                                                   countryCode = newValue!;
                                                 });
                                               },
-                                              value: countryCode,
+                                              value: countryCodeList.countryCode.any((m) => m.ccode == countryCode) ? countryCode : null,
                                               items: countryCodeList.countryCode.map<DropdownMenuItem>((m) {
                                                 return DropdownMenuItem(
                                                   value: m.ccode,

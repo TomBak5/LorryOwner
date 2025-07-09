@@ -121,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        "${homePageController.userData.ccode.toString()}  ${homePageController.userData.mobile.toString()}",
+                                        "${homePageController.userData.ccode ?? ''}  ${homePageController.userData.mobile ?? ''}",
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
                                           fontFamily: fontFamilyRegular,
@@ -136,11 +136,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 trailing: InkWell(
                                   onTap: () {
                                     _buildBottomSheet(
-                                      number: "${homePageController.userData.ccode.toString()}  ${homePageController.userData.mobile.toString()}",
-                                      password: homePageController.userData.password.toString(),
+                                      number: "${homePageController.userData.ccode ?? ''}  ${homePageController.userData.mobile ?? ''}",
+                                      password: homePageController.userData.password ?? '',
                                       name: homePageController.userData.name.toString(),
                                       email: homePageController.userData.email.toString(),
-                                      uid: homePageController.userData.id,
+                                      uid: homePageController.userData.id ?? '',
                                     );
                                   },
                                   child: SizedBox(
@@ -164,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         source: ImageSource.gallery,
                                       ).then((value) {
                                         ApiProvider().editImage(
-                                          uid: homePageController.userData.id,
+                                          uid: homePageController.userData.id ?? '',
                                           image: value!,
                                         ).then((value) async {
                                           var dataaa = value;
@@ -175,7 +175,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                             await prefs.setString("userData", decodeData);
                                             homePageController.getDataFromLocalData().then((value) {
                                               if (value.toString().isNotEmpty) {
-                                                // homePageController.getHomePageData(uid:homePageController.userData.id);
+                                                // homePageController.getHomePageData(uid:homePageController.userData.id ?? '');
                                               }
                                             });
                                           } else {
@@ -566,7 +566,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Get.back();
                                   homePageController.getDataFromLocalData().then((value) {
                                     if (value.toString().isNotEmpty) {
-                                      // homePageController.getHomePageData(uid: homePageController.userData.id);
+                                      // homePageController.getHomePageData(uid: homePageController.userData.id ?? '');
                                     }
                                   });
                                 } else {

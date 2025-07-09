@@ -12,84 +12,65 @@ import '../AppConstData/routes.dart';
 // import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class LoginScreenController extends GetxController implements GetxService {
-  TextEditingController codeController = TextEditingController();
-  TextEditingController mobileController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
 
-  bool isPassword = false;
+  bool isEmail = false;
+  bool isPassword = true; // Always show password field
   bool isShowPassword = true;
-  bool isMobile = false;
-  bool passWord = false;
   bool isPassValid = false;
 
-  setPasswordView(bool value) {
-    isPassword = value;
+  void setIsEmail(bool value) {
+    isEmail = value;
     update();
   }
 
-  setIsPassValid(bool value) {
+  void setIsPassValid(bool value) {
     isPassValid = value;
     update();
   }
 
-  setIsMobile(bool value) {
-    isMobile = value;
-    update();
-  }
-
-  setIsPassWord(bool value) {
-    passWord = value;
-    update();
-  }
-
-  setShowPassword() {
+  void setShowPassword() {
     isShowPassword = !isShowPassword;
     update();
   }
 
   bool isLoading = false;
-
   setIsLoading(value) {
     isLoading = value;
     update();
   }
 
-  checkController({required String code, context}) {
+  // New email/password login logic
+  checkController({required String email, required String password, context}) {
     setIsLoading(true);
-    if (codeController.text.isEmpty && mobileController.text.isEmpty) {
-      setPasswordView(false);
-    } else {
-      ApiProvider()
-          .checkMobileNumber(number: mobileController.text, code: code)
-          .then((value) {
-        if (value["Result"] == "true") {
-          showCommonToast("Number is not register");
-          setPasswordView(false);
-        } else {
-          setPasswordView(true);
-          if (passwordController.text.isNotEmpty) {
-            ApiProvider().loginUser(
-              code: code,
-              number: mobileController.text,
-              password: passwordController.text,
-              ).then((value) async {
-              var data = value;
-              if (data["Result"] == "true") {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-                String decodeData = jsonEncode(data["UserLogin"]);
-                await prefs.setString("userData", decodeData);
-                OneSignal.User.addTagWithKey("user_id", data["UserLogin"]["id"]);
-                Get.offAllNamed(Routes.landingPage);
-                showCommonToast(data["ResponseMsg"]);
-              } else {
-                showCommonToast(data["ResponseMsg"]);
-              }
-            });
-          }
-        }
-        setIsLoading(false);
-      });
+    if (emailController.text.isEmpty) {
+      setIsEmail(true);
+      setIsLoading(false);
+      return;
     }
+    if (passwordController.text.isEmpty) {
+      setIsPassValid(true);
+      setIsLoading(false);
+      return;
+    }
+    ApiProvider().loginUserWithEmail(
+      email: email,
+      password: password,
+    ).then((value) async {
+      var data = value;
+      if (data["Result"] == "true") {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        String decodeData = jsonEncode(data["UserLogin"]);
+        await prefs.setString("userData", decodeData);
+        OneSignal.User.addTagWithKey("user_id", data["UserLogin"]["id"]);
+        Get.offAllNamed(Routes.landingPage);
+        showCommonToast(data["ResponseMsg"]);
+      } else {
+        showCommonToast(data["ResponseMsg"]);
+      }
+      setIsLoading(false);
+    });
   }
 }
 

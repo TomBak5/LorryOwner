@@ -101,7 +101,7 @@ class _AttachLorryState extends State<AttachLorry> {
     debugPrint("======= init editeTitle ======== ${attachLorryController.editeTitle}");
     debugPrint("==========================================");
     ApiProvider()
-        .getVehicleList(uid: homePageController.userData.id)
+        .getVehicleList(uid: homePageController.userData.id ?? '')
         .then((value) {
       attachLorryController.getDataFromApi(value: value);
     });
