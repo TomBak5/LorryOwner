@@ -33,11 +33,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     homePageController.getDataFromLocalData().then((value) {
-      if (value.toString().isNotEmpty) {
-        // OneSignal.User.addTags({"userid": homePageController.userData.id,});
-        homePageController.getHomePageData(uid: homePageController.userData.id ?? '');
+      if (homePageController.userData != null && (homePageController.userData?.id?.isNotEmpty ?? false)) {
+        homePageController.getHomePageData(uid: homePageController.userData!.id!);
+      } else {
+        homePageController.setIsLoading(false);
       }
-      homePageController.setIcon(homePageController.verification12(homePageController.userData.isVerify ?? ''));
+      homePageController.setIcon(homePageController.verification12(homePageController.userData?.isVerify ?? ''));
       ManagePageCalling().setLogin(false);
     });
     ManagePageCalling().setLogin(false);
@@ -50,6 +51,14 @@ class _HomePageState extends State<HomePage> {
       body: GetBuilder<HomePageController>(
         builder: (homePageController) {
           if (homePageController.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          } else if (homePageController.userData == null || (homePageController.userData?.id?.isEmpty ?? true)) {
+            // Redirect to login screen if no user is found
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Get.offAllNamed(Routes.loginScreen);
+            });
             return const Scaffold(
               body: Center(child: CircularProgressIndicator()),
             );
@@ -76,7 +85,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           ListTile(
                             dense: true,
-                            leading: homePageController.userData.proPic.toString() == "null"
+                            leading: homePageController.userData?.proPic.toString() == "null"
                                 ? const CircleAvatar(
                                     backgroundColor: Colors.transparent,
                                     backgroundImage: AssetImage(
@@ -87,11 +96,11 @@ class _HomePageState extends State<HomePage> {
                                 : CircleAvatar(
                                     backgroundColor: Colors.transparent,
                                     backgroundImage: NetworkImage(
-                                      "$basUrl${homePageController.userData.proPic}",
+                                      "$basUrl${homePageController.userData?.proPic}",
                                     ),
                                     radius: 25,
                                     child: Image.network(
-                                      "$basUrl${homePageController.userData.proPic}",
+                                      "$basUrl${homePageController.userData?.proPic}",
                                       color: Colors.transparent,
                                       fit: BoxFit.cover,
                                       errorBuilder: (context, error, stackTrace) {
@@ -131,7 +140,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             subtitle: Text(
-                              homePageController.userData.name.toString(),
+                              homePageController.userData?.name ?? '',
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w400,
@@ -169,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Flexible(
                                         child: Text(
-                                          homePageController.homePageData.homeData!.topMsg!.tr,
+                                          homePageController.homePageData?.homeData?.topMsg?.tr ?? '',
                                           style: const TextStyle(
                                             fontFamily: "urbani_extrabold",
                                             color: Colors.white,
@@ -201,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                                             children: [
                                               InkWell(
                                                 onTap: () {
-                                                  if (homePageController.userData.isVerify == "2") {
+                                                  if (homePageController.userData?.isVerify == "2") {
                                                     switch (a) {
                                                       case 0:
                                                         Get.toNamed(Routes.findLorry);
@@ -214,7 +223,7 @@ class _HomePageState extends State<HomePage> {
                                                       case 3:
                                                         Get.to(Subdrivers());
                                                     }
-                                                  } else if (homePageController.userData.isVerify == "1") {
+                                                  } else if (homePageController.userData?.isVerify == "1") {
                                                     showCommonToast("verification Under Process");
                                                   } else {
                                                     Get.toNamed(Routes.verifyIdentity);
@@ -278,8 +287,8 @@ class _HomePageState extends State<HomePage> {
                             autoPlay: true,
                           ),
                           items: [
-                            for (int a = 0; a < homePageController.homePageData.homeData!.banner!.length; a++)
-                              homePageController.homePageData.homeData!.banner![a].img!.isEmpty
+                            for (int a = 0; a < (homePageController.homePageData?.homeData?.banner?.length ?? 0); a++)
+                              homePageController.homePageData?.homeData?.banner?[a].img?.isEmpty ?? true
                                   ? Shimmer.fromColors(
                                       baseColor: Colors.grey.shade300,
                                       highlightColor: Colors.grey.shade100,
@@ -296,7 +305,7 @@ class _HomePageState extends State<HomePage> {
                                   : ClipRRect(
                                       borderRadius: BorderRadius.circular(12),
                                       child: Image.network(
-                                        "$basUrl${homePageController.homePageData.homeData!.banner![a].img}",
+                                        "$basUrl${homePageController.homePageData?.homeData?.banner?[a].img ?? ''}",
                                         fit: BoxFit.cover,
                                         width: Get.width,
                                         errorBuilder: (context, error, stackTrace) {
@@ -312,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                       ),
-                      homePageController.homePageData.homeData!.mylorrylist!.isNotEmpty
+                      homePageController.homePageData?.homeData?.mylorrylist?.isNotEmpty ?? false
                           ? Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -360,7 +369,7 @@ class _HomePageState extends State<HomePage> {
                                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                   children: [
                                                     Image.network(
-                                                      "$basUrl${homePageController.homePageData.homeData!.mylorrylist![index].lorryImg}",
+                                                      "$basUrl${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryImg ?? ''}",
                                                       height: 70,
                                                       width: 90,
                                                       errorBuilder: (context, error, stackTrace) {
@@ -373,7 +382,7 @@ class _HomePageState extends State<HomePage> {
                                                       },
                                                     ),
                                                     Text(
-                                                      "${homePageController.homePageData.homeData!.mylorrylist![index].lorryNo}",
+                                                      "${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryNo ?? ''}",
                                                       style: TextStyle(
                                                         fontSize: 14,
                                                         color: textBlackColor,
@@ -389,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                                                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                                   children: [
                                                     Text(
-                                                      "${homePageController.homePageData.homeData!.mylorrylist![index].lorryTitle}",
+                                                      "${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryTitle ?? ''}",
                                                       style: TextStyle(
                                                         fontSize: 18,
                                                         color: textBlackColor,
@@ -406,7 +415,7 @@ class _HomePageState extends State<HomePage> {
                                                         ),
                                                         const SizedBox(width: 5),
                                                         Text(
-                                                          "${homePageController.homePageData.homeData!.mylorrylist![index].routes.toString()} + Routs",
+                                                          "${homePageController.homePageData?.homeData?.mylorrylist?[index].routes?.toString() ?? ''} + Routs",
                                                           style: TextStyle(
                                                             color: textGreyColor,
                                                             fontSize: 15,
@@ -418,13 +427,13 @@ class _HomePageState extends State<HomePage> {
                                                     Row(
                                                       children: [
                                                         SvgPicture.asset(
-                                                          homePageController.homePageData.homeData!.mylorrylist![index].rcVerify == "2"
+                                                          homePageController.homePageData?.homeData?.mylorrylist?[index].rcVerify == "2"
                                                               ? "assets/icons/ic_unverified.svg"
                                                               : "assets/icons/badge-check.svg",
                                                         ),
                                                         const SizedBox(width: 5),
                                                         Text(
-                                                          homePageController.homePageData.homeData!.mylorrylist![index].rcVerify == '2'
+                                                          homePageController.homePageData?.homeData?.mylorrylist?[index].rcVerify == '2'
                                                               ? "Document Reupload"
                                                               : "RC Verified",
                                                         ),
@@ -441,16 +450,16 @@ class _HomePageState extends State<HomePage> {
                                             child: InkWell(
                                               onTap: () async {
                                                 SharedPreferences preferences = await SharedPreferences.getInstance();
-                                                Mylorrylist data = homePageController.homePageData.homeData!.mylorrylist![index];
+                                                Mylorrylist? data = homePageController.homePageData?.homeData?.mylorrylist?[index];
 
                                                 Map editData = {
-                                                  "lorryNo": data.lorryNo,
-                                                  "numberOfTones": data.weight,
-                                                  "vehicle": data.lorryTitle,
-                                                  "description": data.description,
+                                                  "lorryNo": data?.lorryNo,
+                                                  "numberOfTones": data?.weight,
+                                                  "vehicle": data?.lorryTitle,
+                                                  "description": data?.description,
                                                   "isedite": true,
-                                                  "statelist": data.totalRoutes,
-                                                  "record_id": data.id
+                                                  "statelist": data?.totalRoutes,
+                                                  "record_id": data?.id
                                                 };
                                                 debugPrint("========== data ========= $data");
                                                 debugPrint("======== editData ======= $editData");
@@ -477,7 +486,7 @@ class _HomePageState extends State<HomePage> {
                                     separatorBuilder: (context, index) {
                                       return const SizedBox(width: 10);
                                     },
-                                    itemCount: homePageController.homePageData.homeData!.mylorrylist!.length,
+                                    itemCount: homePageController.homePageData?.homeData?.mylorrylist?.length ?? 0,
                                   ),
                                 ),
                               ],
@@ -502,7 +511,7 @@ class _HomePageState extends State<HomePage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: GridView.builder(
-                          itemCount: homePageController.homePageData.homeData!.statelist!.length,
+                          itemCount: homePageController.homePageData?.homeData?.statelist?.length ?? 0,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -522,7 +531,7 @@ class _HomePageState extends State<HomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Image.network(
-                                    "$basUrl${homePageController.homePageData.homeData!.statelist![index].img}",
+                                    "$basUrl${homePageController.homePageData?.homeData?.statelist?[index].img ?? ''}",
                                     width: 72,
                                     height: 72,
                                     color: secondaryColor.withOpacity(0.4),
@@ -539,7 +548,7 @@ class _HomePageState extends State<HomePage> {
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(horizontal: 8),
                                       child: Text(
-                                        "${homePageController.homePageData.homeData!.statelist![index].title}",
+                                        "${homePageController.homePageData?.homeData?.statelist?[index].title ?? ''}",
                                         style: TextStyle(
                                           fontSize: 17,
                                           color: textBlackColor,
@@ -567,7 +576,7 @@ class _HomePageState extends State<HomePage> {
                                         child: Transform.translate(
                                           offset: const Offset(0, 1),
                                           child: Text(
-                                            "${homePageController.homePageData.homeData!.statelist![index].totalLoad} Load",
+                                            "${homePageController.homePageData?.homeData?.statelist?[index].totalLoad ?? ''} Load",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontSize: 12,
@@ -595,7 +604,7 @@ class _HomePageState extends State<HomePage> {
                                         child: Transform.translate(
                                           offset: const Offset(0, 1),
                                           child: Text(
-                                            "${homePageController.homePageData.homeData!.statelist![index].totalLorry} Lorry",
+                                            "${homePageController.homePageData?.homeData?.statelist?[index].totalLorry ?? ''} Lorry",
                                             style: TextStyle(
                                               fontWeight: FontWeight.w500,
                                               fontSize: 12,

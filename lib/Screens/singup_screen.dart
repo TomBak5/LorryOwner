@@ -12,6 +12,8 @@ import '../Controllers/singiup_controller.dart';
 import '../models/contry_code_model.dart';
 import '../widgets/widgets.dart';
 import 'main_pages/home_page.dart';
+import 'congratulations_screen.dart';
+import 'sub_pages/truck_info_screen.dart';
 
 class SingUp extends StatefulWidget {
   const SingUp({super.key});
@@ -93,7 +95,7 @@ class _SingUpState extends State<SingUp> {
                       ),
                     ),
                   )
-                : SafeArea(
+            : SafeArea(
                 child: Scaffold(
                   body: Stack(
                     alignment: Alignment.bottomCenter,
@@ -124,22 +126,22 @@ class _SingUpState extends State<SingUp> {
                                     // Email field
                                     TextField(
                                       controller: singUpController.emailController,
-                                      keyboardType: TextInputType.text, // changed for testing
+                                      keyboardType: TextInputType.emailAddress,
                                       onChanged: (value) { print('Email input: ' + value); },
-                                      decoration: InputDecoration(
+                                            decoration: InputDecoration(
                                         hintText: "Email Address",
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide(color: textGreyColor),
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
                                           borderSide: BorderSide(color: textGreyColor),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: textGreyColor),
-                                        ),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: textGreyColor),
-                                        ),
+                                              ),
+                                              disabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide(color: textGreyColor),
+                                              ),
                                         hintStyle: TextStyle(color: textGreyColor, fontFamily: "urbani_regular", fontSize: 14),
                                         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 15),
                                       ),
@@ -337,7 +339,7 @@ class _SingUpState extends State<SingUp> {
                                                   Expanded(
                                                     child: Text(
                                                       'Driver',
-                                                      style: TextStyle(
+                                                  style: TextStyle(
                                                         fontSize: 16,
                                                         fontWeight: FontWeight.w600,
                                                         color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor,
@@ -364,7 +366,13 @@ class _SingUpState extends State<SingUp> {
                                               initPlatformState();
                                               if (singUpController.emailController.text.isNotEmpty && singUpController.passwordController.text.isNotEmpty && singUpController.confirmPasswordController.text.isNotEmpty) {
                                                 singUpController.setIsLoading(true);
-                                                singUpController.getDataFromApi(context);
+                                                // After successful email/pass/confirm, go to TruckInfoScreen
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => TruckInfoScreen(),
+                                                  ),
+                                                );
                                               }
                                               if (singUpController.emailController.text.isEmpty) {
                                                 singUpController.setEmailAddress(true);

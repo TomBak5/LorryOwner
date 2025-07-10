@@ -83,7 +83,9 @@ class SingUpController extends GetxController implements GetxService {
       required String email,
       required String pass,
       required String reff,
-      required String userRole}) {
+      required String userRole,
+      String? company,
+      String? emergencyContact}) {
     // Generate a unique numeric phone number if blank
     String phoneToSend = mobile.isEmpty
         ? (DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(999).toString())
@@ -96,7 +98,9 @@ class SingUpController extends GetxController implements GetxService {
             mobile: phoneToSend,
             name: name,
             referCode: reff,
-            userRole: userRole)
+            userRole: userRole,
+            company: company,
+            emergencyContact: emergencyContact)
         .then((value) async {
       print('Registration API response:  [36m$value [0m');
       var dataaa = value;

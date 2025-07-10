@@ -40,7 +40,7 @@ class _FindLoadState extends State<FindLoad> {
     super.initState();
     getGkey();
     ApiProvider()
-        .findLorry(uid: homePageController.userData.id ?? '',pickStateId: "0",dropStateId: "0")
+        .findLorry(uid: homePageController.userData?.id ?? '',pickStateId: "0",dropStateId: "0")
         .then((value) {
           if (value["Result"] == "true") {
             findLorryController.setDataInList(FindLoadModel.fromJson(value));
@@ -78,7 +78,7 @@ class _FindLoadState extends State<FindLoad> {
           findLorryController.setIsLoading(true);
           ApiProvider()
               .findLorry(
-              uid: homePageController.userData.id ?? '',
+              uid: homePageController.userData?.id ?? '',
               pickStateId: decode["pick_state_id"],
               dropStateId: decode["drop_state_id"])
               .then((value) {
@@ -112,7 +112,7 @@ class _FindLoadState extends State<FindLoad> {
       });
     } else {
       ApiProvider()
-        .findLorry(uid: homePageController.userData.id ?? '',pickStateId: "0",dropStateId: "0")
+        .findLorry(uid: homePageController.userData?.id ?? '',pickStateId: "0",dropStateId: "0")
         .then((value) {
           if (value["Result"] == "true") {
             findLorryController.setDataInList(FindLoadModel.fromJson(value));
@@ -672,7 +672,7 @@ class _FindLoadState extends State<FindLoad> {
                                                                       findLorryController.setIsBidLoder(index: index, value: true);
                                                                       debugPrint("========== setIsBidLoder index ========= $index");
                                                                       ApiProvider().getLorryList(
-                                                                        ownerId: homePageController.userData.id ?? '',
+                                                                        ownerId: homePageController.userData?.id ?? '',
                                                                         loadId: loads.loaddata[index].id)
                                                                           .then((value) {
                                                                           bidBottomsheetController.bidNowBottombar(

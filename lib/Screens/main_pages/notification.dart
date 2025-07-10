@@ -27,7 +27,7 @@ class _NotificationState extends State<Notification> {
   void initState() {
     super.initState();
     ApiProvider()
-        .notification(uid: homePageController.userData.id ?? '')
+        .notification(uid: homePageController.userData?.id ?? '')
         .then((value) {
       setState(() {
         notificationModel = value;

@@ -57,20 +57,20 @@ class LoginScreenController extends GetxController implements GetxService {
     ApiProvider().loginUserWithEmail(
       email: email,
       password: password,
-    ).then((value) async {
-      var data = value;
-      if (data["Result"] == "true") {
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        String decodeData = jsonEncode(data["UserLogin"]);
-        await prefs.setString("userData", decodeData);
-        OneSignal.User.addTagWithKey("user_id", data["UserLogin"]["id"]);
-        Get.offAllNamed(Routes.landingPage);
-        showCommonToast(data["ResponseMsg"]);
-      } else {
-        showCommonToast(data["ResponseMsg"]);
-      }
-      setIsLoading(false);
-    });
+              ).then((value) async {
+              var data = value;
+              if (data["Result"] == "true") {
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                String decodeData = jsonEncode(data["UserLogin"]);
+                await prefs.setString("userData", decodeData);
+                OneSignal.User.addTagWithKey("user_id", data["UserLogin"]["id"]);
+                Get.offAllNamed(Routes.landingPage);
+                showCommonToast(data["ResponseMsg"]);
+              } else {
+                showCommonToast(data["ResponseMsg"]);
+        }
+        setIsLoading(false);
+      });
   }
 }
 

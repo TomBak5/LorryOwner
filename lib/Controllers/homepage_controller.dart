@@ -9,8 +9,8 @@ import '../models/login_model.dart';
 import 'package:flutter/foundation.dart';
 
 class HomePageController extends GetxController implements GetxService {
-  late UserLogin userData;
-  late HomeModel homePageData;
+  UserLogin? userData;
+  HomeModel? homePageData;
 
   List menuList = [
     "Find Loads",
@@ -21,9 +21,9 @@ class HomePageController extends GetxController implements GetxService {
 
   updateUserProfile(context) {
     ApiProvider().loginUser(
-            code: userData.ccode ?? '',
-            number: userData.mobile ?? '',
-            password: userData.password ?? '')
+            code: userData?.ccode ?? '',
+            number: userData?.mobile ?? '',
+            password: userData?.password ?? '')
         .then((value) async {
       var data = value;
       if (data["Result"] == "true") {
@@ -32,8 +32,8 @@ class HomePageController extends GetxController implements GetxService {
         await prefs.setString("userData", decodeData);
         getDataFromLocalData().then((value) {
           if (value.toString().isNotEmpty) {
-            setIcon(verification12(userData.isVerify ?? ''));
-            getHomePageData(uid: userData.id ?? '');
+            setIcon(verification12(userData?.isVerify ?? ''));
+            getHomePageData(uid: userData?.id ?? '');
           }
         });
       } else {
@@ -77,7 +77,7 @@ class HomePageController extends GetxController implements GetxService {
       var decodedata = jsonDecode(encodedMap);
       userData = UserLogin.fromJson(decodedata);
 
-      prefs.setString("uid", userData.id ?? '');
+      prefs.setString("uid", userData?.id ?? '');
 
       update();
     }
@@ -98,9 +98,9 @@ class HomePageController extends GetxController implements GetxService {
       homePageData = HomeModel.fromJson(Map<String, dynamic>.from(response));
       update();
       final SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString("wallet", homePageData.homeData!.currency!);
-      prefs.setString("currencyIcon", homePageData.homeData!.currency!);
-      prefs.setString("gkey", homePageData.homeData!.gKey ?? "");
+      prefs.setString("wallet", homePageData?.homeData?.currency ?? "");
+      prefs.setString("currencyIcon", homePageData?.homeData?.currency ?? "");
+      prefs.setString("gkey", homePageData?.homeData?.gKey ?? "");
       update();
       setIsLoading(false); // Stop loading on success
     } else {

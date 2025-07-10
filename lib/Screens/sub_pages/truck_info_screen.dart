@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Api_Provider/api_provider.dart';
 import '../main_pages/home_page.dart';
+import 'account_info_screen.dart';
 
 class TruckInfoScreen extends StatefulWidget {
   const TruckInfoScreen({Key? key}) : super(key: key);
@@ -128,7 +129,7 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Go to next step/tab
+                    Get.to(() => AccountInfoScreen());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,

@@ -19,6 +19,7 @@ import '../Screens/sub_pages/findload.dart';
 import '../Screens/sub_pages/nearload.dart';
 import '../Screens/sub_pages/verify_indentity.dart';
 import '../Screens/sub_pages/truck_info_screen.dart';
+import '../Screens/congratulations_screen.dart';
 
 class Routes {
   static String splashScreen = '/';
@@ -118,5 +119,9 @@ final getpage = [
   GetPage(
     name: Routes.truckInfo,
     page: () => const TruckInfoScreen(),
+  ),
+  GetPage(
+    name: '/Congratulations',
+    page: () => CongratulationsScreen(),
   ),
 ];

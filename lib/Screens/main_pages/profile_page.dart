@@ -94,7 +94,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 contentPadding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
                                 tileColor: priMaryColor,
                                 title: Text(
-                                  homePageController.userData.name.toString(),
+                                  homePageController.userData?.name ?? '',
                                   style: TextStyle(
                                     fontSize: 20,
                                     color: Colors.white,
@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        homePageController.userData.email.toString(),
+                                        homePageController.userData?.email ?? '',
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
                                           fontFamily: fontFamilyRegular,
@@ -121,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        "${homePageController.userData.ccode ?? ''}  ${homePageController.userData.mobile ?? ''}",
+                                        "${homePageController.userData?.ccode ?? ''}  ${homePageController.userData?.mobile ?? ''}",
                                         style: TextStyle(
                                           color: Colors.white.withOpacity(0.8),
                                           fontFamily: fontFamilyRegular,
@@ -136,11 +136,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 trailing: InkWell(
                                   onTap: () {
                                     _buildBottomSheet(
-                                      number: "${homePageController.userData.ccode ?? ''}  ${homePageController.userData.mobile ?? ''}",
-                                      password: homePageController.userData.password ?? '',
-                                      name: homePageController.userData.name.toString(),
-                                      email: homePageController.userData.email.toString(),
-                                      uid: homePageController.userData.id ?? '',
+                                      number: "${homePageController.userData?.ccode ?? ''}  ${homePageController.userData?.mobile ?? ''}",
+                                      password: homePageController.userData?.password ?? '',
+                                      name: homePageController.userData?.name ?? '',
+                                      email: homePageController.userData?.email ?? '',
+                                      uid: homePageController.userData?.id ?? '',
                                     );
                                   },
                                   child: SizedBox(
@@ -164,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                         source: ImageSource.gallery,
                                       ).then((value) {
                                         ApiProvider().editImage(
-                                          uid: homePageController.userData.id ?? '',
+                                          uid: homePageController.userData?.id ?? '',
                                           image: value!,
                                         ).then((value) async {
                                           var dataaa = value;
@@ -194,12 +194,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                             border:Border.all(color: Colors.white),
                                             shape: BoxShape.circle,
                                           ),
-                                          child: homePageController.userData.proPic.toString().isNotEmpty
+                                          child: homePageController.userData?.proPic.toString().isNotEmpty ?? false
                                               ? CircleAvatar(
                                                   backgroundColor:Colors.transparent,
                                                   radius: 30,
                                                   backgroundImage: NetworkImage(
-                                                    "$basUrl${homePageController.userData.proPic}",
+                                                    "$basUrl${homePageController.userData?.proPic}",
                                                   ),
                                                 )
                                               : const CircleAvatar(

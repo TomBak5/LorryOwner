@@ -35,7 +35,7 @@ class _AddsubdriverState extends State<Addsubdriver> {
       isEdit = widget.isEdit;
     addSubdriverCont.setSdriverLoad = false;
     });
-    addSubdriverCont.getLorrylist(uid: homePageCont.userData.id, isEdit: isEdit);
+    addSubdriverCont.getLorrylist(uid: homePageCont.userData?.id ?? '', isEdit: isEdit);
     ApiProvider().getCountryCode().then((value) {
       setState(() {
         countryCodeList = value;
@@ -446,10 +446,10 @@ class _AddsubdriverState extends State<Addsubdriver> {
                                         title: "Next".tr,
                                         onTapp: () {
                                           if (_formKey.currentState!.validate()) {
-                                            isEdit ? addSubdriverCont.editSubdriver(ownerId: homePageCont.userData.id).then((value) {
-                                              addSubdriverCont.getSubdriverlist(uid: homePageCont.userData.id);
-                                            },) : addSubdriverCont.addSubdriver(ownerId: homePageCont.userData.id).then((value) {
-                                              addSubdriverCont.getSubdriverlist(uid: homePageCont.userData.id);
+                                            isEdit ? addSubdriverCont.editSubdriver(ownerId: homePageCont.userData?.id ?? '').then((value) {
+                                              addSubdriverCont.getSubdriverlist(uid: homePageCont.userData?.id ?? '');
+                                            },) : addSubdriverCont.addSubdriver(ownerId: homePageCont.userData?.id ?? '').then((value) {
+                                              addSubdriverCont.getSubdriverlist(uid: homePageCont.userData?.id ?? '');
                                             },);
                                           }
                                         },

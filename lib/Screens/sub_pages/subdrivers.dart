@@ -21,7 +21,7 @@ class _SubdriversState extends State<Subdrivers> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    addSubdriverCont.getSubdriverlist(uid: homePageCont.userData.id);
+    addSubdriverCont.getSubdriverlist(uid: homePageCont.userData?.id ?? '');
   }
 
   bool isLoading = true;
@@ -78,7 +78,7 @@ class _SubdriversState extends State<Subdrivers> {
             return Future.delayed(
               Duration(seconds: 1),
                   () {
-                addSubdriverCont.getSubdriverlist(uid: homePageCont.userData.id);
+                addSubdriverCont.getSubdriverlist(uid: homePageCont.userData?.id ?? '');
               },
             );
           },

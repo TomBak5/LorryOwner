@@ -18,20 +18,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _routeBasedOnUser();
+  }
 
-    getDataFromLocal();
-    Future.delayed(
-      const Duration(seconds: 3),
-      () async {
-        if (isOnBoring!) {
-          Get.offAllNamed(Routes.onBoardingScreens);
-        } else if (isLogin!) {
-          Get.offAllNamed(Routes.loginScreen);
-        } else if (isOnBoring! == false && isLogin! == false) {
-          Get.offAllNamed(Routes.landingPage);
+  Future<void> _routeBasedOnUser() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await Future.delayed(const Duration(seconds: 2));
+    String? userData = prefs.getString('userData');
+    if (userData != null && userData.isNotEmpty) {
+      try {
+        final decoded = userData.isNotEmpty ? userData : null;
+        if (decoded != null && decoded.contains('id') && !decoded.contains('"id":""')) {
+          Get.offAllNamed(Routes.landingPage); // or Routes.homePage if you have a dedicated home route
+          return;
         }
-      },
-    );
+      } catch (e) {}
+    }
+    Get.offAllNamed(Routes.loginScreen);
   }
 
   @override
@@ -43,12 +46,15 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Center(
-              child: SvgPicture.asset(
-                "assets/logo/Group 427320347.svg",
-                height: 60,
-                width: 60,
+              child: Image.asset(
+                "assets/logo/truckbuddy_logo.png",
+                width: double.infinity,
+                height: 140,
+                fit: BoxFit.contain,
               ),
             ),
+            const SizedBox(height: 32),
+            const CircularProgressIndicator(),
           ],
         ),
       ),

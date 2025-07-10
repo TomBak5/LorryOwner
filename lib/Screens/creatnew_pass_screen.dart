@@ -34,8 +34,8 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    SvgPicture.asset(
-                      "assets/logo/Group 427320347.svg",
+                    Image.asset(
+                      "assets/logo/truckbuddy_logo.png",
                       width: 150,
                       height: 80,
                       color: priMaryColor,

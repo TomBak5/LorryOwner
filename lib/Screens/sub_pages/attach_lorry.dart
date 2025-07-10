@@ -107,7 +107,7 @@ class _AttachLorryState extends State<AttachLorry> {
     debugPrint("======= init editeTitle ======== ${attachLorryController.editeTitle}");
     debugPrint("==========================================");
     ApiProvider()
-        .getVehicleList(uid: homePageController.userData.id ?? '')
+        .getVehicleList(uid: homePageController.userData?.id ?? '')
         .then((value) {
       attachLorryController.getDataFromApi(value: value);
     });
@@ -434,7 +434,7 @@ class _AttachLorryState extends State<AttachLorry> {
                             Text(
                               "Select Brand",
                               style: Typographyy.headLine.copyWith(fontSize: 15),
-                            ),
+                                    ),
                             const SizedBox(height: 10),
                             DropdownButtonFormField<String>(
                               value: selectedBrand,
@@ -449,14 +449,14 @@ class _AttachLorryState extends State<AttachLorry> {
                                 setState(() {
                                   selectedBrand = value;
                                 });
-                              },
-                            ),
+                                                },
+                                              ),
                             const SizedBox(height: 20),
                             // Trailer Type Dropdown
-                            Text(
+                                                    Text(
                               "Select Trailer Type",
                               style: Typographyy.headLine.copyWith(fontSize: 15),
-                            ),
+                                                    ),
                             const SizedBox(height: 10),
                             DropdownButtonFormField<String>(
                               value: selectedTrailerType,
@@ -471,8 +471,8 @@ class _AttachLorryState extends State<AttachLorry> {
                                 setState(() {
                                   selectedTrailerType = value;
                                 });
-                              },
-                            ),
+                                    },
+                                  ),
                             const SizedBox(height: 20),
                             // The vehicle grid/list and its loading shimmer are removed.
                             // Only the new dropdowns for brand and trailer type remain for selection.

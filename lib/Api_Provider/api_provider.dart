@@ -115,14 +115,17 @@ class ApiProvider {
   }
 
 //!- - - - - Register User - - - - - !//
-  Future registerUser(
-      {required String name,
-      required String mobile,
-      required String cCode,
-      required String email,
-      required String password,
-      required String referCode,
-      required String userRole}) async {
+  Future registerUser({
+    required String name,
+    required String mobile,
+    required String cCode,
+    required String email,
+    required String password,
+    required String referCode,
+    required String userRole,
+    String? company,
+    String? emergencyContact,
+  }) async {
     Map body = {
       "name": name,
       "mobile": mobile,
@@ -132,6 +135,12 @@ class ApiProvider {
       "refercode": referCode,
       "user_role": userRole,
     };
+    if (company != null && company.isNotEmpty) {
+      body["company"] = company;
+    }
+    if (emergencyContact != null && emergencyContact.isNotEmpty) {
+      body["emergency_contact"] = emergencyContact;
+    }
 
     try {
       var respons = await api.sendRequest.post(
