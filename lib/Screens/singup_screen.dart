@@ -364,25 +364,23 @@ class _SingUpState extends State<SingUp> {
                                             onTapp: () {
                                               print("Sign Up button pressed");
                                               initPlatformState();
-                                              if (singUpController.emailController.text.isNotEmpty && singUpController.passwordController.text.isNotEmpty && singUpController.confirmPasswordController.text.isNotEmpty) {
-                                                singUpController.setIsLoading(true);
-                                                // After successful email/pass/confirm, go to TruckInfoScreen
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) => TruckInfoScreen(),
-                                                  ),
-                                                );
+                                              // Only require email and password
+                                              if (singUpController.emailController.text.isEmpty ||
+                                                  singUpController.passwordController.text.isEmpty) {
+                                                showCommonToast("Please enter email and password");
+                                                return;
                                               }
-                                              if (singUpController.emailController.text.isEmpty) {
-                                                singUpController.setEmailAddress(true);
-                                              }
-                                              if (singUpController.passwordController.text.isEmpty) {
-                                                singUpController.setPassWord(true);
-                                              }
-                                              if (singUpController.confirmPasswordController.text.isEmpty) {
-                                                // Optionally, add a method to handle confirm password validation
-                                              }
+                                              singUpController.setIsLoading(true);
+                                              singUpController.setUserData(
+                                                context,
+                                                email: singUpController.emailController.text,
+                                                pass: singUpController.passwordController.text,
+                                                ccode: '',
+                                                name: '',
+                                                mobile: '',
+                                                reff: '',
+                                                userRole: '',
+                                              );
                                             },
                                           ),
                                         ),

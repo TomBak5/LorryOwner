@@ -121,7 +121,7 @@ final getpage = [
     page: () => const TruckInfoScreen(),
   ),
   GetPage(
-    name: '/Congratulations',
-    page: () => CongratulationsScreen(),
+    name: '/CongratulationsScreen',
+    page: () => CongratulationsScreen(userRole: 'driver'),
   ),
 ];

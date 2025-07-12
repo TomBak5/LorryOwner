@@ -14,6 +14,7 @@ import 'package:uuid/uuid.dart';
 
 import '../Api_Provider/api_provider.dart';
 import '../AppConstData/routes.dart';
+import '../Screens/congratulations_screen.dart';
 
 class SingUpController extends GetxController implements GetxService {
   bool isPasswordShow = true;
@@ -110,11 +111,8 @@ class SingUpController extends GetxController implements GetxService {
         await prefs.setString("userData", decodeData);
         // OneSignal.shared.sendTag("owner_id", dataaa["UserLogin"]["id"]);
         OneSignal.User.addTagWithKey("user_id", dataaa["UserLogin"]["id"]);
-        if (userRole == 'driver') {
-          Get.offAllNamed(Routes.truckInfo);
-        } else {
-          Get.offAllNamed(Routes.landingPage);
-        }
+        // Navigate to Truck Information screen after registration
+        Get.offAllNamed(Routes.truckInfo);
         setIsLoading(false);
         showCommonToast(dataaa["ResponseMsg"]);
       } else {

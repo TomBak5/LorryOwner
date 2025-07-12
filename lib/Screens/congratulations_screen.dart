@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../AppConstData/routes.dart';
 
 class CongratulationsScreen extends StatelessWidget {
+  final String userRole;
+  const CongratulationsScreen({Key? key, required this.userRole}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +95,7 @@ class CongratulationsScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // To be implemented: location permission and navigation
+                    Get.offAllNamed(Routes.landingPage);
                   },
                   child: Text(
                     'Start Driving!',

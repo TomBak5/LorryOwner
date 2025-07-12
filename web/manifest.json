@@ -1,6 +1,6 @@
 {
-    "name": "movers_lorry_owner",
-    "short_name": "movers_lorry_owner",
+    "name": "LorryOwner",
+    "short_name": "LorryOwner",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",

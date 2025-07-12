@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
         builder: (context, localeModel, child) {
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
-            title: 'Movers Lorry Owner',
+            title: 'LorryOwner',
             getPages: getpage,
             locale: localeModel.locale,
             initialRoute: Routes.splashScreen,

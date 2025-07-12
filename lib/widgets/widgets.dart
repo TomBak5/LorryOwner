@@ -149,7 +149,7 @@ commonBg() {
             ),
             Positioned(
               top: 70,
-              child: SvgPicture.asset(
+              child: Image.asset(
                 "assets/logo/truckbuddy_logo.png",
                 height: 60,
                 width: 120,

@@ -65,7 +65,6 @@ class LoginScreenController extends GetxController implements GetxService {
                 await prefs.setString("userData", decodeData);
                 OneSignal.User.addTagWithKey("user_id", data["UserLogin"]["id"]);
                 Get.offAllNamed(Routes.landingPage);
-                showCommonToast(data["ResponseMsg"]);
               } else {
                 showCommonToast(data["ResponseMsg"]);
         }

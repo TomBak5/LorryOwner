@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../main_pages/home_page.dart';
 import '../../Controllers/singiup_controller.dart';
+import '../congratulations_screen.dart';
 
 class AccountInfoScreen extends StatefulWidget {
   const AccountInfoScreen({Key? key}) : super(key: key);
@@ -97,7 +98,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     setState(() { isLoading = true; });
-                    singUpController.setUserData(
+                    await singUpController.setUserData(
                       context,
                       name: fullNameController.text,
                       mobile: phoneController.text,
@@ -109,6 +110,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       company: companyController.text,
                       emergencyContact: emergencyContactController.text,
                     );
+                    Get.to(() => CongratulationsScreen(userRole: 'driver'));
                     setState(() { isLoading = false; });
                   },
                   style: ElevatedButton.styleFrom(
