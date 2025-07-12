@@ -556,12 +556,16 @@ class _AttachLorry2State extends State<AttachLorry2> {
                                                 isloading = false;
                                               });
                                               Get.offAllNamed(Routes.landingPage);
-                                              showCommonToast(decode["ResponseMsg"]);
+                                              if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                showCommonToast(decode["ResponseMsg"]);
+                                              }
                                             } else {
                                               setState(() {
                                                 isloading = false;
                                               });
-                                              showCommonToast(decode["ResponseMsg"]);
+                                              if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                showCommonToast(decode["ResponseMsg"]);
+                                              }
                                             }
                                           });
                                         } else {
@@ -599,12 +603,16 @@ class _AttachLorry2State extends State<AttachLorry2> {
       SharedPreferences preferences = await SharedPreferences.getInstance();
       preferences.setString("EditLorryData", "");
       Get.offAllNamed(Routes.landingPage);
-      showCommonToast(value["ResponseMsg"]);
+      if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(value["ResponseMsg"]);
+      }
     } else {
       setState(() {
         isloading = false;
       });
-      showCommonToast(value["ResponseMsg"]);
+      if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(value["ResponseMsg"]);
+      }
     }
   }
 

@@ -303,7 +303,9 @@ class BidBottomsheetController extends GetxController implements GetxService {
                                           ).then((value) {
                                             var decode = value;
                                             if (decode["Result"] == "true") {
-                                              showCommonToast(decode["ResponseMsg"]);
+                                              if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                showCommonToast(decode["ResponseMsg"]);
+                                              }
                                               Get.back();
                                               amount.text = "";
                                               setIsPriceFix(false);
@@ -312,8 +314,10 @@ class BidBottomsheetController extends GetxController implements GetxService {
                                               amount.clear();
                                               description.clear();
                                             } else {
+                                              if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                showCommonToast(decode["ResponseMsg"]);
+                                              }
                                               Get.back();
-                                              showCommonToast(decode["ResponseMsg"]);
                                               amount.text = "";
                                               setIsPriceFix(false);
                                               setIsAvailable(false);

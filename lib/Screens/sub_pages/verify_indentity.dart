@@ -657,12 +657,16 @@ class _VerifyIdentityState extends State<VerifyIdentity> {
       print("STTUS LOADING >>>>> >${verifyIdentityController.isLoading}");
       homePageController.updateUserProfile(context);
       verifyIdentityController.setIsLoading(false);
-      showCommonToast(decode["ResponseMsg"]);
+      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(decode["ResponseMsg"]);
+      }
     } else {
       print(">>>>>>response ${decode["ResponseMsg"]}");
       print(">>>>>>STTUS LOADING ${verifyIdentityController.isLoading}");
       verifyIdentityController.setIsLoading(false);
-      showCommonToast(decode["ResponseMsg"]);
+      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(decode["ResponseMsg"]);
+      }
     }
   }
 

@@ -46,14 +46,18 @@ class AddSubdriverController extends GetxController implements GetxService {
       ApiProvider().getAddsubdriver(body: body, url: "add_sub_driver.php").then((value) {
         if(value["Result"] == "true"){
           authServices.setSubdriverData(ownerId: ownerId, lat: "0", long: "0", lorryId: lorryId, subdriverId: value["sub_driver_id"].toString());
-          showCommonToast(value["ResponseMsg"]);
+          if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+            showCommonToast(value["ResponseMsg"]);
+          }
           setSdriverLoad = false;
           update();
           Get.back();
         } else {
           setSdriverLoad = false;
           update();
-          showCommonToast(value["ResponseMsg"]);
+          if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+            showCommonToast(value["ResponseMsg"]);
+          }
         }
       },);
     } catch (e) {
@@ -81,14 +85,18 @@ class AddSubdriverController extends GetxController implements GetxService {
       ApiProvider().getAddsubdriver(body: body, url: "edit_sub_driver.php").then((value) {
         if(value["Result"] == "true"){
           authServices.setSubdriverData(ownerId: ownerId, lat: "0", long: "0", lorryId: lorryId, subdriverId: value["UserProfile"]["id"]);
-          showCommonToast(value["ResponseMsg"]);
+          if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+            showCommonToast(value["ResponseMsg"]);
+          }
           setSdriverLoad = false;
           update();
           Get.back();
         } else {
           setSdriverLoad = false;
           update();
-          showCommonToast(value["ResponseMsg"]);
+          if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+            showCommonToast(value["ResponseMsg"]);
+          }
         }
       },);
     } catch (e) {

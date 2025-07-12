@@ -961,10 +961,14 @@ class _EarningScreenState extends State<EarningScreen> {
     if (decode["Result"] == "true") {
       Get.back();
       walletScreenController.fetChDataFromApi();
-      showCommonToast(decode["ResponseMsg"]);
+      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(decode["ResponseMsg"]);
+      }
     } else {
       Get.back();
-      showCommonToast(decode["ResponseMsg"]);
+      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(decode["ResponseMsg"]);
+      }
     }
   }
 

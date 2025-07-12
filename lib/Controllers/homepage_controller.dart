@@ -37,7 +37,9 @@ class HomePageController extends GetxController implements GetxService {
           }
         });
       } else {
-        showCommonToast(data["ResponseMsg"]);
+        if ((data["ResponseMsg"] ?? "").trim().isNotEmpty) {
+          showCommonToast(data["ResponseMsg"]);
+        }
       }
     });
   }
@@ -104,7 +106,9 @@ class HomePageController extends GetxController implements GetxService {
       update();
       setIsLoading(false); // Stop loading on success
     } else {
-      showCommonToast(response['ResponseMsg']?.toString() ?? 'Unknown error');
+      if ((response['ResponseMsg']?.toString() ?? '').trim().isNotEmpty) {
+        // Removed: showCommonToast(response['ResponseMsg']?.toString());
+      }
       setIsLoading(false); // Stop loading on backend error
     }
   }

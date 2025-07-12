@@ -107,7 +107,9 @@ class _FindLoadState extends State<FindLoad> {
             });
           }
           findLorryController.setIsLoading(false);
-          showCommonToast("${decode["ResponseMsg"]}");
+          if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+            showCommonToast("${decode["ResponseMsg"]}");
+          }
         }
       });
     } else {
@@ -630,7 +632,9 @@ class _FindLoadState extends State<FindLoad> {
                                                                             dropState: loads.loaddata[index].dropState,
                                                                             pickupState: loads.loaddata[index].pickupState,
                                                                           );
-                                                                          showCommonToast(decode["ResponseMsg"]);
+                                                                          if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                                            showCommonToast(decode["ResponseMsg"]);
+                                                                          }
                                                                         }
                                                                     });
                                                                     }

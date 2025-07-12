@@ -99,12 +99,16 @@ class _BookedDetailsState extends State<BookedDetails> {
                                         isloading = false;
                                       });
                                       Get.back();
-                                      showCommonToast(decode["ResponseMsg"]);
+                                      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                        showCommonToast(decode["ResponseMsg"]);
+                                      }
                                     } else {
                                       setState(() {
                                         isloading = false;
                                       });
-                                      showCommonToast(decode["ResponseMsg"]);
+                                      if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                        showCommonToast(decode["ResponseMsg"]);
+                                      }
                                     }
                                   });
                                 },

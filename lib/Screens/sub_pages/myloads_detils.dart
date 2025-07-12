@@ -188,10 +188,14 @@ class _LoadsDetailsState extends State<LoadsDetails> {
                                                                 var decode = jsonDecode(value);
 
                                                                 if (decode["Result"] == "true") {
-                                                                  showCommonToast(decode["ResponseMsg"]);
+                                                                  if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                                    showCommonToast(decode["ResponseMsg"]);
+                                                                  }
                                                                   Get.close(2);
                                                                 } else {
-                                                                  showCommonToast(decode["ResponseMsg"]);
+                                                                  if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                                    showCommonToast(decode["ResponseMsg"]);
+                                                                  }
                                                                   Get.back();
                                                                 }
                                                               });

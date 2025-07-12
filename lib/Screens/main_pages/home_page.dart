@@ -224,7 +224,9 @@ class _HomePageState extends State<HomePage> {
                                                         Get.to(Subdrivers());
                                                     }
                                                   } else if (homePageController.userData?.isVerify == "1") {
-                                                    showCommonToast("verification Under Process");
+                                                    if (("verification Under Process" ?? "").trim().isNotEmpty) {
+                                                      showCommonToast("verification Under Process");
+                                                    }
                                                   } else {
                                                     Get.toNamed(Routes.verifyIdentity);
                                                   }

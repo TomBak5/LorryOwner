@@ -169,7 +169,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                         ).then((value) async {
                                           var dataaa = value;
                                           if (dataaa["Result"] == "true") {
-                                            showCommonToast(dataaa["ResponseMsg"]);
+                                            if ((dataaa["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                              showCommonToast(dataaa["ResponseMsg"]);
+                                            }
                                             final SharedPreferences prefs = await SharedPreferences.getInstance();
                                             String decodeData = jsonEncode(dataaa["UserLogin"]);
                                             await prefs.setString("userData", decodeData);
@@ -179,7 +181,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                               }
                                             });
                                           } else {
-                                            showCommonToast(dataaa["ResponseMsg"]);
+                                            if ((dataaa["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                              showCommonToast(dataaa["ResponseMsg"]);
+                                            }
                                           }
                                         });
                                         return null;
@@ -559,7 +563,9 @@ class _ProfilePageState extends State<ProfilePage> {
                               (value) async {
                                 var decodeString = value;
                                 if (decodeString["Result"] == "true") {
-                                  showCommonToast(decodeString["ResponseMsg"]);
+                                  if ((decodeString["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                    showCommonToast(decodeString["ResponseMsg"]);
+                                  }
                                   final SharedPreferences prefs = await SharedPreferences.getInstance();
                                   String decodeData = jsonEncode(decodeString["UserLogin"]);
                                   await prefs.setString("userData", decodeData);
@@ -570,7 +576,9 @@ class _ProfilePageState extends State<ProfilePage> {
                                     }
                                   });
                                 } else {
-                                  showCommonToast(decodeString["ResponseMsg"]);
+                                  if ((decodeString["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                    showCommonToast(decodeString["ResponseMsg"]);
+                                  }
                                 }
                               },
                             );

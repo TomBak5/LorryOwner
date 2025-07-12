@@ -251,7 +251,9 @@ class ApiProvider {
     );
     var data = response.data;
     if(data["Result"] == "false"){
-      showCommonToast(data["ResponseMsg"]);
+      if ((data["ResponseMsg"] ?? "").trim().isNotEmpty) {
+        showCommonToast(data["ResponseMsg"]);
+      }
       return data;
     } else {
       print("RESPONSE DATA  ${response.data}");

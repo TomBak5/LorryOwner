@@ -429,14 +429,18 @@ class _NearLoadState extends State<NearLoad> {
                                                               longs: locationLongtitude,
                                                               inde: index,
                                                             );
-                                                            showCommonToast(decode["ResponseMsg"]);
+                                                            if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                              showCommonToast(decode["ResponseMsg"]);
+                                                            }
                                                           } else {
                                                             dataApi(
                                                               lats: locationLatitude,
                                                               longs: locationLongtitude,
                                                               inde: index,
                                                             );
-                                                            showCommonToast(decode["ResponseMsg"]);
+                                                            if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                                              showCommonToast(decode["ResponseMsg"]);
+                                                            }
                                                           }
                                                         });
                                                       }

@@ -114,11 +114,9 @@ class SingUpController extends GetxController implements GetxService {
         // Navigate to Truck Information screen after registration
         Get.offAllNamed(Routes.truckInfo);
         setIsLoading(false);
-        showCommonToast(dataaa["ResponseMsg"]);
       } else {
         setIsLoading(false);
         print("LOADAER $isLoading");
-        showCommonToast(dataaa["ResponseMsg"]);
       }
     });
   }

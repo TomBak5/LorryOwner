@@ -162,9 +162,13 @@ class _CreateNewPasswordState extends State<CreateNewPassword> {
                                   var decode = value;
                                   if (decode["Result"] == "true") {
                                     Get.offAll(const LoginScreen());
-                                    showCommonToast(decode["ResponseMsg"]);
+                                    if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                      showCommonToast(decode["ResponseMsg"]);
+                                    }
                                   } else {
-                                    showCommonToast(decode["ResponseMsg"]);
+                                    if ((decode["ResponseMsg"] ?? "").trim().isNotEmpty) {
+                                      showCommonToast(decode["ResponseMsg"]);
+                                    }
                                   }
                                 });
                               } else {
