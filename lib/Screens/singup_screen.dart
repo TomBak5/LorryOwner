@@ -14,6 +14,7 @@ import '../widgets/widgets.dart';
 import 'main_pages/home_page.dart';
 import 'congratulations_screen.dart';
 import 'sub_pages/truck_info_screen.dart';
+import 'sub_pages/account_info_screen.dart';
 
 class SingUp extends StatefulWidget {
   const SingUp({super.key});
@@ -371,16 +372,23 @@ class _SingUpState extends State<SingUp> {
                                                 return;
                                               }
                                               singUpController.setIsLoading(true);
-                                              singUpController.setUserData(
-                                                context,
-                                                email: singUpController.emailController.text,
-                                                pass: singUpController.passwordController.text,
-                                                ccode: '',
-                                                name: '',
-                                                mobile: '',
-                                                reff: '',
-                                                userRole: '',
-                                              );
+                                              // In the onTapp for the Sign up button, branch based on selectedRole
+                                              if (singUpController.selectedRole == 'dispatcher') {
+                                                // Go to Account Info screen for dispatcher
+                                                Get.to(() => AccountInfoScreen(userRole: 'dispatcher'));
+                                              } else {
+                                                // Existing driver flow
+                                                singUpController.setUserData(
+                                                  context,
+                                                  email: singUpController.emailController.text,
+                                                  pass: singUpController.passwordController.text,
+                                                  ccode: '',
+                                                  name: '',
+                                                  mobile: '',
+                                                  reff: '',
+                                                  userRole: '',
+                                                );
+                                              }
                                             },
                                           ),
                                         ),

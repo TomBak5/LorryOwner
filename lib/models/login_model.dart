@@ -52,6 +52,7 @@ class UserLogin {
   String? isVerify;
   dynamic rejectComment;
   String? commission;
+  String? userRole; // Add userRole field
 
   UserLogin({
     this.id,
@@ -68,6 +69,7 @@ class UserLogin {
     this.isVerify,
     this.rejectComment,
     this.commission,
+    this.userRole, // Add to constructor
   });
 
   factory UserLogin.fromJson(Map<String, dynamic> json) => UserLogin(
@@ -85,6 +87,7 @@ class UserLogin {
         isVerify: json["is_verify"]?.toString() ?? '',
         rejectComment: json["reject_comment"],
         commission: json["commission"]?.toString() ?? '',
+        userRole: json["user_role"]?.toString() ?? "driver", // Default to driver if not provided
       );
 
   Map<String, dynamic> toJson() => {
@@ -102,5 +105,6 @@ class UserLogin {
         "is_verify": isVerify,
         "reject_comment": rejectComment,
         "commission": commission,
+        "user_role": userRole, // Add to JSON
       };
 }

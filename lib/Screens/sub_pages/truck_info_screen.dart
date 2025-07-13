@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../Api_Provider/api_provider.dart';
 import '../main_pages/home_page.dart';
 import 'account_info_screen.dart';
+import '../../Controllers/singiup_controller.dart';
 
 class TruckInfoScreen extends StatefulWidget {
   const TruckInfoScreen({Key? key}) : super(key: key);
@@ -129,7 +130,9 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.to(() => AccountInfoScreen());
+                    final singUpController = Get.find<SingUpController>();
+                    final userRole = singUpController.selectedRole;
+                    Get.to(() => AccountInfoScreen(userRole: userRole));
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,

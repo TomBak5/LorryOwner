@@ -20,6 +20,8 @@ import '../Screens/sub_pages/nearload.dart';
 import '../Screens/sub_pages/verify_indentity.dart';
 import '../Screens/sub_pages/truck_info_screen.dart';
 import '../Screens/congratulations_screen.dart';
+import '../Screens/sub_pages/assign_order_screen.dart';
+import '../Screens/sub_pages/assigned_orders_screen.dart';
 
 class Routes {
   static String splashScreen = '/';
@@ -41,6 +43,8 @@ class Routes {
   static String attachLorry = "/AttachLorry";
   static String notification = "/Notification";
   static const String truckInfo = '/truckInfo';
+  static const String assignOrder = '/assignOrder';
+  static const String assignedOrders = '/assignedOrders';
 }
 
 final getpage = [
@@ -119,6 +123,14 @@ final getpage = [
   GetPage(
     name: Routes.truckInfo,
     page: () => const TruckInfoScreen(),
+  ),
+  GetPage(
+    name: Routes.assignOrder,
+    page: () => const AssignOrderScreen(),
+  ),
+  GetPage(
+    name: Routes.assignedOrders,
+    page: () => const AssignedOrdersScreen(),
   ),
   GetPage(
     name: '/CongratulationsScreen',

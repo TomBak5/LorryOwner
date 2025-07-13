@@ -201,36 +201,119 @@ class _HomePageState extends State<HomePage> {
                                     ],
                                   ),
                                   const SizedBox(height: 24),
+                                  // Debug info - show user role
+                                  if (homePageController.userData?.userRole != null)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                                      child: Text(
+                                        'User Role: ${homePageController.userData?.userRole}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
                                   SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Row(
                                       children: [
-                                        for (int a = 0; a < 4; a++)
-                                          Row(
-                                            children: [
-                                              InkWell(
-                                                onTap: () {
-                                                  if (homePageController.userData?.isVerify == "2") {
-                                                    switch (a) {
-                                                      case 0:
-                                                        Get.toNamed(Routes.findLorry);
-                                                        break;
-                                                      case 1:
-                                                        Get.toNamed(Routes.nearLoad);
-                                                        break;
-                                                      case 2:
-                                                        Get.toNamed(Routes.attachLorry);
-                                                      case 3:
-                                                        Get.to(Subdrivers());
+                                        // Check if user is dispatcher or driver
+                                        if (homePageController.userData?.userRole == 'dispatcher')
+                                          // Dispatcher menu
+                                          for (int a = 0; a < 4; a++)
+                                            Row(
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    if (homePageController.userData?.isVerify == "2") {
+                                                      switch (a) {
+                                                        case 0:
+                                                          Get.toNamed(Routes.assignOrder);
+                                                          break;
+                                                        case 1:
+                                                          Get.to(Subdrivers()); // Manage Drivers
+                                                          break;
+                                                        case 2:
+                                                          Get.toNamed(Routes.assignedOrders); // Order History
+                                                          break;
+                                                        case 3:
+                                                          // Dashboard - stay on home page
+                                                          break;
+                                                      }
+                                                    } else if (homePageController.userData?.isVerify == "1") {
+                                                      if (("verification Under Process" ?? "").trim().isNotEmpty) {
+                                                        showCommonToast("verification Under Process");
+                                                      }
+                                                    } else {
+                                                      Get.toNamed(Routes.verifyIdentity);
                                                     }
-                                                  } else if (homePageController.userData?.isVerify == "1") {
-                                                    if (("verification Under Process" ?? "").trim().isNotEmpty) {
-                                                      showCommonToast("verification Under Process");
+                                                  },
+                                                  child: Container(
+                                                    height: 40,
+                                                    width: 110,
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.all(
+                                                        Radius.circular(12),
+                                                      ),
+                                                      border: Border.all(
+                                                        color: Colors.white.withOpacity(0.8),
+                                                        width: 1.5,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                                      mainAxisAlignment: MainAxisAlignment.center,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            homePageController.dispatcherMenuList[a].toString().tr,
+                                                            style: TextStyle(
+                                                              color: Colors.white,
+                                                              fontWeight: FontWeight.w500,
+                                                              fontFamily: "urbani_extrabold",
+                                                              fontSize: 14,
+                                                            ),
+                                                            overflow: TextOverflow.ellipsis,
+                                                            maxLines: 1,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10)
+                                              ],
+                                            )
+                                        else
+                                          // Driver menu (existing)
+                                          for (int a = 0; a < 4; a++)
+                                            Row(
+                                              children: [
+                                                InkWell(
+                                                  onTap: () {
+                                                    if (homePageController.userData?.isVerify == "2") {
+                                                      switch (a) {
+                                                        case 0:
+                                                          Get.toNamed(Routes.findLorry);
+                                                          break;
+                                                        case 1:
+                                                          Get.toNamed(Routes.nearLoad);
+                                                          break;
+                                                        case 2:
+                                                          Get.toNamed(Routes.attachLorry);
+                                                          break;
+                                                        case 3:
+                                                          Get.toNamed(Routes.assignedOrders);
+                                                          break;
+                                                      }
+                                                    } else if (homePageController.userData?.isVerify == "1") {
+                                                      if (("verification Under Process" ?? "").trim().isNotEmpty) {
+                                                        showCommonToast("verification Under Process");
+                                                      }
+                                                    } else {
+                                                      Get.toNamed(Routes.verifyIdentity);
                                                     }
-                                                  } else {
-                                                    Get.toNamed(Routes.verifyIdentity);
-                                                  }
-                                                },
+                                                  },
                                                 child: Container(
                                                   height: 40,
                                                   width: 110,

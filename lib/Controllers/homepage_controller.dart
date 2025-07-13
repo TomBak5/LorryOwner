@@ -16,7 +16,14 @@ class HomePageController extends GetxController implements GetxService {
     "Find Loads",
     "Near Load",
     "Attach Lorry",
-    "Add Subdriver"
+    "My Orders"
+  ];
+
+  List dispatcherMenuList = [
+    "Assign Orders",
+    "Manage Drivers",
+    "Order History",
+    "Dashboard"
   ];
 
   updateUserProfile(context) {

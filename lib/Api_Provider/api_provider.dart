@@ -125,6 +125,7 @@ class ApiProvider {
     required String userRole,
     String? company,
     String? emergencyContact,
+    List<Map<String, dynamic>>? linkedDrivers,
   }) async {
     Map body = {
       "name": name,
@@ -140,6 +141,9 @@ class ApiProvider {
     }
     if (emergencyContact != null && emergencyContact.isNotEmpty) {
       body["emergency_contact"] = emergencyContact;
+    }
+    if (linkedDrivers != null && linkedDrivers.isNotEmpty) {
+      body["linked_drivers"] = linkedDrivers.map((d) => d['id']).toList();
     }
 
     try {
@@ -730,6 +734,66 @@ class ApiProvider {
       }
     }
     return [];
+  }
+
+  // Search for drivers by email (for dispatcher registration autocomplete)
+  Future<List<Map<String, dynamic>>> searchDriversByEmail(String query) async {
+    final response = await api.sendRequest.post(
+      "http://localhost/AdminPanel/Api/search_driver.php",
+      data: jsonEncode({'query': query}),
+      options: Options(headers: header),
+    );
+    if (response.data['success'] == true) {
+      return List<Map<String, dynamic>>.from(response.data['drivers']);
+    } else {
+      return [];
+    }
+  }
+
+//?- - - - - Assign Order API - - - - - !//
+  Future assignOrderApi({
+    required String dispatcherId,
+    required String driverId,
+    required String details,
+  }) async {
+    Map body = {
+      "dispatcher_id": dispatcherId,
+      "driver_id": driverId,
+      "details": details,
+    };
+    log("+-+-+-+-+ assign order body +-+-+-+-+ $body");
+    var response = await api.sendRequest.post(
+      "${basUrlApi}assign_order.php",
+      data: jsonEncode(body),
+    );
+    return response.data;
+  }
+
+//?- - - - - Get Assigned Orders API - - - - - !//
+  Future getAssignedOrdersApi({required String driverId}) async {
+    Map body = {"driver_id": driverId};
+    var response = await api.sendRequest.post(
+      "${basUrlApi}get_assigned_orders.php",
+      data: jsonEncode(body),
+    );
+    return response.data;
+  }
+
+//?- - - - - Update Order Status API - - - - - !//
+  Future updateOrderStatusApi({
+    required String orderId,
+    required String status,
+  }) async {
+    Map body = {
+      "order_id": orderId,
+      "status": status,
+    };
+    log("+-+-+-+-+ update order status body +-+-+-+-+ $body");
+    var response = await api.sendRequest.post(
+      "${basUrlApi}update_order_status.php",
+      data: jsonEncode(body),
+    );
+    return response.data;
   }
 
 }

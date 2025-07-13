@@ -111,8 +111,7 @@ class SingUpController extends GetxController implements GetxService {
         await prefs.setString("userData", decodeData);
         // OneSignal.shared.sendTag("owner_id", dataaa["UserLogin"]["id"]);
         OneSignal.User.addTagWithKey("user_id", dataaa["UserLogin"]["id"]);
-        // Navigate to Truck Information screen after registration
-        Get.offAllNamed(Routes.truckInfo);
+        // Navigation removed from here. Let the caller handle navigation after registration.
         setIsLoading(false);
       } else {
         setIsLoading(false);

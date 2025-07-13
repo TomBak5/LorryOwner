@@ -3,9 +3,11 @@ import 'package:get/get.dart';
 import '../main_pages/home_page.dart';
 import '../../Controllers/singiup_controller.dart';
 import '../congratulations_screen.dart';
+import 'link_driver_screen.dart';
 
 class AccountInfoScreen extends StatefulWidget {
-  const AccountInfoScreen({Key? key}) : super(key: key);
+  final String userRole;
+  const AccountInfoScreen({Key? key, required this.userRole}) : super(key: key);
 
   @override
   State<AccountInfoScreen> createState() => _AccountInfoScreenState();
@@ -21,6 +23,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDispatcher = widget.userRole == 'dispatcher';
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -34,25 +37,25 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 children: [
                   Text('Account information', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black)),
                   const Spacer(),
-                  Text('2/3', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500)),
+                  Text('1/3', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500)),
                 ],
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: 2 / 3,
+                value: 1 / 3,
                 backgroundColor: Colors.grey[200],
                 color: Colors.blue,
                 minHeight: 3,
               ),
               const SizedBox(height: 32),
-              Text('Your Account information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.black)),
+              Text('Account information', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.black)),
               const SizedBox(height: 32),
               Text('Full name', style: TextStyle(fontSize: 14, color: Colors.black)),
               const SizedBox(height: 8),
               TextField(
                 controller: fullNameController,
                 decoration: InputDecoration(
-                  hintText: 'Enter full name',
+                  hintText: isDispatcher ? 'Dry Van Dispatcher' : 'Enter full name',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
@@ -64,34 +67,36 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 controller: phoneController,
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
-                  hintText: 'Enter phone number',
+                  hintText: '+44',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                   contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Company name', style: TextStyle(fontSize: 14, color: Colors.black)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: companyController,
-                decoration: InputDecoration(
-                  hintText: 'Enter company name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              if (isDispatcher) ...[
+                Text('Company name', style: TextStyle(fontSize: 14, color: Colors.black)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: companyController,
+                  decoration: InputDecoration(
+                    hintText: 'Your company name',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text('Family emergency contact', style: TextStyle(fontSize: 14, color: Colors.black)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: emergencyContactController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  hintText: 'Enter emergency contact',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                const SizedBox(height: 16),
+                Text('Family emergency contact', style: TextStyle(fontSize: 14, color: Colors.black)),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: emergencyContactController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    hintText: '+44',
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  ),
                 ),
-              ),
+              ],
               const Spacer(),
               SizedBox(
                 width: double.infinity,
@@ -106,11 +111,14 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       email: singUpController.emailController.text,
                       pass: singUpController.passwordController.text,
                       reff: singUpController.referralCodeController.text,
-                      userRole: singUpController.selectedRole,
-                      company: companyController.text,
-                      emergencyContact: emergencyContactController.text,
+                      userRole: widget.userRole,
+                      company: isDispatcher ? companyController.text : null,
+                      emergencyContact: isDispatcher ? emergencyContactController.text : null,
                     );
-                    Get.to(() => CongratulationsScreen(userRole: 'driver'));
+                    Get.to(() => LinkDriverScreen(
+                      initialDrivers: [],
+                      onDriversSelected: (drivers) {},
+                    ));
                     setState(() { isLoading = false; });
                   },
                   style: ElevatedButton.styleFrom(
