@@ -104,59 +104,84 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                   ),
               ],
             ),
-            if (isLoading) ...[
-              SizedBox(height: 12),
-              Center(child: CircularProgressIndicator()),
-            ],
-            if (suggestions.isNotEmpty)
-              ...suggestions.map((driver) => ListTile(
-                leading: Icon(Icons.person_outline),
-                title: Text(driver['email'] ?? ''),
-                subtitle: Text(driver['mobile'] ?? ''),
-                onTap: () => addDriver(driver),
-              )),
-            if (notFoundMsg.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(notFoundMsg, style: TextStyle(color: Colors.red)),
-              ),
-            SizedBox(height: 16),
-            if (linkedDrivers.isNotEmpty)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Expanded(
+              child: ListView(
                 children: [
-                  Text('Linked Drivers:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  ...linkedDrivers.asMap().entries.map((entry) => ListTile(
-                    leading: Icon(Icons.person),
-                    title: Text(entry.value['email'] ?? ''),
-                    subtitle: Text(entry.value['mobile'] ?? ''),
-                    trailing: IconButton(
-                      icon: Icon(Icons.remove_circle, color: Colors.red),
-                      onPressed: () => removeDriver(entry.key),
+                  if (isLoading) ...[
+                    SizedBox(height: 12),
+                    Center(child: CircularProgressIndicator()),
+                  ],
+                  if (suggestions.isNotEmpty)
+                    ...suggestions.map((driver) => ListTile(
+                      leading: Icon(Icons.person_outline),
+                      title: Text(driver['email'] ?? ''),
+                      subtitle: Text(driver['mobile'] ?? ''),
+                      onTap: () => addDriver(driver),
+                    )),
+                  if (notFoundMsg.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(notFoundMsg, style: TextStyle(color: Colors.red)),
                     ),
-                  )),
+                  SizedBox(height: 16),
+                  if (linkedDrivers.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Linked Drivers:', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ...linkedDrivers.asMap().entries.map((entry) => ListTile(
+                          leading: Icon(Icons.person),
+                          title: Text(entry.value['email'] ?? ''),
+                          subtitle: Text(entry.value['mobile'] ?? ''),
+                          trailing: IconButton(
+                            icon: Icon(Icons.remove_circle, color: Colors.red),
+                            onPressed: () => removeDriver(entry.key),
+                          ),
+                        )),
+                      ],
+                    ),
                 ],
               ),
-            Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    widget.onDriversSelected(linkedDrivers);
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Skip now'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (searchController.text.isNotEmpty && suggestions.isNotEmpty) {
-                      addDriver(suggestions.first);
-                    }
-                  },
-                  child: Text('Add another'),
-                ),
-              ],
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  // TODO: Replace with actual dispatcher ID retrieval logic
+                  int dispatcherId = 1; // <-- Replace with real dispatcher ID
+                  if (linkedDrivers.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please select at least one driver.')),
+                    );
+                    return;
+                  }
+                  setState(() { isLoading = true; });
+                  final driverIds = linkedDrivers.map((d) => int.tryParse(d['id'].toString()) ?? 0).where((id) => id > 0).toList();
+                  final result = await ApiProvider().assignDriversToDispatcher(
+                    dispatcherId: dispatcherId,
+                    driverIds: driverIds,
+                  );
+                  setState(() { isLoading = false; });
+                  if (result['success'] == true) {
+                    Navigator.of(context).pushReplacementNamed('/CongratulationsScreen');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(result['message'] ?? 'Failed to assign drivers.')),
+                    );
+                  }
+                },
+                child: Text('Assign'),
+              ),
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () {
+                  widget.onDriversSelected(linkedDrivers);
+                  Navigator.of(context).pop();
+                },
+                child: Text('Skip now', textAlign: TextAlign.center),
+              ),
             ),
           ],
         ),

@@ -739,7 +739,7 @@ class ApiProvider {
   // Search for drivers by email (for dispatcher registration autocomplete)
   Future<List<Map<String, dynamic>>> searchDriversByEmail(String query) async {
     final response = await api.sendRequest.post(
-      "http://localhost/AdminPanel/Api/search_driver.php",
+      "${basUrlApi}search_driver.php",
       data: jsonEncode({'query': query}),
       options: Options(headers: header),
     );
@@ -794,6 +794,28 @@ class ApiProvider {
       data: jsonEncode(body),
     );
     return response.data;
+  }
+
+  Future<Map<String, dynamic>> assignDriversToDispatcher({
+    required int dispatcherId,
+    required List<int> driverIds,
+  }) async {
+    final body = {
+      "dispatcher_id": dispatcherId,
+      "driver_ids": driverIds,
+    };
+    try {
+      final response = await api.sendRequest.post(
+        "${basUrlApi}assign_drivers.php",
+        data: jsonEncode(body),
+        options: Options(headers: header),
+      );
+      if (response.data is Map) return response.data;
+      return jsonDecode(response.data);
+    } catch (e) {
+      debugPrint('Error assigning drivers: $e');
+      return {"success": false, "message": "Failed to assign drivers"};
+    }
   }
 
 }
