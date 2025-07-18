@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../Api_Provider/api_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class LinkDriverScreen extends StatefulWidget {
   final List<Map<String, dynamic>> initialDrivers;
@@ -53,6 +55,16 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
     setState(() {
       linkedDrivers.removeAt(index);
     });
+  }
+
+  Future<int?> getCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userDataString = prefs.getString("userData");
+    if (userDataString != null) {
+      final userData = jsonDecode(userDataString);
+      return int.tryParse(userData["id"].toString());
+    }
+    return null;
   }
 
   @override
@@ -147,8 +159,13 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
-                  // TODO: Replace with actual dispatcher ID retrieval logic
-                  int dispatcherId = 1; // <-- Replace with real dispatcher ID
+                  int? dispatcherId = await getCurrentUserId();
+                  if (dispatcherId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Could not determine dispatcher ID.')),
+                    );
+                    return;
+                  }
                   if (linkedDrivers.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Please select at least one driver.')),
