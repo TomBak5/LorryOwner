@@ -388,6 +388,9 @@ class _SingUpState extends State<SingUp> {
                                                   reff: '',
                                                   userRole: '',
                                                 );
+                                                // Add navigation to TruckInfoScreen after registration
+                                                singUpController.setIsLoading(false);
+                                                Get.toNamed('/truckInfo');
                                               }
                                             },
                                           ),

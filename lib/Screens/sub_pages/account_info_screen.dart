@@ -37,12 +37,12 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 children: [
                   Text('Account information', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black)),
                   const Spacer(),
-                  Text('1/3', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500)),
+                  Text('2/3', style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500)),
                 ],
               ),
               const SizedBox(height: 8),
               LinearProgressIndicator(
-                value: 1 / 3,
+                value: 2 / 3,
                 backgroundColor: Colors.grey[200],
                 color: Colors.blue,
                 minHeight: 3,
@@ -115,10 +115,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       company: isDispatcher ? companyController.text : null,
                       emergencyContact: isDispatcher ? emergencyContactController.text : null,
                     );
-                    Get.to(() => LinkDriverScreen(
-                      initialDrivers: [],
-                      onDriversSelected: (drivers) {},
-                    ));
+                    Get.to(() => CongratulationsScreen(userRole: widget.userRole));
                     setState(() { isLoading = false; });
                   },
                   style: ElevatedButton.styleFrom(
