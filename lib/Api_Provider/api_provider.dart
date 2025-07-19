@@ -823,10 +823,10 @@ class ApiProvider {
       
       if (response.data is Map) {
         // Convert the response format to match what the UI expects
-        if (response.data['Result'] == 'true') {
-          return {"success": true, "message": response.data['ResponseMsg'] ?? "Drivers assigned successfully"};
+        if (response.data['success'] == true) {
+          return {"success": true, "message": response.data['message'] ?? "Drivers assigned successfully"};
         } else {
-          return {"success": false, "message": response.data['ResponseMsg'] ?? "Failed to assign drivers"};
+          return {"success": false, "message": response.data['message'] ?? "Failed to assign drivers"};
         }
       }
       return jsonDecode(response.data);
