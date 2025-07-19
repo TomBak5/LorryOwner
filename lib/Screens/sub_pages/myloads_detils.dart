@@ -17,6 +17,7 @@ import '../../AppConstData/typographyy.dart';
 import '../../Controllers/loadsdeatils_controller.dart';
 
 import '../../widgets/widgets.dart';
+import 'package:movers_lorry_owner/Screens/sub_pages/load_route_map_screen.dart';
 
 class LoadsDetails extends StatefulWidget {
   final String uid;

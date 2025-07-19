@@ -31,14 +31,23 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
       isLoading = true;
       notFoundMsg = '';
     });
-    final results = await ApiProvider().searchDriversByEmail(query);
-    setState(() {
-      isLoading = false;
-      suggestions = results;
-      if (results.isEmpty) {
-        notFoundMsg = 'No driver found';
-      }
-    });
+    try {
+      final results = await ApiProvider().searchDriversByEmail(query);
+      setState(() {
+        suggestions = results;
+        if (results.isEmpty) {
+          notFoundMsg = 'No driver found';
+        }
+      });
+    } catch (e) {
+      setState(() {
+        notFoundMsg = 'Error searching drivers';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void addDriver(Map<String, dynamic> driver) {
@@ -127,7 +136,7 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     ...suggestions.map((driver) => ListTile(
                       leading: Icon(Icons.person_outline),
                       title: Text(driver['email'] ?? ''),
-                      subtitle: Text(driver['mobile'] ?? ''),
+                      subtitle: Text(driver['name'] ?? driver['mobile'] ?? ''),
                       onTap: () => addDriver(driver),
                     )),
                   if (notFoundMsg.isNotEmpty)
@@ -144,7 +153,7 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                         ...linkedDrivers.asMap().entries.map((entry) => ListTile(
                           leading: Icon(Icons.person),
                           title: Text(entry.value['email'] ?? ''),
-                          subtitle: Text(entry.value['mobile'] ?? ''),
+                          subtitle: Text(entry.value['name'] ?? entry.value['mobile'] ?? ''),
                           trailing: IconButton(
                             icon: Icon(Icons.remove_circle, color: Colors.red),
                             onPressed: () => removeDriver(entry.key),

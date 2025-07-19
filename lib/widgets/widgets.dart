@@ -65,29 +65,17 @@ commonTextField({
   void Function(String)? onTap,
 }) {
   return TextField(
-    onChanged: onTap,
-    style: TextStyle(color: textBlackColor, fontFamily: "urbani_regular", fontSize: 16),
     controller: controller,
     keyboardType: keyBordType,
+    textInputAction: TextInputAction.next, // Force regular text input
+    onChanged: onTap,
+    style: TextStyle(color: textBlackColor, fontFamily: "urbani_regular", fontSize: 16),
     decoration: InputDecoration(
       hintStyle: TextStyle(color: textGreyColor, fontFamily: "urbani_regular", fontSize: 14),
       hintText: hintText.tr,
-      suffixIcon: isValide.isNull
-          ? const SizedBox()
-          : isValide!
-              ? SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: Center(
-                    child: SvgPicture.asset(
-                      "assets/icons/alert-circle.svg",
-                      color: Colors.red,
-                      height: 22,
-                      width: 22,
-                    ),
-                  ),
-                )
-              : const SizedBox(),
+      suffixIcon: isValide == true
+          ? const Icon(Icons.error, color: Colors.red)
+          : null,
       contentPadding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -97,13 +85,15 @@ commonTextField({
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: textGreyColor),
       ),
-      disabledBorder: OutlineInputBorder(
+      focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: textGreyColor),
+        borderSide: BorderSide(color: const Color(0xff194BFB)),
       ),
     ),
   );
 }
+
+
 
 showCommonToast(String msg) {
   Fluttertoast.showToast(msg: msg, toastLength: Toast.LENGTH_SHORT);

@@ -291,11 +291,12 @@ class _HomePageState extends State<HomePage> {
                                               children: [
                                                 InkWell(
                                                   onTap: () {
-                                                    if (homePageController.userData?.isVerify == "2") {
+                                                    // Remove identity verification for Find Loads (case 0)
+                                                    if (a == 0) {
+                                                      // Allow Find Loads without verification
+                                                      Get.toNamed(Routes.findLorry);
+                                                    } else if (homePageController.userData?.isVerify == "2") {
                                                       switch (a) {
-                                                        case 0:
-                                                          Get.toNamed(Routes.findLorry);
-                                                          break;
                                                         case 1:
                                                           Get.toNamed(Routes.nearLoad);
                                                           break;

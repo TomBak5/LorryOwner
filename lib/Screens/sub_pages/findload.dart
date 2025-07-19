@@ -46,12 +46,28 @@ class _FindLoadState extends State<FindLoad> {
             findLorryController.setDataInList(FindLoadModel.fromJson(value));
             findLorryController.setIsLoading(false);
             isloading = false;
-            if (findLorryController.loadData.findLoadData.isNotEmpty) {
-              findLorryController.isBidNowLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
-              findLorryController.isBidLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+            if (findLorryController.loadData?.findLoadData.isNotEmpty == true) {
+              findLorryController.isBidNowLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+              findLorryController.isBidLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
             }
             findLorryController.setIsShowData(true);
+          } else {
+            // Handle error case
+            findLorryController.setIsLoading(false);
+            isloading = false;
+            findLorryController.setIsShowData(true);
+            if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+              showCommonToast("${value["ResponseMsg"]}");
+            }
           }
+      setState(() {});
+    }).catchError((error) {
+      // Handle network or other errors
+      debugPrint("Error loading loads: $error");
+      findLorryController.setIsLoading(false);
+      isloading = false;
+      findLorryController.setIsShowData(true);
+      showCommonToast("Failed to load loads. Please try again.");
       setState(() {});
     });
     getdatafromlocal();
@@ -83,8 +99,10 @@ class _FindLoadState extends State<FindLoad> {
               dropStateId: decode["drop_state_id"])
               .then((value) {
             findLorryController.setDataInList(FindLoadModel.fromJson(value));
-            findLorryController.isBidNowLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
-            findLorryController.isBidLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+            if (findLorryController.loadData?.findLoadData.isNotEmpty == true) {
+              findLorryController.isBidNowLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+              findLorryController.isBidLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+            }
             findLorryController.setIsLoading(false);
             findLorryController.setIsShowData(true);
             debugPrint("======= isbidnowLoder ======== ${findLorryController.isBidNowLoder.length}");
@@ -120,14 +138,30 @@ class _FindLoadState extends State<FindLoad> {
             findLorryController.setDataInList(FindLoadModel.fromJson(value));
             findLorryController.setIsLoading(false);
             isloading = false;
-            if (findLorryController.loadData.findLoadData.isNotEmpty) {
-              findLorryController.isBidNowLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
-              findLorryController.isBidLoder = List.filled(findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+            if (findLorryController.loadData?.findLoadData.isNotEmpty == true) {
+              findLorryController.isBidNowLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
+              findLorryController.isBidLoder = List.filled(findLorryController.loadData!.findLoadData[findLorryController.selectVehicle].loaddata.length, false);
             }
             debugPrint("======= isbidnowLoder ======== ${findLorryController.isBidNowLoder.length}");
             debugPrint("========= isBidLoder ========= ${findLorryController.isBidLoder.length}");
             findLorryController.setIsShowData(true);
+          } else {
+            // Handle error case
+            findLorryController.setIsLoading(false);
+            isloading = false;
+            findLorryController.setIsShowData(true);
+            if ((value["ResponseMsg"] ?? "").trim().isNotEmpty) {
+              showCommonToast("${value["ResponseMsg"]}");
+            }
           }
+        setState(() {});
+      }).catchError((error) {
+        // Handle network or other errors
+        debugPrint("Error loading loads: $error");
+        findLorryController.setIsLoading(false);
+        isloading = false;
+        findLorryController.setIsShowData(true);
+        showCommonToast("Failed to load loads. Please try again.");
         setState(() {});
       });
     }
@@ -145,8 +179,8 @@ class _FindLoadState extends State<FindLoad> {
   @override
   void dispose() {
     super.dispose();
-    if (findLorryController.loadData.findLoadData.isNotEmpty) {
-      findLorryController.loadData.findLoadData.clear();
+    if (findLorryController.loadData?.findLoadData.isNotEmpty == true) {
+      findLorryController.loadData!.findLoadData.clear();
     }
     isloading = true;
     findLorryController.selectVehicle = 0;
@@ -210,7 +244,7 @@ class _FindLoadState extends State<FindLoad> {
                               ],
                             ),
                             findLorryController.isShowData
-                                ? findLorryController.loadData.findLoadData.isEmpty
+                                ? findLorryController.loadData?.findLoadData.isEmpty != false
                                     ? Center(
                                         child: Column(
                                         children: [
@@ -262,14 +296,16 @@ class _FindLoadState extends State<FindLoad> {
                                                     return SizedBox(width: 10);
                                                   },
                                                   shrinkWrap: true,
-                                                  itemCount: findLorryController.loadData.findLoadData.length,
+                                                  itemCount: findLorryController.loadData?.findLoadData.length ?? 0,
                                                   scrollDirection: Axis.horizontal,
                                                   itemBuilder: (context, index) {
                                                     return InkWell(
                                                       onTap: () {
                                                         findLorryController.setSelectVehicle(index);
-                                                        findLorryController.isBidNowLoder = List.filled(findLorryController.loadData.findLoadData[index].loaddata.length, false);
-                                                        findLorryController.isBidLoder = List.filled(findLorryController.loadData.findLoadData[index].loaddata.length, false);
+                                                        if (findLorryController.loadData?.findLoadData.isNotEmpty == true) {
+                                                          findLorryController.isBidNowLoder = List.filled(findLorryController.loadData!.findLoadData[index].loaddata.length, false);
+                                                          findLorryController.isBidLoder = List.filled(findLorryController.loadData!.findLoadData[index].loaddata.length, false);
+                                                        }
                                                         debugPrint("========= isbidnowLoder ========= ${findLorryController.isBidNowLoder.length}");
                                                         debugPrint("========== isBidLoder =========== ${findLorryController.isBidLoder.length}");
                                                         setState(() {});
@@ -295,7 +331,7 @@ class _FindLoadState extends State<FindLoad> {
                                                           children: [
                                                             Flexible(
                                                               child: Text(
-                                                                findLorryController.loadData.findLoadData[index].title,
+                                                                findLorryController.loadData?.findLoadData[index].title ?? '',
                                                                 style: TextStyle(
                                                                   fontSize: 15,
                                                                   color: findLorryController.selectVehicle == index
@@ -309,7 +345,7 @@ class _FindLoadState extends State<FindLoad> {
                                                             ),
                                                             const SizedBox(height: 5),
                                                             Text(
-                                                              "${findLorryController.loadData.findLoadData[index].minWeight} - ${findLorryController.loadData.findLoadData[index].maxWeight} ${"Tonnes".tr}",
+                                                              "${findLorryController.loadData?.findLoadData[index].minWeight ?? 0} - ${findLorryController.loadData?.findLoadData[index].maxWeight ?? 0} ${"Tonnes".tr}",
                                                               style: TextStyle(
                                                                 color: findLorryController.selectVehicle == index
                                                                   ? secondaryColor
@@ -328,7 +364,7 @@ class _FindLoadState extends State<FindLoad> {
                                             ),
                                             SizedBox(height: 20),
                                             Text(
-                                              "${findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length} ${"Available".tr}",
+                                              "${findLorryController.loadData?.findLoadData[findLorryController.selectVehicle]?.loaddata.length ?? 0} ${"Available".tr}",
                                               style: TextStyle(
                                                 fontSize: 18,
                                                 fontFamily: fontFamilyBold,
@@ -341,7 +377,8 @@ class _FindLoadState extends State<FindLoad> {
                                               shrinkWrap: true,
                                               physics: NeverScrollableScrollPhysics(),
                                               itemBuilder: (context, index) {
-                                                FindLoadDatum loads = findLorryController.loadData.findLoadData[findLorryController.selectVehicle];
+                                                FindLoadDatum? loads = findLorryController.loadData?.findLoadData[findLorryController.selectVehicle];
+                                                if (loads == null) return SizedBox.shrink();
                                                 return Container(
                                                   padding: EdgeInsets.all(15),
                                                   decoration: BoxDecoration(
@@ -360,18 +397,18 @@ class _FindLoadState extends State<FindLoad> {
                                                       Row(
                                                         children: [
                                                           Image.network(
-                                                            '$basUrl${loads.loaddata[index].vehicleImg}',
+                                                            '$basUrl${loads!.loaddata[index].vehicleImg}',
                                                             height: 50,
                                                             width: 50,
                                                           ),
                                                           const SizedBox(width: 8),
-                                                          Text(loads.loaddata[index].vehicleTitle),
+                                                          Text(loads!.loaddata[index].vehicleTitle),
                                                           const Spacer(),
                                                           RichText(
                                                             text: TextSpan(
                                                               children: [
                                                                 TextSpan(
-                                                                  text: "$currency${loads.loaddata[index].amount}",
+                                                                  text: "$currency${loads!.loaddata[index].amount}",
                                                                   style:
                                                                       TextStyle(
                                                                     fontSize: 18,
@@ -381,7 +418,7 @@ class _FindLoadState extends State<FindLoad> {
                                                                   ),
                                                                 ),
                                                                 TextSpan(
-                                                                  text: " /${loads.loaddata[index].amtType}",
+                                                                  text: " /${loads!.loaddata[index].amtType}",
                                                                   style: TextStyle(
                                                                     color: textGreyColor,
                                                                     fontFamily: fontFamilyRegular,
@@ -793,7 +830,7 @@ class _FindLoadState extends State<FindLoad> {
                                               separatorBuilder: (context, index) {
                                                 return const SizedBox(height: 20);
                                               },
-                                              itemCount: findLorryController.loadData.findLoadData[findLorryController.selectVehicle].loaddata.length,
+                                              itemCount: findLorryController.loadData?.findLoadData[findLorryController.selectVehicle]?.loaddata.length ?? 0,
                                             )
                                           ],
                                         ),

@@ -17,6 +17,21 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Fix for text input issues
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
+  // Force proper text input mode
+  SystemChrome.setEnabledSystemUIMode(
+    SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+  );
+  
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await permission();
   final localeLanuage = await SharedPreferences.getInstance();
@@ -53,6 +68,20 @@ class MyApp extends StatelessWidget {
               primaryColor: const Color(0xff1347FF),
               colorScheme: ColorScheme.fromSwatch().copyWith(
                 primary: const Color(0xff194BFB),
+              ),
+              // Fix for text input issues
+              inputDecorationTheme: InputDecorationTheme(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: const Color(0xff194BFB)),
+                ),
               ),
             ),
             home: const SplashScreen(),

@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import '../models/find_load_model.dart';
 
 class FindLoadController extends GetxController implements GetxService {
-  late FindLoadModel loadData;
+  FindLoadModel? loadData;
   int selectVehicle = 0;
 
   setSelectVehicle(int value) {

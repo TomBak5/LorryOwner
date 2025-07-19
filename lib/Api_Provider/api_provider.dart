@@ -28,13 +28,13 @@ String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
 class ApiProvider {
   final api = Api();
   Map<String, String> header = {'Content-Type': 'application/json', 'X-API-KEY': 'cscodetech'};
-  String basUrlApi = "http://truckbuddy.sprendimai.ai/Api/";
+  String basUrlApi = "http://truckbuddy.sprendimai.ai/";
 
 //!- - - - - country_code - - - - - !//
   Future<ContryCodeModel> getCountryCode() async {
     debugPrint("======url=== ${basUrlApi}country_code.php");
     var response = await api.sendRequest.get(
-      "${basUrlApi}country_code.php",
+      "${basUrlApi}Api/country_code.php",
       options: Options(headers: header),
     );
     return ContryCodeModel.fromJson(response.data);
@@ -46,7 +46,7 @@ class ApiProvider {
       {required String number, required String code}) async {
     Map body = {"mobile": number, "ccode": code};
     final response = await api.sendRequest.post(
-      "${basUrlApi}mobile_check.php",
+      "${basUrlApi}Api/mobile_check.php",
       data: body,
     );
     debugPrint("============ mobile check url ========== ${basUrlApi}mobile_check.php");
@@ -60,7 +60,7 @@ class ApiProvider {
   Future send_otp({required String number/*, required String code*/}) async {
     Map body = {"mobile": number};
     final response = await api.sendRequest.post(
-      "${basUrlApi}send_otp.php",
+      "${basUrlApi}Api/send_otp.php",
       data: body,
     );
 
@@ -78,7 +78,7 @@ class ApiProvider {
     Map body = {"mobile": number, "ccode": code, "password": password};
 
     var response = await api.sendRequest.post(
-      "${basUrlApi}login_user.php",
+      "${basUrlApi}Api/login_user.php",
       data: body,
     );
     debugPrint("============ Login body ========= ${body}");
@@ -90,7 +90,7 @@ class ApiProvider {
   Future loginUserWithEmail({required String email, required String password}) async {
     Map body = {"mobile": email, "password": password};
     var response = await api.sendRequest.post(
-      "${basUrlApi}login_user.php",
+      "${basUrlApi}Api/login_user.php",
       data: body,
     );
     debugPrint("============ Login (email) body ========= $body");
@@ -106,7 +106,7 @@ class ApiProvider {
     Map body = {"mobile": mobile, "password": password, "ccode": ccode};
     log("Api-------$body");
     var response = await api.sendRequest.post(
-      "${basUrlApi}forget_password.php",
+      "${basUrlApi}Api/forget_password.php",
       data: body,
     );
 
@@ -148,7 +148,7 @@ class ApiProvider {
 
     try {
       var respons = await api.sendRequest.post(
-        "${basUrlApi}reg_user.php",
+        "${basUrlApi}Api/reg_user.php",
         data: body,
         options: Options(headers: header),
       );
@@ -184,7 +184,7 @@ class ApiProvider {
       {required String name, required String pass, required String uid}) async {
     Map body = {"name": name, "password": pass, "uid": uid};
     var response = await api.sendRequest.post(
-      "${basUrlApi}profile_edit.php",
+      "${basUrlApi}Api/profile_edit.php",
       data: body,
     );
 
@@ -197,7 +197,7 @@ class ApiProvider {
 //!- - - - - Faq - - - - - !//
   Future<FaqModel> faq({required String uid}) async {
     var response = await api.sendRequest
-        .post("${basUrlApi}faq.php", data: jsonEncode({"uid": uid}));
+        .post("${basUrlApi}Api/faq.php", data: jsonEncode({"uid": uid}));
 
     return FaqModel.fromJson(response.data);
   }
@@ -207,7 +207,7 @@ class ApiProvider {
     Map body = {"owner_id": uid};
     try {
       var response = await api.sendRequest.post(
-        "${basUrlApi}home_page.php",
+        "${basUrlApi}Api/home_page.php",
         data: jsonEncode(body),
       );
       debugPrint('Raw home_page.php response:');
@@ -238,7 +238,7 @@ class ApiProvider {
 
 //!- - - - - Privacy Policy - - - - - !//
   Future<PrivacyPolicyModel> privacyPolicy() async {
-    var response = await api.sendRequest.get("${basUrlApi}pagelist.php");
+    var response = await api.sendRequest.get("${basUrlApi}Api/pagelist.php");
     return PrivacyPolicyModel.fromJson(response.data);
   }
 
@@ -311,7 +311,7 @@ class ApiProvider {
     };
 
     var respons = await api.sendRequest.post(
-      "${basUrlApi}find_load.php",
+      "${basUrlApi}lorry_api/find_load.php",
       data: jsonEncode(body),
     );
 
@@ -379,7 +379,7 @@ class ApiProvider {
     Map body = {"owner_id": ownerid, "lats": lats, "longs": longs};
 
     var response = await api.sendRequest.post(
-      "${basUrlApi}near_load.php",
+      "${basUrlApi}lorry_api/near_load.php",
       data: jsonEncode(body),
     );
     return NearLoadModel.fromJson(response.data);
@@ -388,7 +388,7 @@ class ApiProvider {
 //?- - - - - VehicleList - - - - - !//
   Future getVehicleList({required String uid}) async {
     var respons = await api.sendRequest.post(
-      "${basUrlApi}vehicle_list.php",
+      "${basUrlApi}lorry_api/vehicle_list.php",
       data: jsonEncode({
         "uid": uid,
       }),
@@ -468,7 +468,7 @@ class ApiProvider {
       {required String ownerId, required String status}) async {
     Map body = {"owner_id": ownerId, "status": status};
     var response = await api.sendRequest
-        .post("${basUrlApi}load_history.php", data: jsonEncode(body));
+        .post("${basUrlApi}lorry_api/load_history.php", data: jsonEncode(body));
 
     return MyLoadsModel.fromJson(response.data);
   }
@@ -477,7 +477,7 @@ class ApiProvider {
   Future bookHistory({required String uid, required String status}) async {
     Map body = {"owner_id": uid, "status": status};
     var respons = await api.sendRequest.post(
-      "${basUrlApi}book_history.php",
+      "${basUrlApi}lorry_api/book_history.php",
       data: body,
     );
     return respons.data;
@@ -488,7 +488,7 @@ class ApiProvider {
       {required String uid, required String loadId}) async {
     Map body = {"owner_id": uid, "load_id": loadId};
     var respons = await api.sendRequest.post(
-      "${basUrlApi}load_details.php",
+      "${basUrlApi}lorry_api/load_details.php",
       data: body,
     );
 
@@ -511,7 +511,7 @@ class ApiProvider {
     //POST_LOAD
 
     var response = await api.sendRequest
-        .post("${basUrlApi}lorrydecision.php", data: jsonEncode(body));
+        .post("${basUrlApi}lorry_api/lorrydecision.php", data: jsonEncode(body));
 
     return response.data;
   }
@@ -532,7 +532,7 @@ class ApiProvider {
     log("++++++++++++++$body");
 
     var response = await api.sendRequest.post(
-      "${basUrlApi}rate_update.php",
+      "${basUrlApi}lorry_api/rate_update.php",
       data: jsonEncode(body),
     );
 
@@ -544,7 +544,7 @@ class ApiProvider {
       {required String uid, required String loadId}) async {
     Map body = {"owner_id": uid, "load_id": loadId};
     var respons = await api.sendRequest.post(
-      "${basUrlApi}book_details.php",
+      "${basUrlApi}lorry_api/book_details.php",
       data: jsonEncode(body),
     );
 
@@ -563,7 +563,7 @@ class ApiProvider {
       "comment_reject": commentReject
     };
     var response = await api.sendRequest.post(
-      "${basUrlApi}offer_decision.php",
+      "${basUrlApi}lorry_api/offer_decision.php",
       data: jsonEncode(body),
     );
 
@@ -582,7 +582,7 @@ class ApiProvider {
       "comment_reject": commentReject
     };
     var response = await api.sendRequest.post(
-      "${basUrlApi}offer_decision.php",
+      "${basUrlApi}lorry_api/offer_decision.php",
       data: jsonEncode(body),
     );
 
@@ -608,7 +608,7 @@ class ApiProvider {
     };
 
     var response = await api.sendRequest.post(
-      "${basUrlApi}offer_decision.php",
+      "${basUrlApi}lorry_api/offer_decision.php",
       data: jsonEncode(body),
     );
 
@@ -619,7 +619,7 @@ class ApiProvider {
   Future earning({required String uid}) async {
     Map body = {"owner_id": uid};
     var response = await api.sendRequest.post(
-      "${basUrlApi}getearning.php",
+      "${basUrlApi}lorry_api/getearning.php",
       data: jsonEncode(body),
     );
 
@@ -650,7 +650,7 @@ class ApiProvider {
     };
 
     var response = await api.sendRequest.post(
-      "${basUrlApi}request_withdraw.php",
+      "${basUrlApi}lorry_api/request_withdraw.php",
       data: jsonEncode(body),
     );
 
@@ -661,7 +661,7 @@ class ApiProvider {
   Future<TransactionModel> transactionHistory({required String ownerId}) async {
     Map body = {"owner_id": ownerId};
     var response = await api.sendRequest.post(
-      "${basUrlApi}payout_list.php",
+      "${basUrlApi}lorry_api/payout_list.php",
       data: jsonEncode(body),
     );
 
@@ -672,7 +672,7 @@ class ApiProvider {
   Future ownerProfile({required String uid}) async {
     Map body = {"owner_id": uid};
     var response = await api.sendRequest.post(
-      "${basUrlApi}lorri_profile.php",
+      "${basUrlApi}lorry_api/lorri_profile.php",
       data: jsonEncode(body),
     );
 
@@ -682,7 +682,7 @@ class ApiProvider {
 //!- - - - - Notification - - - - - !//
   Future notification({required String uid}) async {
     var response = await api.sendRequest
-        .post("${basUrlApi}notification.php", data: {"owner_id": uid});
+        .post("${basUrlApi}lorry_api/notification.php", data: {"owner_id": uid});
 
     return NotificationModel.fromJson(jsonDecode(response.data));
   }
@@ -738,14 +738,22 @@ class ApiProvider {
 
   // Search for drivers by email (for dispatcher registration autocomplete)
   Future<List<Map<String, dynamic>>> searchDriversByEmail(String query) async {
-    final response = await api.sendRequest.post(
-      "${basUrlApi}search_driver.php",
-      data: jsonEncode({'query': query}),
-      options: Options(headers: header),
-    );
-    if (response.data['success'] == true) {
-      return List<Map<String, dynamic>>.from(response.data['drivers']);
-    } else {
+    try {
+      final response = await api.sendRequest.post(
+        "${basUrlApi}Api/search_driver.php",
+        data: jsonEncode({'query': query}),
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Search driver response: ${response.data}");
+      
+      if (response.data['success'] == true && response.data['drivers'] != null) {
+        return List<Map<String, dynamic>>.from(response.data['drivers']);
+      } else {
+        return [];
+      }
+    } catch (e) {
+      debugPrint("Error searching drivers: $e");
       return [];
     }
   }
@@ -806,11 +814,21 @@ class ApiProvider {
     };
     try {
       final response = await api.sendRequest.post(
-        "${basUrlApi}assign_drivers.php",
+        "${basUrlApi}Api/assign_drivers.php",
         data: jsonEncode(body),
         options: Options(headers: header),
       );
-      if (response.data is Map) return response.data;
+      
+      debugPrint("Assign drivers response: ${response.data}");
+      
+      if (response.data is Map) {
+        // Convert the response format to match what the UI expects
+        if (response.data['Result'] == 'true') {
+          return {"success": true, "message": response.data['ResponseMsg'] ?? "Drivers assigned successfully"};
+        } else {
+          return {"success": false, "message": response.data['ResponseMsg'] ?? "Failed to assign drivers"};
+        }
+      }
       return jsonDecode(response.data);
     } catch (e) {
       debugPrint('Error assigning drivers: $e');
