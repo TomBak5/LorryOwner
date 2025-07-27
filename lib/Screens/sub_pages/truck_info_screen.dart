@@ -39,11 +39,21 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
 
   void fetchTrailerTypes() async {
     setState(() => isLoadingTrailerTypes = true);
-    final data = await ApiProvider().fetchTrailerTypes();
-    setState(() {
-      trailerTypes = data;
-      isLoadingTrailerTypes = false;
-    });
+    try {
+      print('Fetching comprehensive truck types...');
+      final data = await ApiProvider().fetchComprehensiveTruckTypes();
+      print('Truck types received: ${data.length} items');
+      setState(() {
+        trailerTypes = data;
+        isLoadingTrailerTypes = false;
+      });
+    } catch (e) {
+      print('Error fetching truck types: $e');
+      setState(() {
+        trailerTypes = [];
+        isLoadingTrailerTypes = false;
+      });
+    }
   }
 
   @override
@@ -101,7 +111,7 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                       hint: Text('Select trailer type'),
                       items: trailerTypes.map((t) => DropdownMenuItem(
                         value: t['id'].toString(),
-                        child: Text(t['trailer_type'] ?? ''),
+                        child: Text(t['name'] ?? ''),
                       )).toList(),
                       onChanged: (val) {
                         setState(() {
@@ -120,10 +130,15 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               const SizedBox(height: 28),
               Text('Trailer information', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               const SizedBox(height: 10),
-              _infoRow('Length:', selectedTrailerTypeObj?['length'] ?? '—'),
-              _infoRow('Width:', selectedTrailerTypeObj?['width'] ?? '—'),
-              _infoRow('Height:', selectedTrailerTypeObj?['height'] ?? '—'),
-              _infoRow('Weight Capacity:', selectedTrailerTypeObj?['weight_capacity'] ?? '—'),
+              _infoRow('Length:', '${selectedTrailerTypeObj?['length_min'] ?? '—'} - ${selectedTrailerTypeObj?['length_max'] ?? '—'} m'),
+              _infoRow('Width:', '${selectedTrailerTypeObj?['width'] ?? '—'} m'),
+              _infoRow('Height:', selectedTrailerTypeObj?['height_min'] != null && selectedTrailerTypeObj?['height_max'] != null 
+                ? '${selectedTrailerTypeObj?['height_min']} - ${selectedTrailerTypeObj?['height_max']} m'
+                : selectedTrailerTypeObj?['height_min'] != null 
+                  ? '${selectedTrailerTypeObj?['height_min']} m'
+                  : '—'),
+              _infoRow('Weight Capacity:', '${selectedTrailerTypeObj?['weight_capacity_lbs'] ?? '—'} lbs (${selectedTrailerTypeObj?['weight_capacity_kg'] ?? '—'} kg)'),
+              _infoRow('Category:', selectedTrailerTypeObj?['category'] ?? '—'),
               _infoRow('Common Uses:', selectedTrailerTypeObj?['common_uses'] ?? '—'),
               const Spacer(),
               SizedBox(
@@ -132,6 +147,15 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                   onPressed: () {
                     final singUpController = Get.find<SingUpController>();
                     final userRole = singUpController.selectedRole;
+                    
+                    // Save truck information to the controller
+                    if (selectedBrand != null) {
+                      singUpController.selectedBrand = selectedBrand;
+                    }
+                    if (selectedTrailerTypeId != null) {
+                      singUpController.selectedTrailerType = selectedTrailerTypeId;
+                    }
+                    
                     Get.to(() => AccountInfoScreen(userRole: userRole));
                   },
                   style: ElevatedButton.styleFrom(

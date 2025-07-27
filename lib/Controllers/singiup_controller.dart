@@ -23,6 +23,8 @@ class SingUpController extends GetxController implements GetxService {
   String response = '';
   String countryCode = '+91';
   String selectedRole = 'driver'; // Add selected role with default value
+  String? selectedBrand; // Store selected truck brand
+  String? selectedTrailerType; // Store selected trailer type
 
   bool isMobileNumber = false;
   bool isFullName = false;
@@ -86,7 +88,9 @@ class SingUpController extends GetxController implements GetxService {
       required String reff,
       required String userRole,
       String? company,
-      String? emergencyContact}) {
+      String? emergencyContact,
+      String? selectedBrand,
+      String? selectedTrailerType}) {
     // Generate a unique numeric phone number if blank
     String phoneToSend = mobile.isEmpty
         ? (DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(999).toString())
@@ -101,7 +105,9 @@ class SingUpController extends GetxController implements GetxService {
             referCode: reff,
             userRole: userRole,
             company: company,
-            emergencyContact: emergencyContact)
+            emergencyContact: emergencyContact,
+            selectedBrand: selectedBrand,
+            selectedTrailerType: selectedTrailerType)
         .then((value) async {
       print('Registration API response:  [36m$value [0m');
       var dataaa = value;
@@ -153,6 +159,8 @@ class SingUpController extends GetxController implements GetxService {
       pass: passwordController.text,
       reff: '', // No referral code
       userRole: selectedRole,
+      selectedBrand: selectedBrand,
+      selectedTrailerType: selectedTrailerType,
     );
   }
 

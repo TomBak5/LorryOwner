@@ -276,22 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
 
-                // Test Map Button
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Get.toNamed('/testMap');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                    child: const Text('Test Map Routing'),
-                  ),
-                ),
+
                 
                 // Social Login Buttons
                 const SizedBox(height: 24),

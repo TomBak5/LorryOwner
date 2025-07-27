@@ -126,6 +126,8 @@ class ApiProvider {
     String? company,
     String? emergencyContact,
     List<Map<String, dynamic>>? linkedDrivers,
+    String? selectedBrand,
+    String? selectedTrailerType,
   }) async {
     Map body = {
       "name": name,
@@ -144,6 +146,12 @@ class ApiProvider {
     }
     if (linkedDrivers != null && linkedDrivers.isNotEmpty) {
       body["linked_drivers"] = linkedDrivers.map((d) => d['id']).toList();
+    }
+    if (selectedBrand != null && selectedBrand.isNotEmpty) {
+      body["selected_brand"] = selectedBrand;
+    }
+    if (selectedTrailerType != null && selectedTrailerType.isNotEmpty) {
+      body["selected_trailer_type"] = selectedTrailerType;
     }
 
     try {
@@ -730,6 +738,18 @@ class ApiProvider {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
       if (data["status"] == true) {
+        return List<Map<String, dynamic>>.from(data["trailer_types"]);
+      }
+    }
+    return [];
+  }
+
+  // Fetch comprehensive truck types with detailed specifications
+  Future<List<Map<String, dynamic>>> fetchComprehensiveTruckTypes() async {
+    final response = await http.get(Uri.parse("${basUrlApi}Api/list_comprehensive_trailer_types.php"));
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data["Result"] == "true") {
         return List<Map<String, dynamic>>.from(data["trailer_types"]);
       }
     }
