@@ -106,6 +106,13 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     setState(() { isLoading = true; });
+                    
+                    // Debug: Print truck selection values
+                    print('Truck selection debug:');
+                    print('  selectedBrand: ${singUpController.selectedBrand}');
+                    print('  selectedTrailerType: ${singUpController.selectedTrailerType}');
+                    print('  userRole: ${widget.userRole}');
+                    
                     await singUpController.setUserData(
                       context,
                       name: fullNameController.text,
@@ -117,6 +124,8 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       userRole: widget.userRole,
                       company: isDispatcher ? companyController.text : null,
                       emergencyContact: isDispatcher ? emergencyContactController.text : null,
+                      selectedBrand: singUpController.selectedBrand,
+                      selectedTrailerType: singUpController.selectedTrailerType,
                     );
                     setState(() { isLoading = false; });
                     if (isDispatcher) {

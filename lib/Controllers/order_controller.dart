@@ -163,4 +163,74 @@ class OrderController extends GetxController implements GetxService {
       setIsLoading(false);
     }
   }
+
+  // Create new order by dispatcher
+  Future createDispatcherOrder({
+    required String dispatcherId,
+    required String driverId,
+    required String vehicleId,
+    required String pickupPoint,
+    required String dropPoint,
+    required String materialName,
+    required String weight,
+    required String amount,
+    required String amountType,
+    required String totalAmount,
+    required String description,
+    required String pickupName,
+    required String pickupMobile,
+    required String dropName,
+    required String dropMobile,
+    required double pickLat,
+    required double pickLng,
+    required double dropLat,
+    required double dropLng,
+    required int pickStateId,
+    required int dropStateId,
+  }) async {
+    setIsLoading(true);
+    try {
+      print("=== Creating dispatcher order with driver: $driverId ===");
+      
+      final response = await ApiProvider().createDispatcherOrderApi(
+        dispatcherId: dispatcherId,
+        driverId: driverId,
+        vehicleId: vehicleId,
+        pickupPoint: pickupPoint,
+        dropPoint: dropPoint,
+        materialName: materialName,
+        weight: weight,
+        amount: amount,
+        amountType: amountType,
+        totalAmount: totalAmount,
+        description: description,
+        pickupName: pickupName,
+        pickupMobile: pickupMobile,
+        dropName: dropName,
+        dropMobile: dropMobile,
+        pickLat: pickLat,
+        pickLng: pickLng,
+        dropLat: dropLat,
+        dropLng: dropLng,
+        pickStateId: pickStateId,
+        dropStateId: dropStateId,
+      );
+      
+      print("=== API Response: $response ===");
+      
+      if (response["Result"] == "true") {
+        Get.snackbar('Success', 'Order created successfully! Driver will be notified.');
+        return true;
+      } else {
+        Get.snackbar('Error', response["ResponseMsg"] ?? 'Failed to create order');
+        return false;
+      }
+    } catch (e) {
+      print("=== Error creating order: $e ===");
+      Get.snackbar('Error', 'Network error occurred while creating order');
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }
 } 

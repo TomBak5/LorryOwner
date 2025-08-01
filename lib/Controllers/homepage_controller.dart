@@ -20,7 +20,7 @@ class HomePageController extends GetxController implements GetxService {
   ];
 
   List dispatcherMenuList = [
-    "Assign Orders",
+    "Create Order",
     "Manage Drivers",
     "Order History",
     "Dashboard"

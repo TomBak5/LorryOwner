@@ -170,7 +170,18 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Get.offAll(() => HomePage());
+                    final singUpController = Get.find<SingUpController>();
+                    final userRole = singUpController.selectedRole;
+                    
+                    // Set default values when skipping (for drivers)
+                    if (userRole == 'driver') {
+                      // Set default truck brand and trailer type when skipping
+                      singUpController.selectedBrand = '1'; // Default brand ID
+                      singUpController.selectedTrailerType = '1'; // Default trailer type ID (Flatbed)
+                      print('Skipping truck selection - setting defaults: brand=1, trailer=1');
+                    }
+                    
+                    Get.to(() => AccountInfoScreen(userRole: userRole));
                   },
                   child: Text('Skip now', style: TextStyle(color: Colors.grey)),
                 ),

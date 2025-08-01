@@ -27,24 +27,43 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
   }
 
   void searchDrivers(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        suggestions = [];
+        isLoading = false;
+      });
+      return;
+    }
+
     setState(() {
       isLoading = true;
-      notFoundMsg = '';
     });
+
     try {
-      final results = await ApiProvider().searchDriversByEmail(query);
+      // Use the new API method to get all available drivers
+      final apiProvider = ApiProvider();
+      final allDrivers = await apiProvider.getAllAvailableDrivers();
+      
+      // Filter drivers based on search query
+      final filteredDrivers = allDrivers.where((driver) {
+        final name = driver['name']?.toString().toLowerCase() ?? '';
+        final email = driver['email']?.toString().toLowerCase() ?? '';
+        final mobile = driver['mobile']?.toString().toLowerCase() ?? '';
+        final queryLower = query.toLowerCase();
+        
+        return name.contains(queryLower) || 
+               email.contains(queryLower) || 
+               mobile.contains(queryLower);
+      }).toList();
+
       setState(() {
-        suggestions = results;
-        if (results.isEmpty) {
-          notFoundMsg = 'No driver found';
-        }
+        suggestions = filteredDrivers;
+        isLoading = false;
       });
     } catch (e) {
+      print('Error searching drivers: $e');
       setState(() {
-        notFoundMsg = 'Error searching drivers';
-      });
-    } finally {
-      setState(() {
+        suggestions = [];
         isLoading = false;
       });
     }
@@ -182,17 +201,35 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     return;
                   }
                   setState(() { isLoading = true; });
-                  final driverIds = linkedDrivers.map((d) => int.tryParse(d['id'].toString()) ?? 0).where((id) => id > 0).toList();
-                  final result = await ApiProvider().assignDriversToDispatcher(
-                    dispatcherId: dispatcherId,
-                    driverIds: driverIds,
-                  );
-                  setState(() { isLoading = false; });
-                  if (result['success'] == true) {
-                    Navigator.of(context).pushReplacementNamed('/CongratulationsScreen');
-                  } else {
+                  
+                  try {
+                    final driverIds = linkedDrivers.map((d) => d['id'].toString()).toList();
+                    print('=== Assigning drivers to dispatcher ===');
+                    print('=== Dispatcher ID: $dispatcherId ===');
+                    print('=== Driver IDs: $driverIds ===');
+                    
+                    final result = await ApiProvider().assignDriversToDispatcher(
+                      dispatcherId: dispatcherId.toString(),
+                      driverIds: driverIds,
+                    );
+                    
+                    setState(() { isLoading = false; });
+                    
+                    if (result['success'] == true) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result['message'] ?? 'Drivers assigned successfully')),
+                      );
+                      Navigator.of(context).pushReplacementNamed('/CongratulationsScreen');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result['message'] ?? 'Failed to assign drivers.')),
+                      );
+                    }
+                  } catch (e) {
+                    print('Error assigning drivers: $e');
+                    setState(() { isLoading = false; });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(result['message'] ?? 'Failed to assign drivers.')),
+                      SnackBar(content: Text('Error assigning drivers: $e')),
                     );
                   }
                 },

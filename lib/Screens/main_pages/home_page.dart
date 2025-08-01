@@ -225,11 +225,11 @@ class _HomePageState extends State<HomePage> {
                                               children: [
                                                 InkWell(
                                                   onTap: () {
-                                                    if (homePageController.userData?.isVerify == "2") {
+                                                    // Allow Create Order without verification (case 0)
+                                                    if (a == 0) {
+                                                      Get.toNamed(Routes.assignOrder);
+                                                    } else if (homePageController.userData?.isVerify == "2") {
                                                       switch (a) {
-                                                        case 0:
-                                                          Get.toNamed(Routes.assignOrder);
-                                                          break;
                                                         case 1:
                                                           Get.to(Subdrivers()); // Manage Drivers
                                                           break;
