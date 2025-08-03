@@ -36,6 +36,11 @@ class _MyLoadsState extends State<MyLoads> {
 
   @override
   Widget build(BuildContext context) {
+    print("=== BUILDING MY LOADS SCREEN ===");
+    print("Current data length: ${myLoadsController.currentData.loadHistoryData.length}");
+    print("Assigned orders length: ${myLoadsController.assignedOrders.length}");
+    print("Is loading: ${myLoadsController.isLoading}");
+    print("Is loading orders: ${myLoadsController.isLoadingOrders}");
     return GetBuilder<MyLoadsController>(
       builder: (myLoadsController) {
         return DefaultTabController(
@@ -387,6 +392,8 @@ class _MyLoadsState extends State<MyLoads> {
   }
 
   Widget _buildCurrentLoadsContent() {
+    print("=== BUILDING CURRENT LOADS CONTENT ===");
+    print("Assigned orders count: ${myLoadsController.assignedOrders.length}");
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
@@ -611,6 +618,12 @@ class _MyLoadsState extends State<MyLoads> {
 
           // Assigned orders section
           if (myLoadsController.assignedOrders.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(8),
+              margin: const EdgeInsets.all(10),
+              color: Colors.yellow,
+              child: Text("DEBUG: ${myLoadsController.assignedOrders.length} assigned orders"),
+            ),
             if (myLoadsController.currentData.loadHistoryData.isNotEmpty)
               const SizedBox(height: 20),
             Padding(
@@ -792,7 +805,117 @@ class _MyLoadsState extends State<MyLoads> {
                           ),
                         ],
                       ),
-                      if (order['cargo_details'] != null && order['cargo_details'].toString().isNotEmpty) ...[
+                      if (order['route_info'] != null) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.route, size: 16, color: Colors.blue[600]),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Route Information",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(Icons.straighten, size: 14, color: Colors.grey[600]),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              order['route_info']['distance'] ?? 'N/A',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey[700],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              order['route_info']['duration'] ?? 'N/A',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey[700],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      "Truck Route",
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: Colors.green[700],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (order['route_info']['route_summary'] != null) ...[
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.info_outline, size: 12, color: Colors.grey[600]),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          order['route_info']['route_summary'],
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ] else if (order['cargo_details'] != null && order['cargo_details'].toString().isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.all(8),
