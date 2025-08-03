@@ -75,9 +75,9 @@ class _HomePageState extends State<HomePage> {
               child: Scaffold(
                 backgroundColor: Colors.white,
                 appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(80),
+                  preferredSize: const Size.fromHeight(100),
                   child: AppBar(
-                      toolbarHeight: 80,
+                      toolbarHeight: 100,
                       backgroundColor: priMaryColor,
                       elevation: 0,
                       titleSpacing: 0,
@@ -139,14 +139,31 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            subtitle: Text(
-                              homePageController.userData?.name ?? '',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w400,
-                                color: Colors.white,
-                                fontFamily: "urbani_extrabold",
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  homePageController.userData?.name ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    fontFamily: "urbani_extrabold",
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                // User Role text styled like Find Loads button
+                                if (homePageController.userData?.userRole != null)
+                                  Text(
+                                    'Role: ${homePageController.userData?.userRole}',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: "urbani_extrabold",
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
                         ],
@@ -201,18 +218,6 @@ class _HomePageState extends State<HomePage> {
                                     ],
                                   ),
                                   const SizedBox(height: 24),
-                                  // Debug info - show user role
-                                  if (homePageController.userData?.userRole != null)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                                      child: Text(
-                                        'User Role: ${homePageController.userData?.userRole}',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
                                   SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
                                     child: Row(

@@ -618,12 +618,6 @@ class _MyLoadsState extends State<MyLoads> {
 
           // Assigned orders section
           if (myLoadsController.assignedOrders.isNotEmpty) ...[
-            Container(
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.all(10),
-              color: Colors.yellow,
-              child: Text("DEBUG: ${myLoadsController.assignedOrders.length} assigned orders"),
-            ),
             if (myLoadsController.currentData.loadHistoryData.isNotEmpty)
               const SizedBox(height: 20),
             Padding(
