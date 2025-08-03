@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../Api_Provider/api_provider.dart';
 import '../models/order_model.dart';
+import 'dart:convert'; // Added for jsonDecode
 
 class OrderController extends GetxController implements GetxService {
   bool isLoading = false;
@@ -52,51 +53,41 @@ class OrderController extends GetxController implements GetxService {
   Future getAssignedOrders(String driverId) async {
     setIsLoading(true);
     try {
-      // For testing, use mock data
-      await Future.delayed(Duration(seconds: 1)); // Simulate API call
+      final apiProvider = ApiProvider();
+      final orders = await apiProvider.getDriverOrders(driverId);
       
-      // Mock assigned orders
-      assignedOrders = [
-        OrderModel(
-          orderId: '1',
-          dispatcherId: 'dispatcher1',
-          driverId: driverId,
-          status: 'pending',
-          details: 'Pickup at A, drop at B - $driverId',
-          createdAt: DateTime.now().subtract(Duration(hours: 2)),
-          updatedAt: DateTime.now().subtract(Duration(hours: 2)),
-        ),
-        OrderModel(
-          orderId: '2',
-          dispatcherId: 'dispatcher1',
-          driverId: driverId,
-          status: 'pending',
-          details: 'Pickup at C, drop at D - $driverId',
-          createdAt: DateTime.now().subtract(Duration(hours: 1)),
-          updatedAt: DateTime.now().subtract(Duration(hours: 1)),
-        ),
-      ];
+      // Convert API response to OrderModel objects
+      assignedOrders = orders.map((order) => OrderModel(
+        orderId: order['id'].toString(),
+        dispatcherId: order['dispatcher_id'].toString(),
+        driverId: order['driver_id'].toString(),
+        status: order['status'] ?? 'pending',
+        details: _formatOrderDetails(order),
+        createdAt: DateTime.parse(order['created_at'] ?? DateTime.now().toIso8601String()),
+        updatedAt: DateTime.parse(order['updated_at'] ?? DateTime.now().toIso8601String()),
+      )).toList();
+      
       update();
       return true;
-      
-      // Uncomment when backend is ready:
-      // final response = await ApiProvider().getAssignedOrdersApi(driverId: driverId);
-      // 
-      // if (response["Result"] == "true") {
-      //   assignedOrders = (response["Orders"] as List)
-      //       .map((order) => OrderModel.fromJson(order))
-      //       .toList();
-      //   update();
-      //   return true;
-      // } else {
-      //   Get.snackbar('Error', response["ResponseMsg"] ?? 'Failed to load orders');
-      //   return false;
-      // }
     } catch (e) {
-      Get.snackbar('Error', 'Network error occurred');
+      print('Error loading assigned orders: $e');
+      Get.snackbar('Error', 'Failed to load orders');
       return false;
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  // Format order details from cargo_details JSON
+  String _formatOrderDetails(Map<String, dynamic> order) {
+    try {
+      final cargoDetails = jsonDecode(order['cargo_details'] ?? '{}');
+      return '${cargoDetails['pickup_name'] ?? 'Unknown'} → ${cargoDetails['drop_name'] ?? 'Unknown'}\n'
+             'Material: ${cargoDetails['material_name'] ?? 'N/A'}\n'
+             'Weight: ${cargoDetails['weight'] ?? 'N/A'} kg\n'
+             'Amount: ${cargoDetails['total_amount'] ?? 'N/A'}';
+    } catch (e) {
+      return 'Order ${order['id']} - ${order['pickup_address'] ?? 'Unknown'} to ${order['dropoff_address'] ?? 'Unknown'}';
     }
   }
 
@@ -104,59 +95,41 @@ class OrderController extends GetxController implements GetxService {
   Future updateOrderStatus({
     required String orderId,
     required String status,
+    String? comment,
   }) async {
     setIsLoading(true);
     try {
-      // For testing, use mock response
-      await Future.delayed(Duration(seconds: 1)); // Simulate API call
+      final apiProvider = ApiProvider();
+      final result = await apiProvider.updateOrderStatus(
+        orderId: orderId,
+        status: status,
+        comment: comment,
+      );
       
-      // Update local order status
-      final orderIndex = assignedOrders.indexWhere((order) => order.orderId == orderId);
-      if (orderIndex != -1) {
-        assignedOrders[orderIndex] = OrderModel(
-          orderId: assignedOrders[orderIndex].orderId,
-          dispatcherId: assignedOrders[orderIndex].dispatcherId,
-          driverId: assignedOrders[orderIndex].driverId,
-          status: status,
-          details: assignedOrders[orderIndex].details,
-          createdAt: assignedOrders[orderIndex].createdAt,
-          updatedAt: DateTime.now(),
-        );
-        update();
+      if (result['success'] == true) {
+        // Update local order status
+        final orderIndex = assignedOrders.indexWhere((order) => order.orderId == orderId);
+        if (orderIndex != -1) {
+          assignedOrders[orderIndex] = OrderModel(
+            orderId: assignedOrders[orderIndex].orderId,
+            dispatcherId: assignedOrders[orderIndex].dispatcherId,
+            driverId: assignedOrders[orderIndex].driverId,
+            status: status,
+            details: assignedOrders[orderIndex].details,
+            createdAt: assignedOrders[orderIndex].createdAt,
+            updatedAt: DateTime.now(),
+          );
+          update();
+        }
+        
+        Get.snackbar('Success', 'Order ${status} successfully!');
+        return true;
+      } else {
+        Get.snackbar('Error', result['message'] ?? 'Failed to update order');
+        return false;
       }
-      
-      Get.snackbar('Success', 'Order ${status} successfully!');
-      return true;
-      
-      // Uncomment when backend is ready:
-      // final response = await ApiProvider().updateOrderStatusApi(
-      //   orderId: orderId,
-      //   status: status,
-      // );
-      // 
-      // if (response["Result"] == "true") {
-      //   // Update local order status
-      //   final orderIndex = assignedOrders.indexWhere((order) => order.orderId == orderId);
-      //   if (orderIndex != -1) {
-      //     assignedOrders[orderIndex] = OrderModel(
-      //       orderId: assignedOrders[orderIndex].orderId,
-      //       dispatcherId: assignedOrders[orderIndex].dispatcherId,
-      //       driverId: assignedOrders[orderIndex].driverId,
-      //       status: status,
-      //       details: assignedOrders[orderIndex].details,
-      //       createdAt: assignedOrders[orderIndex].createdAt,
-      //       updatedAt: DateTime.now(),
-      //     );
-      //     update();
-      //   }
-      //   
-      //   Get.snackbar('Success', 'Order ${status} successfully!');
-      //   return true;
-      // } else {
-      //   Get.snackbar('Error', response["ResponseMsg"] ?? 'Failed to update order');
-      //   return false;
-      // }
     } catch (e) {
+      print('Error updating order status: $e');
       Get.snackbar('Error', 'Network error occurred');
       return false;
     } finally {

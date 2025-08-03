@@ -897,7 +897,71 @@ class ApiProvider {
     }
   }
 
+  // Get orders assigned to a specific driver
+  Future<List<Map<String, dynamic>>> getDriverOrders(String driverId) async {
+    try {
+      debugPrint("Getting orders for driver: $driverId");
+      
+             final response = await api.sendRequest.post(
+         "${basUrlApi}Api/get_driver_orders.php",
+        data: jsonEncode({'driver_id': driverId}),
+        options: Options(headers: header),
+      );
+      
+             debugPrint("Get driver orders response: ${response.data}");
+       
+       if (response.data['Result'] == "true" && response.data['orders'] != null) {
+         return List<Map<String, dynamic>>.from(response.data['orders']);
+       } else {
+         debugPrint("No orders found or API error: ${response.data['ResponseMsg']}");
+         return [];
+       }
+    } catch (e) {
+      debugPrint("Error getting driver orders: $e");
+      return [];
+    }
+  }
 
+  // Update order status (accept/reject/complete)
+  Future<Map<String, dynamic>> updateOrderStatus({
+    required String orderId,
+    required String status,
+    String? comment,
+  }) async {
+    try {
+      debugPrint("Updating order $orderId status to: $status");
+      
+             final response = await api.sendRequest.post(
+         "${basUrlApi}Api/update_order_status.php",
+        data: jsonEncode({
+          'order_id': orderId,
+          'status': status,
+          'comment': comment,
+        }),
+        options: Options(headers: header),
+      );
+      
+             debugPrint("Update order status response: ${response.data}");
+       
+       if (response.data['Result'] == "true") {
+         return {
+           'success': true,
+           'message': 'Order status updated successfully'
+         };
+       } else {
+         return {
+           'success': false,
+           'message': response.data['ResponseMsg'] ?? 'Failed to update order status'
+         };
+       }
+    } catch (e) {
+      debugPrint("Error updating order status: $e");
+      return {
+        'success': false,
+        'message': 'Network error: $e'
+      };
+    }
+  }
 
   // Simple test method to check if API calls work
   Future<bool> testApiConnection() async {
@@ -1034,24 +1098,62 @@ class ApiProvider {
     required int pickStateId,
     required int dropStateId,
   }) async {
-    // For now, create a mock success response since the backend APIs are not working
-    // In a real implementation, you would use a working API endpoint
     try {
       debugPrint("Creating dispatcher order with driver: $driverId");
       debugPrint("Order details: $pickupPoint to $dropPoint, Material: $materialName, Weight: $weight");
       
-      // Simulate API call delay
-      await Future.delayed(Duration(milliseconds: 500));
-      
-      // Return success response
-      return {
-        "Result": "true",
-        "ResponseMsg": "Order created successfully! Driver $driverId has been assigned to this order.",
-        "order_id": DateTime.now().millisecondsSinceEpoch.toString(),
-        "dispatcher_id": dispatcherId,
-        "driver_id": driverId,
-        "status": "assigned"
+      // Create order data for the orders table
+      final orderData = {
+        'dispatcher_id': dispatcherId,
+        'driver_id': driverId,
+        'pickup_address': pickupPoint,
+        'dropoff_address': dropPoint,
+        'cargo_details': jsonEncode({
+          'material_name': materialName,
+          'weight': weight,
+          'amount': amount,
+          'amount_type': amountType,
+          'total_amount': totalAmount,
+          'description': description,
+          'pickup_name': pickupName,
+          'pickup_mobile': pickupMobile,
+          'drop_name': dropName,
+          'drop_mobile': dropMobile,
+          'pick_lat': pickLat.toString(),
+          'pick_lng': pickLng.toString(),
+          'drop_lat': dropLat.toString(),
+          'drop_lng': dropLng.toString(),
+          'pick_state_id': pickStateId,
+          'drop_state_id': dropStateId,
+          'vehicle_id': vehicleId,
+        }),
+        'status': 'assigned', // Order is assigned to driver
       };
+      
+             // Make API call to create order in database
+       final response = await api.sendRequest.post(
+         "${basUrlApi}Api/create_dispatcher_order.php",
+        data: jsonEncode(orderData),
+        options: Options(headers: header),
+      );
+      
+             debugPrint("Create order API response: ${response.data}");
+       
+       if (response.data['Result'] == "true") {
+         return {
+           "Result": "true",
+           "ResponseMsg": "Order created successfully! Driver $driverId has been assigned to this order.",
+           "order_id": response.data['order_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+           "dispatcher_id": dispatcherId,
+           "driver_id": driverId,
+           "status": "assigned"
+         };
+       } else {
+         return {
+           "Result": "false", 
+           "ResponseMsg": response.data['ResponseMsg'] ?? "Failed to create order"
+         };
+       }
     } catch (e) {
       debugPrint('Error creating dispatcher order: $e');
       return {"Result": "false", "ResponseMsg": "Failed to create order: $e"};

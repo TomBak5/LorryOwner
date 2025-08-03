@@ -20,8 +20,9 @@ import '../Screens/sub_pages/nearload.dart';
 import '../Screens/sub_pages/verify_indentity.dart';
 import '../Screens/sub_pages/truck_info_screen.dart';
 import '../Screens/congratulations_screen.dart';
-import '../Screens/sub_pages/assign_order_screen.dart';
+
 import '../Screens/sub_pages/assigned_orders_screen.dart';
+import '../Screens/sub_pages/assign_order_screen.dart';
 
 
 class Routes {
@@ -131,6 +132,7 @@ final getpage = [
     name: Routes.assignOrder,
     page: () => const AssignOrderScreen(),
   ),
+
   GetPage(
     name: Routes.assignedOrders,
     page: () => const AssignedOrdersScreen(),

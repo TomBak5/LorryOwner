@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_address_from_latlng/flutter_address_from_latlng.dart';
+// import 'package:flutter_address_from_latlng/flutter_address_from_latlng.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:get/get.dart';
@@ -618,14 +618,9 @@ class _AttachLorry2State extends State<AttachLorry2> {
 
   String address = "";
   Future<void> _getAddressFromLatLng() async {
-    Address? administrativeArea1 = await FlutterAddressFromLatLng().getAdministrativeAddress1(
-      latitude: lat,
-      longitude: long,
-      googleApiKey: gkey,
-    );
+    // TODO: Implement address lookup using geocoding package
     setState(() {
       address = "Surat, Gujarat";
-      // administrativeArea1!.formattedAddress!;
     });
   }
 

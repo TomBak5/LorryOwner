@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LoadRouteMapScreen extends StatelessWidget {
   final double pickLat;
@@ -17,24 +16,35 @@ class LoadRouteMapScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LatLng pickup = LatLng(pickLat, pickLng);
-    final LatLng drop = LatLng(dropLat, dropLng);
     return Scaffold(
       appBar: AppBar(title: Text('Load Route Map')),
-      body: GoogleMap(
-        initialCameraPosition: CameraPosition(target: pickup, zoom: 8),
-        markers: {
-          Marker(markerId: MarkerId('pickup'), position: pickup, infoWindow: InfoWindow(title: 'Pickup')),
-          Marker(markerId: MarkerId('drop'), position: drop, infoWindow: InfoWindow(title: 'Drop')),
-        },
-        polylines: {
-          Polyline(
-            polylineId: PolylineId('route'),
-            points: [pickup, drop],
-            color: Colors.blue,
-            width: 5,
-          ),
-        },
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text(
+              'Route Map',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Pickup: ${pickLat.toStringAsFixed(6)}, ${pickLng.toStringAsFixed(6)}',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Drop: ${dropLat.toStringAsFixed(6)}, ${dropLng.toStringAsFixed(6)}',
+              style: TextStyle(fontSize: 14),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Map functionality will be implemented later',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
       ),
     );
   }

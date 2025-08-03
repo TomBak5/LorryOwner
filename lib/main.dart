@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:movers_lorry_owner/AppConstData/setlanguage.dart';
 import 'package:movers_lorry_owner/AppConstData/string_file.dart';
 import 'package:movers_lorry_owner/Screens/splash_screen.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +14,21 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Add global error handling
+  FlutterError.onError = (FlutterErrorDetails details) {
+    print('=== Global Flutter Error ===');
+    print('Error: ${details.exception}');
+    print('Stack trace: ${details.stack}');
+  };
+  
+  // Handle platform errors
+  WidgetsBinding.instance.platformDispatcher.onError = (error, stack) {
+    print('=== Global Platform Error ===');
+    print('Error: $error');
+    print('Stack trace: $stack');
+    return true;
+  };
   
   // Fix for text input issues
   SystemChrome.setSystemUIOverlayStyle(
@@ -95,13 +107,27 @@ class MyApp extends StatelessWidget {
 permission() async {
   LocationPermission permission;
   permission = await Geolocator.checkPermission();
-  permission = await Geolocator.requestPermission();
+  
   if (permission == LocationPermission.denied) {
-    if (Platform.isAndroid) {
-      SystemNavigator.pop();
-    } else if (Platform.isIOS) {
-      exit(0);
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      // Don't crash the app, just log the issue
+      print('Location permission denied by user');
+      return;
     }
+  }
+  
+  if (permission == LocationPermission.deniedForever) {
+    // Don't crash the app, just log the issue
+    print('Location permission permanently denied');
+    return;
+  }
+  
+  // Check if location services are enabled
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    print('Location services are disabled');
+    return;
   }
 }
 

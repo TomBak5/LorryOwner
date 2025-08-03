@@ -1,7 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
-import 'package:flutter_address_from_latlng/flutter_address_from_latlng.dart';
+// import 'package:flutter_address_from_latlng/flutter_address_from_latlng.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -1086,12 +1086,7 @@ class _FindLoadState extends State<FindLoad> {
 }
 
 Future<String> getAddressFromLatLong(String? lat, String? long) async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  Address? administrativeArea1 =
-      await FlutterAddressFromLatLng().getAdministrativeAddress1(
-    latitude: double.parse(lat!),
-    longitude: double.parse(long!),
-    googleApiKey: prefs.getString("gkey") ?? googleMapkey,
-  );
-  return administrativeArea1!.addressComponents[0].longName!;
+  // TODO: Implement address lookup using geocoding package
+  // For now, return a placeholder
+  return "Location";
 }
