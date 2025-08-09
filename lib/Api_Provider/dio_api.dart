@@ -5,7 +5,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 class Api {
   final Dio _dio = Dio();
   Api() {
-    _dio.options.baseUrl = basUrl;
+    // Don't set a baseUrl here since we use different base URLs in different methods
+    // _dio.options.baseUrl = basUrl;
     // Add the X-API-KEY header globally
     _dio.options.headers.addAll({
       'X-API-KEY': 'cscodetech',

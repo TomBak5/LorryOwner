@@ -724,37 +724,318 @@ class ApiProvider {
   }
 
   Future<List<Map<String, dynamic>>> fetchVehicleBrands() async {
-    final response = await http.get(Uri.parse("${basUrlApi}list_vehicle_brand.php"));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data["status"] == true) {
-        return List<Map<String, dynamic>>.from(data["brands"]);
+    try {
+      debugPrint("Making API call to: ${basUrlApi}list_vehicle_brand.php");
+      
+      final response = await api.sendRequest.get(
+        "${basUrlApi}list_vehicle_brand.php",
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Fetch vehicle brands response: ${response.data}");
+      
+      // Parse the response data if it's a string
+      dynamic responseData = response.data;
+      if (responseData is String) {
+        responseData = jsonDecode(responseData);
       }
+      
+      if (responseData != null && responseData['status'] == true && responseData['brands'] != null) {
+        final brands = List<Map<String, dynamic>>.from(responseData['brands']);
+        debugPrint("Successfully fetched ${brands.length} vehicle brands");
+        return brands;
+      } else {
+        debugPrint("No vehicle brands found or invalid response: ${responseData}");
+        return [];
+      }
+    } catch (e) {
+      debugPrint("Error fetching vehicle brands: $e");
+      if (e is DioException) {
+        debugPrint("DioError type: ${e.type}");
+        debugPrint("DioError response: ${e.response}");
+        debugPrint("DioError data: ${e.response?.data}");
+        debugPrint("DioError request: ${e.requestOptions}");
+      }
+      return [];
     }
-    return [];
   }
 
   Future<List<Map<String, dynamic>>> fetchTrailerTypes() async {
-    final response = await http.get(Uri.parse("${basUrlApi}list_trailer_type.php"));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data["status"] == true) {
-        return List<Map<String, dynamic>>.from(data["trailer_types"]);
+    try {
+      debugPrint("Making API call to: ${basUrlApi}list_trailer_type.php");
+      
+      final response = await api.sendRequest.get(
+        "${basUrlApi}list_trailer_type.php",
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Fetch trailer types response: ${response.data}");
+      
+      // Parse the response data if it's a string
+      dynamic responseData = response.data;
+      if (responseData is String) {
+        responseData = jsonDecode(responseData);
       }
+      
+      if (responseData != null && responseData['status'] == true && responseData['trailer_types'] != null) {
+        final trailerTypes = List<Map<String, dynamic>>.from(responseData['trailer_types']);
+        debugPrint("Successfully fetched ${trailerTypes.length} trailer types");
+        return trailerTypes;
+      } else {
+        debugPrint("No trailer types found or invalid response: ${responseData}");
+        return [];
+      }
+    } catch (e) {
+      debugPrint("Error fetching trailer types: $e");
+      if (e is DioException) {
+        debugPrint("DioError type: ${e.type}");
+        debugPrint("DioError response: ${e.response}");
+        debugPrint("DioError data: ${e.response?.data}");
+        debugPrint("DioError request: ${e.requestOptions}");
+      }
+      return [];
     }
-    return [];
   }
 
   // Fetch comprehensive truck types with detailed specifications
   Future<List<Map<String, dynamic>>> fetchComprehensiveTruckTypes() async {
-    final response = await http.get(Uri.parse("${basUrlApi}Api/list_comprehensive_trailer_types.php"));
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data["Result"] == "true") {
-        return List<Map<String, dynamic>>.from(data["trailer_types"]);
+    try {
+      debugPrint("Making API call to: ${basUrlApi}list_comprehensive_trailer_types.php");
+      
+      final response = await api.sendRequest.get(
+        "${basUrlApi}list_comprehensive_trailer_types.php",
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Fetch comprehensive truck types response: ${response.data}");
+      
+      // Parse the response data if it's a string
+      dynamic responseData = response.data;
+      if (responseData is String) {
+        responseData = jsonDecode(responseData);
       }
+      
+      if (responseData != null && responseData['status'] == true && responseData['trailer_types'] != null) {
+        final trailerTypes = List<Map<String, dynamic>>.from(responseData['trailer_types']);
+        debugPrint("Successfully fetched ${trailerTypes.length} comprehensive trailer types");
+        return trailerTypes;
+      } else {
+        debugPrint("No comprehensive trailer types found or invalid response: ${responseData}");
+        // Return hardcoded comprehensive trailer types as fallback
+        return getHardcodedTrailerTypes();
+      }
+    } catch (e) {
+      debugPrint("Error fetching comprehensive truck types: $e");
+      if (e is DioException) {
+        debugPrint("DioError type: ${e.type}");
+        debugPrint("DioError response: ${e.response}");
+        debugPrint("DioError data: ${e.response?.data}");
+        debugPrint("DioError request: ${e.requestOptions}");
+      }
+      // Return hardcoded comprehensive trailer types as fallback
+      return getHardcodedTrailerTypes();
     }
-    return [];
+  }
+
+  // Hardcoded comprehensive trailer types as fallback
+  List<Map<String, dynamic>> getHardcodedTrailerTypes() {
+    return [
+      {
+        'id': '1',
+        'name': 'Flatbed Trailers',
+        'length_min': 14.60,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': null,
+        'height_max': null,
+        'weight_capacity_lbs': 48000,
+        'weight_capacity_kg': 21772,
+        'common_uses': 'Construction equipment, lumber, steel, machinery',
+        'category': 'Flatbed'
+      },
+      {
+        'id': '2',
+        'name': 'Dry Van Trailers (Enclosed Box)',
+        'length_min': 8.50,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 2.40,
+        'height_max': 2.90,
+        'weight_capacity_lbs': 45000,
+        'weight_capacity_kg': 20412,
+        'common_uses': 'General freight, packaged goods, non-perishable items',
+        'category': 'Enclosed'
+      },
+      {
+        'id': '3',
+        'name': 'Refrigerated Trailers (Reefers)',
+        'length_min': 8.50,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 2.40,
+        'height_max': 2.90,
+        'weight_capacity_lbs': 44000,
+        'weight_capacity_kg': 19958,
+        'common_uses': 'Perishable goods, food, pharmaceuticals',
+        'category': 'Refrigerated'
+      },
+      {
+        'id': '4',
+        'name': 'Lowboy Trailers (Lowbed)',
+        'length_min': 7.30,
+        'length_max': 18.30,
+        'width': 2.60,
+        'height_min': 0.50,
+        'height_max': 0.60,
+        'weight_capacity_lbs': 80000,
+        'weight_capacity_kg': 36287,
+        'common_uses': 'Heavy machinery, construction equipment, oversized loads',
+        'category': 'Lowbed'
+      },
+      {
+        'id': '5',
+        'name': 'Step Deck Trailers (Drop Deck)',
+        'length_min': 14.60,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 1.10,
+        'height_max': 1.80,
+        'weight_capacity_lbs': 48000,
+        'weight_capacity_kg': 21772,
+        'common_uses': 'Tall equipment, vehicles, industrial goods',
+        'category': 'Step Deck'
+      },
+      {
+        'id': '6',
+        'name': 'Double Drop Trailers (RGN)',
+        'length_min': 8.80,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 0.25,
+        'height_max': null,
+        'weight_capacity_lbs': 80000,
+        'weight_capacity_kg': 36287,
+        'common_uses': 'Extremely tall or heavy loads (transformers, wind turbine blades)',
+        'category': 'Double Drop'
+      },
+      {
+        'id': '7',
+        'name': 'Extendable Flatbed Trailers',
+        'length_min': 0.00,
+        'length_max': 24.40,
+        'width': 2.60,
+        'height_min': null,
+        'height_max': null,
+        'weight_capacity_lbs': 80000,
+        'weight_capacity_kg': 36287,
+        'common_uses': 'Oversized cargo (pipes, beams, wind turbine components)',
+        'category': 'Extendable'
+      },
+      {
+        'id': '8',
+        'name': 'Conestoga Trailers (Curtain-Sided)',
+        'length_min': 14.60,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 2.40,
+        'height_max': 2.90,
+        'weight_capacity_lbs': 45000,
+        'weight_capacity_kg': 20412,
+        'common_uses': 'Sensitive cargo needing weather protection (aerospace, military)',
+        'category': 'Curtain-Sided'
+      },
+      {
+        'id': '9',
+        'name': 'Tanker Trailers',
+        'length_min': 9.10,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 3.00,
+        'height_max': 4.00,
+        'weight_capacity_lbs': 44000,
+        'weight_capacity_kg': 19958,
+        'common_uses': 'Fuel, chemicals, milk, liquid food products',
+        'category': 'Tanker'
+      },
+      {
+        'id': '10',
+        'name': 'Car Hauler Trailers (Auto Transporters)',
+        'length_min': 18.30,
+        'length_max': 24.40,
+        'width': 2.60,
+        'height_min': 3.70,
+        'height_max': 4.30,
+        'weight_capacity_lbs': 80000,
+        'weight_capacity_kg': 36287,
+        'common_uses': 'Vehicle transport (cars, trucks, SUVs)',
+        'category': 'Car Hauler'
+      },
+      {
+        'id': '11',
+        'name': 'Gooseneck Trailers',
+        'length_min': 6.10,
+        'length_max': 12.20,
+        'width': 2.40,
+        'height_min': null,
+        'height_max': null,
+        'weight_capacity_lbs': 30000,
+        'weight_capacity_kg': 13608,
+        'common_uses': 'Livestock, equipment, boats',
+        'category': 'Gooseneck'
+      },
+      {
+        'id': '12',
+        'name': 'Dump Trailers',
+        'length_min': 3.70,
+        'length_max': 9.10,
+        'width': 2.60,
+        'height_min': 1.50,
+        'height_max': 2.10,
+        'weight_capacity_lbs': 22680,
+        'weight_capacity_kg': 10287,
+        'common_uses': 'Construction debris, gravel, sand, agricultural use',
+        'category': 'Dump'
+      },
+      {
+        'id': '13',
+        'name': 'Sidekit Trailers',
+        'length_min': 14.60,
+        'length_max': 16.20,
+        'width': 2.60,
+        'height_min': 2.40,
+        'height_max': null,
+        'weight_capacity_lbs': 45000,
+        'weight_capacity_kg': 20412,
+        'common_uses': 'Bulky items (lumber, pipes, large crates)',
+        'category': 'Sidekit'
+      },
+      {
+        'id': '14',
+        'name': 'Livestock Trailers',
+        'length_min': 6.10,
+        'length_max': 16.20,
+        'width': 2.40,
+        'height_min': 1.80,
+        'height_max': 2.40,
+        'weight_capacity_lbs': 22680,
+        'weight_capacity_kg': 10287,
+        'common_uses': 'Transporting cattle, horses, pigs, sheep',
+        'category': 'Livestock'
+      },
+      {
+        'id': '15',
+        'name': 'Container Chassis Trailers',
+        'length_min': 6.10,
+        'length_max': 16.20,
+        'width': 2.40,
+        'height_min': 2.60,
+        'height_max': null,
+        'weight_capacity_lbs': 67200,
+        'weight_capacity_kg': 30481,
+        'common_uses': 'Shipping containers (intermodal transport)',
+        'category': 'Container Chassis'
+      },
+    ];
   }
 
   // Search for drivers by email (for dispatcher registration autocomplete)
@@ -976,6 +1257,27 @@ class ApiProvider {
     } catch (e) {
       debugPrint("Test API error: $e");
       return false;
+    }
+  }
+
+  // Check if trailer types table exists and has data
+  Future<Map<String, dynamic>> checkTrailerTypesTable() async {
+    try {
+      final response = await api.sendRequest.get(
+        "${basUrlApi}Api/check_trailer_types_table.php",
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Check trailer types table response: ${response.data}");
+      return response.data;
+    } catch (e) {
+      debugPrint("Check trailer types table error: $e");
+      return {
+        "Result": "false",
+        "ResponseMsg": "Error: $e",
+        "table_exists": false,
+        "record_count": 0
+      };
     }
   }
 

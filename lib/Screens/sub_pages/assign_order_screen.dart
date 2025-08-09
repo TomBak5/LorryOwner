@@ -37,13 +37,22 @@ class _AssignOrderScreenState extends State<AssignOrderScreen> {
   
   // Add WebView controller
   WebViewController? webViewController;
+  String gkey = "";
 
   @override
   void initState() {
     super.initState();
     print('=== AssignOrderScreen initState ===');
+    getGkey();
     _getCurrentLocation();
     _loadAssignedDrivers();
+  }
+
+  getGkey() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      gkey = prefs.getString("gkey") ?? "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
+    });
   }
 
   @override
@@ -747,7 +756,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           // Search results
           if (_showSearchResults)
             Container(
-              height: 200,
+              constraints: BoxConstraints(
+                maxHeight: 120,
+                minHeight: 60,
+              ),
               margin: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -757,15 +769,22 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                     color: Colors.grey.withOpacity(0.3),
                     spreadRadius: 1,
                     blurRadius: 5,
-                      ),
-                    ],
                   ),
+                ],
+              ),
               child: ListView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: _searchResults.length,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    leading: Icon(Icons.location_on, color: priMaryColor),
-                    title: Text(_searchResults[index]),
+                    dense: true,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Icon(Icons.location_on, color: priMaryColor, size: 20),
+                    title: Text(
+                      _searchResults[index],
+                      style: TextStyle(fontSize: 14),
+                    ),
                     onTap: () => _selectSearchResult(_searchResults[index]),
                   );
                 },
@@ -846,7 +865,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                               },
                             ),
                           )
-                          ..loadHtmlString('''
+                                                    ..loadHtmlString('''
                             <!DOCTYPE html>
                             <html>
                             <head>
@@ -880,10 +899,10 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                             await loadScript('https://js.api.here.com/v3/3.1/mapsjs-ui.js');
                                             await loadScript('https://js.api.here.com/v3/3.1/mapsjs-mapevents.js');
                                             
-                                            // Initialize the platform
-                                            const platform = new H.service.Platform({
-                                                apikey: 'q9Qb1k7st6xCwipGKkBErA'
-                                            });
+                                                                                         // Initialize the platform
+                                             const platform = new H.service.Platform({
+                                                 apikey: 'q9Qb1k7st6xCwipGKkBErA'
+                                             });
                                             
                                             const defaultLayers = platform.createDefaultLayers();
                                             const map = new H.Map(

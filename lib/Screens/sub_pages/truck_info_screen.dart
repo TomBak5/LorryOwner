@@ -30,19 +30,53 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
 
   void fetchBrands() async {
     setState(() => isLoadingBrands = true);
-    final data = await ApiProvider().fetchVehicleBrands();
-    setState(() {
-      brands = data;
-      isLoadingBrands = false;
-    });
+    try {
+      print('Fetching vehicle brands...');
+      final data = await ApiProvider().fetchVehicleBrands();
+      print('Brands received: ${data.length} items');
+      
+      // Debug: Print first few items to see the structure
+      if (data.isNotEmpty) {
+        print('First brand: ${data.first}');
+        print('Available keys: ${data.first.keys.toList()}');
+      }
+      
+      setState(() {
+        brands = data;
+        isLoadingBrands = false;
+      });
+    } catch (e) {
+      print('Error fetching brands: $e');
+      setState(() {
+        brands = [];
+        isLoadingBrands = false;
+      });
+    }
   }
 
   void fetchTrailerTypes() async {
     setState(() => isLoadingTrailerTypes = true);
     try {
       print('Fetching comprehensive truck types...');
+      
+      // First test API connection
+      final apiTest = await ApiProvider().testApiConnection();
+      print('API connection test: $apiTest');
+      
+      // Check if table exists
+      final tableCheck = await ApiProvider().checkTrailerTypesTable();
+      print('Table check: $tableCheck');
+      
+      // Fetch trailer types
       final data = await ApiProvider().fetchComprehensiveTruckTypes();
       print('Truck types received: ${data.length} items');
+      
+      // Debug: Print first few items to see the structure
+      if (data.isNotEmpty) {
+        print('First truck type: ${data.first}');
+        print('Available keys: ${data.first.keys.toList()}');
+      }
+      
       setState(() {
         trailerTypes = data;
         isLoadingTrailerTypes = false;
@@ -90,10 +124,10 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
                       value: selectedBrand,
-                      hint: Text('Select brand'),
+                      hint: Text('Select brand (${brands.length} available)'),
                       items: brands.map((b) => DropdownMenuItem(
                         value: b['id'].toString(),
-                        child: Text(b['brand_name'] ?? ''),
+                        child: Text(b['brand_name'] ?? 'Unknown'),
                       )).toList(),
                       onChanged: (val) => setState(() => selectedBrand = val),
                       decoration: InputDecoration(
@@ -108,10 +142,10 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                   ? Center(child: CircularProgressIndicator())
                   : DropdownButtonFormField<String>(
                       value: selectedTrailerTypeId,
-                      hint: Text('Select trailer type'),
+                      hint: Text('Select trailer type (${trailerTypes.length} available)'),
                       items: trailerTypes.map((t) => DropdownMenuItem(
                         value: t['id'].toString(),
-                        child: Text(t['name'] ?? ''),
+                        child: Text(t['name'] ?? 'Unknown'),
                       )).toList(),
                       onChanged: (val) {
                         setState(() {
@@ -120,6 +154,13 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                             (t) => t['id'].toString() == val,
                             orElse: () => {},
                           );
+                          
+                          // Debug: Print selected trailer type details
+                          print('Selected trailer type ID: $val');
+                          print('Selected trailer type object: $selectedTrailerTypeObj');
+                          if (selectedTrailerTypeObj != null) {
+                            print('Available keys: ${selectedTrailerTypeObj!.keys.toList()}');
+                          }
                         });
                       },
                       decoration: InputDecoration(
@@ -130,16 +171,30 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               const SizedBox(height: 28),
               Text('Trailer information', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
               const SizedBox(height: 10),
-              _infoRow('Length:', '${selectedTrailerTypeObj?['length_min'] ?? '—'} - ${selectedTrailerTypeObj?['length_max'] ?? '—'} m'),
-              _infoRow('Width:', '${selectedTrailerTypeObj?['width'] ?? '—'} m'),
-              _infoRow('Height:', selectedTrailerTypeObj?['height_min'] != null && selectedTrailerTypeObj?['height_max'] != null 
-                ? '${selectedTrailerTypeObj?['height_min']} - ${selectedTrailerTypeObj?['height_max']} m'
-                : selectedTrailerTypeObj?['height_min'] != null 
-                  ? '${selectedTrailerTypeObj?['height_min']} m'
-                  : '—'),
-              _infoRow('Weight Capacity:', '${selectedTrailerTypeObj?['weight_capacity_lbs'] ?? '—'} lbs (${selectedTrailerTypeObj?['weight_capacity_kg'] ?? '—'} kg)'),
-              _infoRow('Category:', selectedTrailerTypeObj?['category'] ?? '—'),
-              _infoRow('Common Uses:', selectedTrailerTypeObj?['common_uses'] ?? '—'),
+              if (selectedTrailerTypeObj != null && selectedTrailerTypeObj!.isNotEmpty) ...[
+                _infoRow('Length:', '${selectedTrailerTypeObj?['length_min'] ?? '—'} - ${selectedTrailerTypeObj?['length_max'] ?? '—'} m'),
+                _infoRow('Width:', '${selectedTrailerTypeObj?['width'] ?? '—'} m'),
+                _infoRow('Height:', selectedTrailerTypeObj?['height_min'] != null && selectedTrailerTypeObj?['height_max'] != null 
+                  ? '${selectedTrailerTypeObj?['height_min']} - ${selectedTrailerTypeObj?['height_max']} m'
+                  : selectedTrailerTypeObj?['height_min'] != null 
+                    ? '${selectedTrailerTypeObj?['height_min']} m'
+                    : '—'),
+                _infoRow('Weight Capacity:', '${selectedTrailerTypeObj?['weight_capacity_lbs'] ?? '—'} lbs (${selectedTrailerTypeObj?['weight_capacity_kg'] ?? '—'} kg)'),
+                _infoRow('Category:', selectedTrailerTypeObj?['category'] ?? '—'),
+                _infoRow('Common Uses:', selectedTrailerTypeObj?['common_uses'] ?? '—'),
+              ] else ...[
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Select a trailer type to see details',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  ),
+                ),
+              ],
               const Spacer(),
               SizedBox(
                 width: double.infinity,
