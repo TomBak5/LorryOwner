@@ -6,9 +6,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:movers_lorry_owner/AppConstData/typographyy.dart';
 import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/addsubdriver.dart';
 import 'package:movers_lorry_owner/Screens/sub_pages/subdrivers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
@@ -29,9 +31,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   HomePageController homePageController = Get.put(HomePageController());
+  MapController? _mapController;
+  Position? _currentPosition;
+  bool _isLocationLoading = true;
+  
   @override
   void initState() {
     super.initState();
+    _mapController = MapController();
+    _getCurrentLocation();
     homePageController.getDataFromLocalData().then((value) {
       if (homePageController.userData != null && (homePageController.userData?.id?.isNotEmpty ?? false)) {
         homePageController.getHomePageData(uid: homePageController.userData!.id!);
@@ -42,6 +50,66 @@ class _HomePageState extends State<HomePage> {
       ManagePageCalling().setLogin(false);
     });
     ManagePageCalling().setLogin(false);
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      // Check if location services are enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _isLocationLoading = false;
+        });
+        return;
+      }
+
+      // Check location permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _isLocationLoading = false;
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _isLocationLoading = false;
+        });
+        return;
+      }
+
+      // Get current position
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      setState(() {
+        _currentPosition = position;
+        _isLocationLoading = false;
+      });
+
+      // Move camera to current location if map controller is available
+      if (_mapController != null && _currentPosition != null) {
+        _mapController!.move(
+          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          15.0,
+        );
+      }
+    } catch (e) {
+      debugPrint('Error getting location: $e');
+      setState(() {
+        _isLocationLoading = false;
+      });
+    }
+  }
+
+  Future<void> _searchNearbyFuelStations() async {
+    // Navigate to the dedicated fuel stations screen
+    Get.toNamed(Routes.fuelStations);
   }
 
   @override
@@ -310,6 +378,9 @@ class _HomePageState extends State<HomePage> {
                                                           break;
                                                         case 3:
                                                           Get.toNamed(Routes.assignedOrders);
+                                                          break;
+                                                        case 4:
+                                                          Get.toNamed('/fuel-stations');
                                                           break;
                                                       }
                                                     } else if (homePageController.userData?.isVerify == "1") {
@@ -584,134 +655,113 @@ class _HomePageState extends State<HomePage> {
                             )
                           : const SizedBox(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Operating Routes".tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontFamily: "urbani_extrabold",
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: GridView.builder(
-                          itemCount: homePageController.homePageData?.homeData?.statelist?.length ?? 0,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            mainAxisExtent: 150,
+                        child: Container(
+                          height: 300,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.grey.withOpacity(0.3),
+                            ),
                           ),
-                          itemBuilder: (context, index) {
-                            return Container(
-                              margin: const EdgeInsets.all(5),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.grey.withOpacity(0.3),
-                                ),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Image.network(
-                                    "$basUrl${homePageController.homePageData?.homeData?.statelist?[index].img ?? ''}",
-                                    width: 72,
-                                    height: 72,
-                                    color: secondaryColor.withOpacity(0.4),
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return commonSimmer(height: 65, width: 65);
-                                    },
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      return (loadingProgress == null)
-                                          ? child
-                                          : commonSimmer(height: 65, width: 65);
-                                    },
-                                  ),
-                                  Flexible(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                                      child: Text(
-                                        "${homePageController.homePageData?.homeData?.statelist?[index].title ?? ''}",
-                                        style: TextStyle(
-                                          fontSize: 17,
-                                          color: textBlackColor,
-                                          fontFamily: "urbani_extrabold",
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: _isLocationLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : Stack(
                                     children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/Group.svg",
-                                        height: 14,
-                                        width: 14,
-                                        color: textGreyColor,
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Flexible(
-                                        child: Transform.translate(
-                                          offset: const Offset(0, 1),
-                                          child: Text(
-                                            "${homePageController.homePageData?.homeData?.statelist?[index].totalLoad ?? ''} Load",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                              color: textGreyColor,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                      FlutterMap(
+                                        mapController: _mapController ?? MapController(),
+                                        options: MapOptions(
+                                          initialCenter: _currentPosition != null
+                                              ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                                              : const LatLng(54.6872, 25.2797), // Fallback to Vilnius
+                                          initialZoom: _currentPosition != null ? 15.0 : 10.0,
+                                          onMapReady: () {
+                                            // Move camera to current location if available
+                                            if (_currentPosition != null && _mapController != null) {
+                                              _mapController!.move(
+                                                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                                                15.0,
+                                              );
+                                            }
+                                          },
                                         ),
+                                        children: [
+                                          TileLayer(
+                                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                            userAgentPackageName: 'com.moverslorryowner.app',
+                                          ),
+                                          if (_currentPosition != null)
+                                            MarkerLayer(
+                                              markers: [
+                                                Marker(
+                                                  point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                                                  width: 80,
+                                                  height: 80,
+                                                  child: const Icon(
+                                                    Icons.location_on,
+                                                    color: Colors.blue,
+                                                    size: 40,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                        ],
                                       ),
+                                                                               // Fuel button positioned at bottom left of map
+                                         Positioned(
+                                           left: 26,
+                                           bottom: 50,
+                                           child: Row(
+                                             children: [
+                                               ElevatedButton(
+                                                 onPressed: _searchNearbyFuelStations,
+                                                 style: ElevatedButton.styleFrom(
+                                                   backgroundColor: Colors.blue,
+                                                   foregroundColor: Colors.white,
+                                                   padding: EdgeInsets.all(16),
+                                                   elevation: 4,
+                                                   shape: CircleBorder(),
+                                                 ),
+                                                 child: Icon(Icons.local_gas_station),
+                                               ),
+                                               SizedBox(width: 8),
+                                               ElevatedButton(
+                                                 onPressed: () {
+                                                   // TODO: Implement truck stops functionality
+                                                 },
+                                                 style: ElevatedButton.styleFrom(
+                                                   backgroundColor: Colors.blue,
+                                                   foregroundColor: Colors.white,
+                                                   padding: EdgeInsets.all(16),
+                                                   elevation: 4,
+                                                   shape: CircleBorder(),
+                                                 ),
+                                                 child: Icon(Icons.local_shipping),
+                                               ),
+                                               SizedBox(width: 8),
+                                               ElevatedButton(
+                                                 onPressed: () {
+                                                   // TODO: Implement weigh functionality
+                                                 },
+                                                 style: ElevatedButton.styleFrom(
+                                                   backgroundColor: Colors.blue,
+                                                   foregroundColor: Colors.white,
+                                                   padding: EdgeInsets.all(16),
+                                                   elevation: 4,
+                                                   shape: CircleBorder(),
+                                                 ),
+                                                 child: Icon(Icons.scale),
+                                               ),
+                                             ],
+                                           ),
+                                         ),
                                     ],
                                   ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/icons/ic_find_lorryf.svg",
-                                        height: 14,
-                                        width: 14,
-                                        color: textGreyColor,
-                                      ),
-                                      const SizedBox(width: 5),
-                                      Flexible(
-                                        child: Transform.translate(
-                                          offset: const Offset(0, 1),
-                                          child: Text(
-                                            "${homePageController.homePageData?.homeData?.statelist?[index].totalLorry ?? ''} Lorry",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                              color: textGreyColor,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                ],
-                              ),
-                            );
-                          },
+                          ),
                         ),
                       ),
                     ],

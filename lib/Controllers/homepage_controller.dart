@@ -16,7 +16,8 @@ class HomePageController extends GetxController implements GetxService {
     "Find Loads",
     "Near Load",
     "Attach Lorry",
-    "My Orders"
+    "My Orders",
+    "Fuel"
   ];
 
   List dispatcherMenuList = [

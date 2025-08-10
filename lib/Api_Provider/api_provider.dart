@@ -23,6 +23,7 @@ import '../models/privacy_policy_model.dart';
 import '../widgets/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../AppConstData/api_config.dart';
 
 String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
 
@@ -1322,6 +1323,75 @@ class ApiProvider {
     } catch (e) {
       debugPrint('Error creating dispatcher order: $e');
       return {"Result": "false", "ResponseMsg": "Failed to create order: $e"};
+    }
+  }
+
+  // Get fuel stations directly from HERE Search API v7
+  Future<Map<String, dynamic>> getFuelStations({
+    required double lat,
+    required double lng,
+    int radius = 5000,
+  }) async {
+    try {
+      debugPrint("Getting fuel stations directly from HERE Search API v7 for location: $lat, $lng");
+      
+      // Use the same API key approach as the routing API
+      final response = await api.sendRequest.get(
+        'https://browse.search.hereapi.com/v1/browse',
+        queryParameters: {
+          'at': '$lat,$lng',
+          'categories': 'fuel-station,gas-station,charging-station',
+          'radius': radius,
+          'limit': 50,
+          'apiKey': ApiConfig.hereApiKey, // Same key used for routing
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+      
+      debugPrint("HERE Search API v7 response: ${response.data}");
+      
+      // Transform HERE Search API v7 response to our expected format
+      if (response.data != null && response.data['items'] != null) {
+        final items = response.data['items'] as List?;
+        if (items != null && items.isNotEmpty) {
+          final fuelStations = items.map((item) => {
+            'id': item['id'] ?? '',
+            'name': item['title'] ?? 'Fuel Station',
+            'address': item['address']?['label'] ?? item['vicinity'] ?? '',
+            'latitude': item['position']?['lat'] ?? 0,
+            'longitude': item['position']?['lng'] ?? 0,
+            'distance': item['distance'] ?? 0,
+            'category': item['categories']?[0]?['id'] ?? 'fuel-station',
+            'icon': item['icon'] ?? '',
+            'rating': item['averageRating'] ?? 0,
+            'openingHours': item['openingHours'] ?? []
+          }).toList();
+          
+          return {
+            "Result": "true",
+            "ResponseMsg": "Fuel stations found via HERE Search API v7",
+            "fuelStations": fuelStations
+          };
+        }
+      }
+      
+      // If no results, return empty list
+      return {
+        "Result": "true",
+        "ResponseMsg": "No fuel stations found",
+        "fuelStations": []
+      };
+      
+    } catch (e) {
+      debugPrint('Error getting fuel stations from HERE Search API v7: $e');
+      return {
+        "Result": "false",
+        "ResponseMsg": "Failed to get fuel stations: $e"
+      };
     }
   }
 

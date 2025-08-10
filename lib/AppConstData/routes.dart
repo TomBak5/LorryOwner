@@ -23,6 +23,7 @@ import '../Screens/congratulations_screen.dart';
 
 import '../Screens/sub_pages/assigned_orders_screen.dart';
 import '../Screens/sub_pages/assign_order_screen.dart';
+import '../Screens/sub_pages/fuel_stations_screen.dart';
 
 
 class Routes {
@@ -47,6 +48,7 @@ class Routes {
   static const String truckInfo = '/truckInfo';
   static const String assignOrder = '/assignOrder';
   static const String assignedOrders = '/assignedOrders';
+  static const String fuelStations = '/fuel-stations';
 
 
 }
@@ -136,6 +138,10 @@ final getpage = [
   GetPage(
     name: Routes.assignedOrders,
     page: () => const AssignedOrdersScreen(),
+  ),
+  GetPage(
+    name: Routes.fuelStations,
+    page: () => const FuelStationsScreen(),
   ),
 
 

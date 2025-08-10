@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/typographyy.dart';
 import '../../AppConstData/routes.dart';
+import '../../AppConstData/api_config.dart';
 import '../../Api_Provider/api_provider.dart';
 import '../../Controllers/order_controller.dart';
 
@@ -904,14 +905,14 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                     
                                     async function initMap() {
                                         try {
-                                            await loadScript('https://js.api.here.com/v3/3.1/mapsjs-core.js');
-                                            await loadScript('https://js.api.here.com/v3/3.1/mapsjs-service.js');
-                                            await loadScript('https://js.api.here.com/v3/3.1/mapsjs-ui.js');
-                                            await loadScript('https://js.api.here.com/v3/3.1/mapsjs-mapevents.js');
+                                            await loadScript('${ApiConfig.hereMapsCoreUrl}');
+                                            await loadScript('${ApiConfig.hereMapsServiceUrl}');
+                                            await loadScript('${ApiConfig.hereMapsUiUrl}');
+                                            await loadScript('${ApiConfig.hereMapsEventsUrl}');
                                             
                                                                                          // Initialize the platform
                                              const platform = new H.service.Platform({
-                                                 apikey: 'q9Qb1k7st6xCwipGKkBErA'
+                                                 apikey: '${ApiConfig.hereMapsApiKey}'
                                              });
                                             
                                             const defaultLayers = platform.createDefaultLayers();
