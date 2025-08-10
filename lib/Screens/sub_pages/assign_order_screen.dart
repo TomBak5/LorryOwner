@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/typographyy.dart';
+import '../../AppConstData/routes.dart';
 import '../../Api_Provider/api_provider.dart';
 import '../../Controllers/order_controller.dart';
 
@@ -234,8 +235,17 @@ class _AssignOrderScreenState extends State<AssignOrderScreen> {
       );
 
       if (success) {
-        // Navigate back to previous screen
-        Get.back();
+        // Show success message
+        Get.snackbar(
+          'Success',
+          'Order assigned successfully!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          duration: Duration(seconds: 2),
+        );
+        
+        // Navigate to main page after successful order assignment
+        Get.offAllNamed(Routes.landingPage);
       }
     } catch (e) {
       print('=== Error creating order: $e ===');
