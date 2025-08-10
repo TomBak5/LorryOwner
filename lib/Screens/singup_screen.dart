@@ -377,18 +377,8 @@ class _SingUpState extends State<SingUp> {
                                                 // Go to Account Info screen for dispatcher
                                                 Get.to(() => AccountInfoScreen(userRole: 'dispatcher'));
                                               } else {
-                                                // Existing driver flow
-                                                singUpController.setUserData(
-                                                  context,
-                                                  email: singUpController.emailController.text,
-                                                  pass: singUpController.passwordController.text,
-                                                  ccode: '',
-                                                  name: '',
-                                                  mobile: '',
-                                                  reff: '',
-                                                  userRole: '',
-                                                );
-                                                // Add navigation to TruckInfoScreen after registration
+                                                // For drivers, just navigate to truck info screen without registration
+                                                // Registration will happen in account_info_screen.dart after collecting all data
                                                 singUpController.setIsLoading(false);
                                                 Get.toNamed('/truckInfo');
                                               }

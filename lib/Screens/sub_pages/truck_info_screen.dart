@@ -207,8 +207,10 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                     if (selectedBrand != null) {
                       singUpController.selectedBrand = selectedBrand;
                     }
-                    if (selectedTrailerTypeId != null) {
-                      singUpController.selectedTrailerType = selectedTrailerTypeId;
+                    if (selectedTrailerTypeObj != null) {
+                      // Send the truck type NAME, not the ID
+                      singUpController.selectedTrailerType = selectedTrailerTypeObj!['name'];
+                      print('Saving truck type NAME: ${selectedTrailerTypeObj!['name']}');
                     }
                     
                     Get.to(() => AccountInfoScreen(userRole: userRole));
@@ -232,8 +234,8 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                     if (userRole == 'driver') {
                       // Set default truck brand and trailer type when skipping
                       singUpController.selectedBrand = '1'; // Default brand ID
-                      singUpController.selectedTrailerType = '1'; // Default trailer type ID (Flatbed)
-                      print('Skipping truck selection - setting defaults: brand=1, trailer=1');
+                      singUpController.selectedTrailerType = 'Flatbed Trailers'; // Default trailer type NAME
+                      print('Skipping truck selection - setting defaults: brand=1, trailer=Flatbed Trailers');
                     }
                     
                     Get.to(() => AccountInfoScreen(userRole: userRole));

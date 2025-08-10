@@ -16,6 +16,7 @@ import '../AppConstData/app_colors.dart';
 import '../AppConstData/typographyy.dart';
 import '../Controllers/creatnew_pass_controller.dart';
 import '../widgets/widgets.dart';
+import 'sub_pages/account_info_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String mobileNumber;
@@ -195,21 +196,22 @@ class _OtpScreenState extends State<OtpScreen> {
                                     try {
                                       final SharedPreferences prefs = await SharedPreferences.getInstance();
                                       if (widget.isSingup) {
-                                        String? encodeData = prefs.getString("tempUserData");
-                                        var tempdatafromlocal = jsonDecode(encodeData!);
-                                        SingUpController().setUserData(
-                                          context,
-                                          name: tempdatafromlocal["name"],
-                                          mobile: tempdatafromlocal["mobile"],
-                                          email: tempdatafromlocal["email"],
-                                          ccode: tempdatafromlocal["ccode"],
-                                          pass: tempdatafromlocal["password"],
-                                          reff: tempdatafromlocal["refercode"],
-                                          userRole: tempdatafromlocal["userRole"] ?? "driver",
-                                        );
+                                        // Don't register here - just store temp data and proceed to account info
+                                        // Registration will happen in account_info_screen.dart after collecting all data
                                         setState(() {
                                           isLoading = false;
                                         });
+                                        
+                                        // Get user role from stored data and navigate to account info screen
+                                        String? encodeData = prefs.getString("tempUserData");
+                                        if (encodeData != null) {
+                                          var tempdatafromlocal = jsonDecode(encodeData);
+                                          String userRole = tempdatafromlocal["userRole"] ?? "driver";
+                                          Get.off(() => AccountInfoScreen(userRole: userRole));
+                                        } else {
+                                          // Fallback to driver role if no data stored
+                                          Get.off(() => AccountInfoScreen(userRole: "driver"));
+                                        }
                                       } else {
                                         String? encodeData = prefs.getString("tempForgotpassData");
                                         var tempdatafromlocal = jsonDecode(encodeData!);

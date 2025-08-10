@@ -126,6 +126,61 @@ class SingUpController extends GetxController implements GetxService {
     });
   }
 
+  // New method that returns a Future<bool> to indicate success/failure
+  Future<bool> setUserDataWithResult(context,
+      {required String name,
+      required String mobile,
+      required String ccode,
+      required String email,
+      required String pass,
+      required String reff,
+      required String userRole,
+      String? company,
+      String? emergencyContact,
+      String? selectedBrand,
+      String? selectedTrailerType}) async {
+    try {
+      // Generate a unique numeric phone number if blank
+      String phoneToSend = mobile.isEmpty
+          ? (DateTime.now().millisecondsSinceEpoch.toString() + Random().nextInt(999).toString())
+          : mobile;
+      print('Attempting registration with: email= [32m$email [0m, userRole= [32m$userRole [0m');
+      
+      var value = await ApiProvider().registerUser(
+              password: pass,
+              cCode: ccode,
+              email: email,
+              mobile: phoneToSend,
+              name: name,
+              referCode: reff,
+              userRole: userRole,
+              company: company,
+              emergencyContact: emergencyContact,
+              selectedBrand: selectedBrand,
+              selectedTrailerType: selectedTrailerType);
+              
+      print('Registration API response:  [36m$value [0m');
+      var dataaa = value;
+      if (dataaa["Result"] == "true") {
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        String decodeData = jsonEncode(dataaa["UserLogin"]);
+        await prefs.setString("userData", decodeData);
+        // OneSignal.shared.sendTag("owner_id", dataaa["UserLogin"]["id"]);
+        OneSignal.User.addTagWithKey("user_id", dataaa["UserLogin"]["id"]);
+        setIsLoading(false);
+        return true; // Registration successful
+      } else {
+        setIsLoading(false);
+        print("Registration failed: ${dataaa["ResponseMsg"] ?? 'Unknown error'}");
+        return false; // Registration failed
+      }
+    } catch (e) {
+      setIsLoading(false);
+      print("Registration error: $e");
+      return false; // Registration failed due to exception
+    }
+  }
+
   setDataInLocal(
       {required String name,
       required String mobile,
@@ -148,21 +203,7 @@ class SingUpController extends GetxController implements GetxService {
     prefs.setString("tempUserData", encodeData);
   }
 
-  Future getDataFromApi(context) async {
-    // Directly call setUserData with only the required fields
-    setUserData(
-      context,
-      name: 'User', // Dummy value
-      mobile: '', // Leave blank to trigger UUID logic
-      email: emailController.text,
-      ccode: '+370', // Dummy value
-      pass: passwordController.text,
-      reff: '', // No referral code
-      userRole: selectedRole,
-      selectedBrand: selectedBrand,
-      selectedTrailerType: selectedTrailerType,
-    );
-  }
+  // Removed getDataFromApi method to prevent duplicate registrations
 
   TextEditingController mobileController = TextEditingController();
   TextEditingController fullNameController = TextEditingController();

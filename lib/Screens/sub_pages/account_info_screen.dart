@@ -104,7 +104,10 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () async {
+                  onPressed: isLoading ? null : () async {
+                    // Prevent multiple taps while loading
+                    if (isLoading) return;
+                    
                     setState(() { isLoading = true; });
                     
                     // Debug: Print truck selection values
@@ -113,34 +116,52 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     print('  selectedTrailerType: ${singUpController.selectedTrailerType}');
                     print('  userRole: ${widget.userRole}');
                     
-                    await singUpController.setUserData(
-                      context,
-                      name: fullNameController.text,
-                      mobile: phoneController.text,
-                      ccode: singUpController.countryCode,
-                      email: singUpController.emailController.text,
-                      pass: singUpController.passwordController.text,
-                      reff: singUpController.referralCodeController.text,
-                      userRole: widget.userRole,
-                      company: isDispatcher ? companyController.text : null,
-                      emergencyContact: isDispatcher ? emergencyContactController.text : null,
-                      selectedBrand: singUpController.selectedBrand,
-                      selectedTrailerType: singUpController.selectedTrailerType,
-                    );
-                    setState(() { isLoading = false; });
-                    if (isDispatcher) {
-                      Get.to(() => LinkDriverScreen(
-                        initialDrivers: [],
-                        onDriversSelected: (drivers) {
+                    try {
+                      // Wait for registration to complete successfully
+                      final registrationResult = await singUpController.setUserDataWithResult(
+                        context,
+                        name: fullNameController.text,
+                        mobile: phoneController.text,
+                        ccode: singUpController.countryCode,
+                        email: singUpController.emailController.text,
+                        pass: singUpController.passwordController.text,
+                        reff: singUpController.referralCodeController.text,
+                        userRole: widget.userRole,
+                        company: isDispatcher ? companyController.text : null,
+                        emergencyContact: isDispatcher ? emergencyContactController.text : null,
+                        selectedBrand: singUpController.selectedBrand,
+                        selectedTrailerType: singUpController.selectedTrailerType,
+                      );
+                      
+                      setState(() { isLoading = false; });
+                      
+                      // Only navigate if registration was successful
+                      if (registrationResult == true) {
+                        if (isDispatcher) {
+                          Get.to(() => LinkDriverScreen(
+                            initialDrivers: [],
+                            onDriversSelected: (drivers) {
+                              Get.to(() => CongratulationsScreen(userRole: widget.userRole));
+                            },
+                          ));
+                        } else {
                           Get.to(() => CongratulationsScreen(userRole: widget.userRole));
-                        },
-                      ));
-                    } else {
-                      Get.to(() => CongratulationsScreen(userRole: widget.userRole));
+                        }
+                      } else {
+                        // Registration failed, show error message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Registration failed. Please try again.')),
+                        );
+                      }
+                    } catch (e) {
+                      setState(() { isLoading = false; });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Registration error: $e')),
+                      );
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: isLoading ? Colors.grey : Colors.blue,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
