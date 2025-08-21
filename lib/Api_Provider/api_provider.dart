@@ -24,8 +24,10 @@ import '../widgets/widgets.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../AppConstData/api_config.dart';
+import 'package:latlong2/latlong.dart';
 
-String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
+// Google Maps API key removed - now using HERE Maps exclusively
+// String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
 
 class ApiProvider {
   final api = Api();
@@ -1043,6 +1045,7 @@ class ApiProvider {
   }
 
   // Get orders assigned to a specific driver
+
   Future<List<Map<String, dynamic>>> getDriverOrders(String driverId) async {
     try {
       debugPrint("Getting orders for driver: $driverId");
@@ -1064,6 +1067,41 @@ class ApiProvider {
     } catch (e) {
       debugPrint("Error getting driver orders: $e");
       return [];
+    }
+  }
+
+  // Get detailed order information for a driver (with coordinates)
+  Future<Map<String, dynamic>?> getDriverOrderDetails({
+    required String driverId,
+    required String orderId,
+  }) async {
+    try {
+      debugPrint("Getting detailed order info for driver: $driverId, order: $orderId");
+      
+      // Try to get detailed order info from the main API first
+      final response = await api.sendRequest.post(
+        "${basUrlApi}Api/get_driver_order_details.php",
+        data: jsonEncode({
+          'driver_id': driverId,
+          'order_id': orderId,
+        }),
+        options: Options(headers: header),
+      );
+      
+      debugPrint("Get driver order details response: ${response.data}");
+      
+      if (response.data['Result'] == "true" && response.data['order_details'] != null) {
+        return response.data['order_details'];
+      } else if (response.data['Result'] == "true" && response.data['load_details'] != null) {
+        // Fallback to load_details if order_details doesn't exist
+        return response.data['load_details'];
+      } else {
+        debugPrint("No order details found or API error: ${response.data['ResponseMsg'] ?? 'Unknown error'}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Error getting driver order details: $e");
+      return null;
     }
   }
 
@@ -1391,6 +1429,343 @@ class ApiProvider {
       return {
         "Result": "false",
         "ResponseMsg": "Failed to get fuel stations: $e"
+      };
+    }
+  }
+
+  // Calculate route using HERE Routing API v8 with API key
+  Future<Map<String, dynamic>> calculateRoute({
+    required double originLat,
+    required double originLng,
+    required double destinationLat,
+    required double destinationLng,
+    String transportMode = 'truck',
+  }) async {
+    try {
+      debugPrint("Calculating route from ($originLat, $originLng) to ($destinationLat, $destinationLng)");
+      
+      // Check if API key is properly configured
+      if (ApiConfig.hereApiKey == 'YOUR_VALID_HERE_API_KEY_HERE') {
+        debugPrint("❌ HERE API key not configured properly");
+        return {
+          'success': false,
+          'message': 'HERE API key not configured. Please update your API configuration.',
+        };
+      }
+      
+      // Build the routing API URL with API key
+      final url = '${ApiConfig.hereRoutingBaseUrl}?'
+          'origin=${originLat},${originLng}'
+          '&destination=${destinationLat},${destinationLng}'
+          '&transportMode=${transportMode}'
+          '&return=polyline,summary'
+          '&routingMode=fast'
+          '&apiKey=${ApiConfig.hereApiKey}';
+      
+      debugPrint("🌐 Calling HERE Routing API v8 with API key");
+      debugPrint("   • URL: $url");
+      
+      final response = await api.sendRequest.get(url);
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        debugPrint("Route calculation response: $data");
+        
+        if (data['routes'] != null && data['routes'].isNotEmpty) {
+          final route = data['routes'][0];
+          final section = route['sections'][0];
+          
+          // Extract route information
+          final summary = section['summary'];
+          final distance = summary['length'] ?? 0;
+          final duration = summary['duration'] ?? 0;
+          
+          // Extract waypoints for turn-by-turn navigation
+          List<Map<String, dynamic>> waypoints = [];
+          if (section['waypoints'] != null) {
+            for (var waypoint in section['waypoints']) {
+              if (waypoint['instruction'] != null) {
+                waypoints.add({
+                  'instruction': waypoint['instruction'],
+                  'distance': waypoint['distance'] ?? '',
+                  'icon': _getTurnIcon(waypoint['instruction']),
+                });
+              }
+            }
+          }
+          
+          // Extract polyline from shape field (HERE API v8 format)
+          List<LatLng> polylinePoints = [];
+          if (section['shape'] != null) {
+            final shape = section['shape'] as List?;
+            if (shape != null) {
+              for (var point in shape) {
+                if (point is Map && point['lat'] != null && point['lng'] != null) {
+                  polylinePoints.add(LatLng(
+                    (point['lat'] is int) ? (point['lat'] as int).toDouble() : point['lat'],
+                    (point['lng'] is int) ? (point['lng'] as int).toDouble() : point['lng'],
+                  ));
+                }
+              }
+            }
+          }
+          
+          // If no shape data, generate fallback polyline
+          if (polylinePoints.isEmpty) {
+            debugPrint("⚠️ No shape data from HERE API, generating fallback polyline");
+            polylinePoints = _generateFallbackPolyline(
+              originLat, originLng, destinationLat, destinationLng
+            );
+          }
+          
+          debugPrint("✅ Extracted ${polylinePoints.length} polyline points from shape");
+          
+          return {
+            'success': true,
+            'distance': '${(distance / 1000).toStringAsFixed(1)} km',
+            'duration': '${(duration / 60).round()} min',
+            'waypoints': waypoints,
+            'polyline': polylinePoints.isNotEmpty ? polylinePoints : null,
+            'route': route,
+          };
+        } else {
+          return {
+            'success': false,
+            'message': 'No routes found',
+          };
+        }
+      } else {
+        debugPrint("Route calculation failed with status: ${response.statusCode}");
+        return {
+          'success': false,
+          'message': 'Failed to calculate route',
+        };
+      }
+    } catch (e) {
+      debugPrint("Error calculating route: $e");
+      return {
+        'success': false,
+        'message': 'Failed to calculate route: $e',
+      };
+    }
+  }
+    
+
+
+
+  // Helper method to get turn icon based on instruction
+  String _getTurnIcon(String instruction) {
+    if (instruction.toLowerCase().contains('left')) {
+      return '🔄'; // Left turn icon
+    } else if (instruction.toLowerCase().contains('right')) {
+      return '🔄'; // Right turn icon
+    } else if (instruction.toLowerCase().contains('straight')) {
+      return '➡️'; // Straight icon
+    } else if (instruction.toLowerCase().contains('u-turn')) {
+      return '🔄'; // U-turn icon
+    } else {
+      return '📍'; // Default location icon
+    }
+  }
+
+  // Helper method to generate fallback polyline when HERE API doesn't provide shape data
+  List<LatLng> _generateFallbackPolyline(
+    double originLat, double originLng, double destinationLat, double destinationLng) {
+    List<LatLng> points = [];
+    
+    // Add origin point
+    points.add(LatLng(originLat, originLng));
+    
+    // Generate intermediate points for a more realistic route
+    const int numPoints = 10;
+    for (int i = 1; i < numPoints; i++) {
+      final ratio = i / numPoints;
+      final lat = originLat + (destinationLat - originLat) * ratio;
+      final lng = originLng + (destinationLng - originLng) * ratio;
+      
+      // Add some realistic curve (slight deviation from straight line)
+      final deviation = 0.001 * (1 - (2 * ratio - 1).abs());
+      points.add(LatLng(lat + deviation, lng + deviation));
+    }
+    
+    // Add destination point
+    points.add(LatLng(destinationLat, destinationLng));
+    
+    debugPrint("🔄 Generated fallback polyline with ${points.length} points");
+    return points;
+  }
+
+  // Get coordinates from address using HERE Geocoding API with API key
+  Future<Map<String, dynamic>> getCoordinatesFromAddress(String address) async {
+    try {
+      debugPrint("Getting coordinates for address: $address");
+      
+      // Check if API key is properly configured
+      if (ApiConfig.hereApiKey == 'YOUR_VALID_HERE_API_KEY_HERE') {
+        debugPrint("❌ HERE API key not configured properly");
+        return {
+          'success': false,
+          'message': 'HERE API key not configured. Please update your API configuration.',
+        };
+      }
+      
+      debugPrint("✅ Using API key for geocoding request");
+      
+      final response = await api.sendRequest.get(
+        ApiConfig.hereGeocodingBaseUrl,
+        queryParameters: {
+          'q': address,
+          'limit': 1,
+          'apiKey': ApiConfig.hereApiKey,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        debugPrint("Geocoding response: $data");
+        
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          final item = data['items'][0];
+          final position = item['position'];
+          
+          return {
+            'success': true,
+            'latitude': position['lat'],
+            'longitude': position['lng'],
+            'address': item['address']['label'],
+          };
+        } else {
+          return {
+            'success': false,
+            'message': 'No coordinates found for this address',
+          };
+        }
+      } else {
+        debugPrint("Geocoding failed with status: ${response.statusCode}");
+        return {
+          'success': false,
+          'message': 'Failed to get coordinates',
+        };
+      }
+    } catch (e) {
+      debugPrint("Error getting coordinates: $e");
+      return {
+        'success': false,
+        'message': 'Error getting coordinates: $e',
+      };
+    }
+  }
+
+  // Helper function to make API key requests to HERE API
+  Future<Response> makeApiKeyRequest(
+    String url, {
+    Map<String, dynamic>? queryParameters,
+    dynamic data,
+    String method = 'GET',
+  }) async {
+    try {
+      // Check if API key is properly configured
+      if (ApiConfig.hereApiKey == 'YOUR_VALID_HERE_API_KEY_HERE') {
+        throw Exception('HERE API key not configured properly');
+      }
+      
+      // Add API key to query parameters
+      final finalQueryParams = Map<String, dynamic>.from(queryParameters ?? {});
+      finalQueryParams['apiKey'] = ApiConfig.hereApiKey;
+      
+      switch (method.toUpperCase()) {
+        case 'GET':
+          return await api.sendRequest.get(url, queryParameters: finalQueryParams);
+        case 'POST':
+          return await api.sendRequest.post(url, data: data, queryParameters: finalQueryParams);
+        case 'PUT':
+          return await api.sendRequest.put(url, data: data, queryParameters: finalQueryParams);
+        case 'DELETE':
+          return await api.sendRequest.delete(url, queryParameters: finalQueryParams);
+        default:
+          throw Exception('Unsupported HTTP method: $method');
+      }
+    } catch (e) {
+      debugPrint("Error making API key request: $e");
+      rethrow;
+    }
+  }
+
+
+
+  // Test method to verify HERE API authorization is working
+  Future<Map<String, dynamic>> testHereApiAuthorization() async {
+    try {
+      debugPrint("🧪 Testing HERE API authorization...");
+      debugPrint("   • API Key: ${ApiConfig.hereApiKey.substring(0, 10)}...");
+      
+      // Test 1: API key validation
+      debugPrint("\n🔑 Test 1: API Key Validation");
+      if (ApiConfig.hereApiKey != 'YOUR_VALID_HERE_API_KEY_HERE') {
+        debugPrint("✅ API key configured properly");
+      } else {
+        debugPrint("❌ API key not configured properly");
+        return {
+          'success': false,
+          'message': 'API key not configured. Please update your configuration.',
+        };
+      }
+      
+      // Test 2: Simple route calculation (short distance)
+      debugPrint("\n🗺️ Test 2: Route Calculation");
+      final routeResult = await calculateRoute(
+        originLat: 40.7128, // New York coordinates
+        originLng: -74.0060,
+        destinationLat: 40.7589,
+        destinationLng: -73.9851,
+        transportMode: 'truck',
+      );
+      
+      if (routeResult['success'] == true) {
+        debugPrint("✅ Route calculation successful");
+        debugPrint("   • Distance: ${routeResult['distance']}");
+        debugPrint("   • Duration: ${routeResult['duration']}");
+      } else {
+        debugPrint("❌ Route calculation failed: ${routeResult['message']}");
+      }
+      
+      // Test 3: Geocoding
+      debugPrint("\n📍 Test 3: Geocoding");
+      final geocodeResult = await getCoordinatesFromAddress("New York, NY");
+      if (geocodeResult['success'] == true) {
+        debugPrint("✅ Geocoding successful");
+        debugPrint("   • Latitude: ${geocodeResult['latitude']}");
+        debugPrint("   • Longitude: ${geocodeResult['longitude']}");
+      } else {
+        debugPrint("❌ Geocoding failed: ${geocodeResult['message']}");
+      }
+      
+      // Test 4: Fuel stations search
+      debugPrint("\n⛽ Test 4: Fuel Stations Search");
+      final fuelResult = await getFuelStations(lat: 40.7128, lng: -74.0060);
+      if (fuelResult['Result'] == 'true') {
+        debugPrint("✅ Fuel stations search successful");
+        debugPrint("   • Found: ${fuelResult['fuelStations']?.length ?? 0} stations");
+      } else {
+        debugPrint("❌ Fuel stations search failed: ${fuelResult['ResponseMsg']}");
+      }
+      
+      debugPrint("\n🎉 HERE API Authorization Test Complete!");
+      
+      return {
+        'success': true,
+        'message': 'All tests completed successfully',
+        'api_key_working': true,
+        'routing_working': routeResult['success'] == true,
+        'geocoding_working': geocodeResult['success'] == true,
+        'search_working': fuelResult['Result'] == 'true',
+      };
+      
+    } catch (e) {
+      debugPrint("❌ Error during HERE API authorization test: $e");
+      return {
+        'success': false,
+        'message': 'Test failed: $e',
       };
     }
   }

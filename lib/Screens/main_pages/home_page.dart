@@ -19,6 +19,7 @@ import '../../Api_Provider/imageupload_api.dart';
 import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
+import '../../AppConstData/api_config.dart';
 import '../../models/home_model.dart';
 import '../../widgets/widgets.dart';
 
@@ -691,7 +692,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         children: [
                                           TileLayer(
-                                            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                                            urlTemplate: 'https://maps.hereapi.com/v3/staticmap?apiKey=${ApiConfig.hereMapsApiKey}&style=alps&w=800&h=600&z={z}&x={x}&y={y}',
                                             userAgentPackageName: 'com.moverslorryowner.app',
                                           ),
                                           if (_currentPosition != null)

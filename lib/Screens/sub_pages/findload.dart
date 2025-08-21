@@ -6,8 +6,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:get/get.dart';
-import 'package:google_places_flutter/google_places_flutter.dart';
-import 'package:google_places_flutter/model/prediction.dart';
+// import 'package:google_places_flutter/google_places_flutter.dart'; // Temporarily disabled - switching to HERE Maps
+// import 'package:google_places_flutter/model/prediction.dart'; // Temporarily disabled - switching to HERE Maps
 import 'package:movers_lorry_owner/Controllers/bid_bottomsheet_controller.dart';
 import 'package:movers_lorry_owner/Screens/sub_pages/trans_profile.dart';
 import 'package:movers_lorry_owner/models/lorry_list_model.dart';
@@ -38,7 +38,7 @@ class _FindLoadState extends State<FindLoad> {
   @override
   void initState() {
     super.initState();
-    getGkey();
+    // getGkey() removed - now using HERE Maps exclusively
     ApiProvider()
         .findLorry(uid: homePageController.userData?.id ?? '',pickStateId: "0",dropStateId: "0")
         .then((value) {
@@ -168,13 +168,14 @@ class _FindLoadState extends State<FindLoad> {
     
   }
 
-  String gkey = "";
-  getGkey() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      gkey = prefs.getString("gkey") ?? googleMapkey;
-    });
-  }
+  // Google Maps key removed - now using HERE Maps exclusively
+  // String gkey = "";
+  // getGkey() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     gkey = prefs.getString("gkey") ?? googleMapkey;
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -969,18 +970,14 @@ class _FindLoadState extends State<FindLoad> {
   TextEditingController dropDownController = TextEditingController();
 
   dropPoint() {
-    return GooglePlaceAutoCompleteTextField(
-      textStyle: TextStyle(
+    return TextField(
+      controller: dropDownController,
+      style: TextStyle(
         fontSize: 17,
         fontFamily: fontFamilyRegular,
         color: textBlackColor,
       ),
-      boxDecoration: BoxDecoration(
-        border: Border.all(color: Colors.transparent),
-      ),
-      textEditingController: dropDownController,
-      googleAPIKey: gkey,
-      inputDecoration: InputDecoration(
+      decoration: InputDecoration(
         hintText: "Drop Point".tr,
         hintStyle: TextStyle(
           fontSize: 17,
@@ -991,53 +988,21 @@ class _FindLoadState extends State<FindLoad> {
         isDense: true,
         contentPadding: EdgeInsets.zero,
       ),
-      debounceTime: 400,
-      getPlaceDetailWithLatLng: (Prediction prediction) {
-        getAddressFromLatLong(prediction.lat, prediction.lng).then((value) {
-          setState(() {
-            findLorryController.dropPoint = value;
-          });
-        });
+      onChanged: (value) {
+        // TODO: Implement HERE Maps place search
         setState(() {
-          findLorryController.dropUpLat = prediction.lat;
-          findLorryController.dropUpLng = prediction.lng;
+          findLorryController.dropPoint = value;
         });
-        print("+++++++++++++++++++ placeDetails" + prediction.lat.toString());
-        print("+++++++++++++++++++ placeDetails" + prediction.lng.toString());
       },
-      itemClick: (Prediction prediction) {
-        findLorryController.setIsDropPoint(false);
-        dropDownController.text = prediction.description ?? "";
-        dropDownController.selection = TextSelection.fromPosition(
-          TextPosition(offset: prediction.description?.length ?? 0),
-        );
-      },
-      itemBuilder: (context, index, Prediction prediction) {
-        return Container(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              const Icon(Icons.location_on),
-              const SizedBox(
-                width: 7,
-              ),
-              Expanded(child: Text(prediction.description ?? ""))
-            ],
-          ),
-        );
-      },
-      isCrossBtnShown: false,
     );
   }
 
   pickUpPoint() {
-    return GooglePlaceAutoCompleteTextField(
-      textStyle: TextStyle(
+    return TextField(
+      controller: pickUpController,
+      style: TextStyle(
           fontSize: 17, fontFamily: fontFamilyRegular, color: textBlackColor),
-      boxDecoration: BoxDecoration(border: Border.all(color: Colors.transparent)),
-      textEditingController: pickUpController,
-      googleAPIKey: gkey,
-      inputDecoration: InputDecoration(
+      decoration: InputDecoration(
           hintText: "Pickup Point".tr,
           hintStyle: TextStyle(
               fontSize: 17,
@@ -1046,41 +1011,12 @@ class _FindLoadState extends State<FindLoad> {
           border: InputBorder.none,
           isDense: true,
           contentPadding: const EdgeInsets.all(0)),
-      debounceTime: 400,
-      getPlaceDetailWithLatLng: (Prediction prediction) {
-        getAddressFromLatLong(prediction.lat, prediction.lng).then((value) {
-          setState(() {
-            findLorryController.picUpState = value;
-          });
-        });
+      onChanged: (value) {
+        // TODO: Implement HERE Maps place search
         setState(() {
-          findLorryController.picUpLat = prediction.lat;
-          findLorryController.picUpLng = prediction.lng;
+          findLorryController.picUpState = value;
         });
       },
-
-      itemClick: (Prediction prediction) {
-        findLorryController.setIsPickUp(false);
-        pickUpController.text = prediction.description ?? "";
-        pickUpController.selection = TextSelection.fromPosition(
-            TextPosition(offset: prediction.description?.length ?? 0));
-      },
-
-      itemBuilder: (context, index, Prediction prediction) {
-        return Container(
-          padding: const EdgeInsets.all(10),
-          child: Row(
-            children: [
-              const Icon(Icons.location_on),
-              const SizedBox(
-                width: 7,
-              ),
-              Expanded(child: Text(prediction.description ?? ""))
-            ],
-          ),
-        );
-      },
-      isCrossBtnShown: false,
     );
   }
 }

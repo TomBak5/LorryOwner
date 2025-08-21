@@ -10,7 +10,6 @@ class Api {
     // Add the X-API-KEY header globally
     _dio.options.headers.addAll({
       'X-API-KEY': 'cscodetech',
-      'Content-Type': 'application/json',
     });
     
     // Add timeout configuration

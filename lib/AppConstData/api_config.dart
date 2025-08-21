@@ -1,28 +1,32 @@
 // API Configuration for LorryOwner App
 class ApiConfig {
   // HERE Navigation API Configuration
-  static const String hereApiKey = 'q9Qb1k7st6oCwipGKkBErA';
+  // ✅ CONFIGURED: Using your actual HERE API credentials
   
-  // HERE Geocoding and Search API v7 (Current)
-  static const String hereGeocodingApiUrl = 'https://geocode.search.hereapi.com/v1/geocode';
-  static const String hereSearchApiUrl = 'https://browse.search.hereapi.com/v1/browse';
-  static const String hereAutocompleteApiUrl = 'https://autocomplete.search.hereapi.com/v1/autocomplete';
+  // HERE Access Key (for basic routing)
+  static const String hereApiKey = 'fnINROSL8maUgRUr2g0ql7Tgk0jgT2psDDjb2aubi88';
   
-  // HERE Routing API v8
-  static const String hereRoutingApiUrl = 'https://router.hereapi.com/v8/routes';
+  // HERE API Configuration (using API key only)
+  // Note: OAuth2 is not needed for basic HERE Maps services
+  // Your API key is sufficient for routing, geocoding, and map tiles
   
-  // HERE Maps JavaScript API - Updated to latest version
-  static const String hereMapsApiKey = 'q9Qb1k7st6oCwipGKkBErA';
+  // HERE Maps API Key (for map tiles - using same access key)
+  static const String hereMapsApiKey = 'fnINROSL8maUgRUr2g0ql7Tgk0jgT2psDDjb2aubi88';
+  
+  // HERE Maps JavaScript API URLs (for web-based maps)
   static const String hereMapsCoreUrl = 'https://js.api.here.com/v3.1/mapsjs-core.js';
   static const String hereMapsServiceUrl = 'https://js.api.here.com/v3.1/mapsjs-service.js';
   static const String hereMapsUiUrl = 'https://js.api.here.com/v3.1/mapsjs-ui.js';
   static const String hereMapsEventsUrl = 'https://js.api.here.com/v3.1/mapsjs-mapevents.js';
   
-  // Base API URL for your backend
-  static const String baseApiUrl = 'https://your-domain.com/AdminPanel/';
+  // Base URLs for HERE APIs
+  static const String hereRoutingBaseUrl = 'https://router.hereapi.com/v8/routes';
+  static const String hereGeocodingBaseUrl = 'https://geocode.search.hereapi.com/v1/geocode';
+  static const String hereSearchBaseUrl = 'https://browse.search.hereapi.com/v1/browse';
   
-  // API Endpoints
+  // Fuel stations search endpoint
   static const String fuelStationsEndpoint = 'Api/get_fuel_stations.php';
-  static const String truckStopsEndpoint = 'Api/get_truck_stations.php';
+  
+  // Weigh stations endpoint
   static const String weighStationsEndpoint = 'Api/get_weigh_stations.php';
 }

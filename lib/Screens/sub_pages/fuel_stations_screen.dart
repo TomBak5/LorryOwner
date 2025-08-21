@@ -8,6 +8,7 @@ import 'package:movers_lorry_owner/Controllers/fuel_stations_controller.dart';
 import 'package:movers_lorry_owner/AppConstData/app_colors.dart';
 import 'package:movers_lorry_owner/AppConstData/typographyy.dart';
 import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:movers_lorry_owner/AppConstData/api_config.dart';
 
 class FuelStationsScreen extends StatelessWidget {
   const FuelStationsScreen({super.key});
@@ -148,7 +149,7 @@ class FuelStationsScreen extends StatelessWidget {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        urlTemplate: 'https://maps.hereapi.com/v3/staticmap?apiKey=${ApiConfig.hereMapsApiKey}&style=alps&w=800&h=600&z={z}&x={x}&y={y}',
                         userAgentPackageName: 'com.moverslorryowner.app',
                       ),
                       // Current location marker
@@ -599,13 +600,13 @@ class FuelStationsScreen extends StatelessWidget {
 
   void _openDirections(station) {
     if (station.latitude != null && station.longitude != null) {
-      // Open in default maps app
-      final url = 'https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}';
+      // Open in HERE Maps
+      final url = 'https://wego.here.com/directions/mix/${station.latitude},${station.longitude}';
       // You can use url_launcher package to open this URL
       // For now, just show a message
       Get.snackbar(
         'Directions',
-        'Opening directions to ${station.name}',
+        'Opening HERE Maps directions to ${station.name}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.green.shade100,
         colorText: Colors.green.shade800,

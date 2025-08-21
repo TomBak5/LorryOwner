@@ -24,6 +24,7 @@ class ProfileController extends GetxController implements GetxService {
     Routes.contactus,
     Routes.faq,
     Routes.faq,
+    '', // Empty route for test button
   ];
 
   List itemIcons = [
@@ -35,6 +36,7 @@ class ProfileController extends GetxController implements GetxService {
     "assets/icons/ic_profile_pages.svg",
     "assets/icons/ic_faq.svg",
     "assets/icons/ic_logout.svg",
+    "assets/icons/ic_profile_pages.svg", // Icon for test button
   ];
 
   List nameOfCountry = [
@@ -68,6 +70,7 @@ class ProfileController extends GetxController implements GetxService {
     "Contact Us",
     "FAQ",
     "LogOut",
+    "Test HERE API", // New test menu item
   ];
 }
 

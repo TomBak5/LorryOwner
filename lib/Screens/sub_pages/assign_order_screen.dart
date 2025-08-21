@@ -39,23 +39,24 @@ class _AssignOrderScreenState extends State<AssignOrderScreen> {
   
   // Add WebView controller
   WebViewController? webViewController;
-  String gkey = "";
+  // String gkey = ""; // Removed - now using HERE Maps exclusively
 
   @override
   void initState() {
     super.initState();
     print('=== AssignOrderScreen initState ===');
-    getGkey();
+    // getGkey() removed - now using HERE Maps exclusively
     _getCurrentLocation();
     _loadAssignedDrivers();
   }
 
-  getGkey() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      gkey = prefs.getString("gkey") ?? "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
-    });
-  }
+  // getGkey() removed - now using HERE Maps exclusively
+  // getGkey() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     gkey = prefs.getString("gkey") ?? "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
+  //   });
+  // }
 
   @override
   void dispose() {

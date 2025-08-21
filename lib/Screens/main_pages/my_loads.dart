@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Api_Provider/imageupload_api.dart';
 import '../../Api_Provider/api_provider.dart';
@@ -11,6 +13,7 @@ import '../../AppConstData/typographyy.dart';
 import '../../Controllers/myloads_controller.dart';
 import '../../widgets/widgets.dart';
 import '../sub_pages/myloads_detils.dart';
+import '../sub_pages/live_navigation_screen.dart';
 
 class MyLoads extends StatefulWidget {
   const MyLoads({super.key});
@@ -192,7 +195,7 @@ class _MyLoadsState extends State<MyLoads> {
                                           );
                                         },
                                         child: Container(
-                                          width: 120,
+                                          width: double.infinity,
                                           padding: const EdgeInsets.all(15),
                                           decoration: BoxDecoration(
                                             color: Colors.white,
@@ -264,39 +267,36 @@ class _MyLoadsState extends State<MyLoads> {
                                                 children: [
                                                   Flexible(
                                                     flex: 3,
-                                                    child: SizedBox(
-                                                      width: 100,
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                        children: [
-                                                          Text(
-                                                            myLoadsController.complete.loadHistoryData[index].pickupState,
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        Text(
+                                                          myLoadsController.complete.loadHistoryData[index].pickupState,
+                                                          style: TextStyle(
+                                                            color: textBlackColor,
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.w500,
+                                                            fontFamily: fontFamilyBold,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 8),
+                                                        Container(
+                                                          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                                                          decoration: BoxDecoration(
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            color: Colors.grey.withOpacity(0.2),
+                                                          ),
+                                                          child: Text(
+                                                            "Load".tr,
                                                             style: TextStyle(
-                                                              color: textBlackColor,
-                                                              fontSize: 18,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontFamily: fontFamilyBold,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                          const SizedBox(height: 8),
-                                                          Container(
-                                                            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-                                                            decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(8),
-                                                              color: Colors.grey.withOpacity(0.2),
-                                                            ),
-                                                            child: Text(
-                                                              "Load".tr,
-                                                              style: TextStyle(
-                                                                fontSize: 14,
-                                                                fontFamily: fontFamilyRegular,
-                                                                fontWeight: FontWeight.w400,
-                                                              ),
+                                                              fontSize: 14,
+                                                              fontFamily: fontFamilyRegular,
+                                                              fontWeight: FontWeight.w400,
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                   const Spacer(flex: 1),
@@ -324,39 +324,36 @@ class _MyLoadsState extends State<MyLoads> {
                                                   const Spacer(flex: 1),
                                                   Flexible(
                                                     flex: 3,
-                                                    child: SizedBox(
-                                                      width: 100,
-                                                      child: Column(
-                                                        crossAxisAlignment: CrossAxisAlignment.end,
-                                                        children: [
-                                                          Text(
-                                                            myLoadsController.complete.loadHistoryData[index].dropState,
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.end,
+                                                      children: [
+                                                        Text(
+                                                          myLoadsController.complete.loadHistoryData[index].dropState,
+                                                          style: TextStyle(
+                                                            color: textBlackColor,
+                                                            fontSize: 18,
+                                                            fontWeight: FontWeight.w500,
+                                                            fontFamily: fontFamilyBold,
+                                                          ),
+                                                          overflow: TextOverflow.ellipsis,
+                                                        ),
+                                                        const SizedBox(height: 8),
+                                                        Container(
+                                                          padding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+                                                          decoration: BoxDecoration(
+                                                            borderRadius: BorderRadius.circular(8),
+                                                            color: Colors.grey.withOpacity(0.2),
+                                                          ),
+                                                          child: Text(
+                                                            "UnLoad".tr,
                                                             style: TextStyle(
-                                                              color: textBlackColor,
-                                                              fontSize: 18,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontFamily: fontFamilyBold,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                          ),
-                                                          const SizedBox(height: 8),
-                                                          Container(
-                                                            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
-                                                            decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(8),
-                                                              color: Colors.grey.withOpacity(0.2),
-                                                            ),
-                                                            child: Text(
-                                                              "UnLoad".tr,
-                                                              style: TextStyle(
-                                                                fontSize: 14,
-                                                                fontFamily: fontFamilyRegular,
-                                                                fontWeight: FontWeight.w400,
-                                                              ),
+                                                              fontSize: 14,
+                                                              fontFamily: fontFamilyRegular,
+                                                              fontWeight: FontWeight.w400,
                                                             ),
                                                           ),
-                                                        ],
-                                                      ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ],
@@ -427,7 +424,7 @@ class _MyLoadsState extends State<MyLoads> {
                     );
                   },
                   child: Container(
-                    width: 120,
+                    width: double.infinity,
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       color: Colors.white,
@@ -620,17 +617,17 @@ class _MyLoadsState extends State<MyLoads> {
           if (myLoadsController.assignedOrders.isNotEmpty) ...[
             if (myLoadsController.currentData.loadHistoryData.isNotEmpty)
               const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(
-                "Assigned Orders".tr,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: textBlackColor,
-                ),
-              ),
-            ),
+                         Padding(
+               padding: const EdgeInsets.all(10),
+               child: Text(
+                 "Driver Orders".tr,
+                 style: TextStyle(
+                   fontSize: 16,
+                   fontWeight: FontWeight.bold,
+                   color: textBlackColor,
+                 ),
+               ),
+             ),
             ListView.separated(
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(10),
@@ -638,7 +635,7 @@ class _MyLoadsState extends State<MyLoads> {
               itemBuilder: (context, index) {
                 final order = myLoadsController.assignedOrders[index];
                 return Container(
-                  width: 120,
+                  width: double.infinity,
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -945,25 +942,25 @@ class _MyLoadsState extends State<MyLoads> {
                             ),
                           ),
                           const Spacer(),
-                          if (order['status'] == 'assigned')
-                            Row(
-                              children: [
-                                TextButton(
-                                  onPressed: () => _updateOrderStatus(order['id'].toString(), 'accepted'),
-                                  child: Text(
-                                    "Accept",
-                                    style: TextStyle(color: Colors.green),
-                                  ),
+                          // Always show Accept/Cancel buttons for testing purposes
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: () => _acceptOrderAndNavigate(order),
+                                child: Text(
+                                  "Accept",
+                                  style: TextStyle(color: Colors.green),
                                 ),
-                                TextButton(
-                                  onPressed: () => _updateOrderStatus(order['id'].toString(), 'rejected'),
-                                  child: Text(
-                                    "Reject",
-                                    style: TextStyle(color: Colors.red),
-                                  ),
+                              ),
+                              TextButton(
+                                onPressed: () => _updateOrderStatus(order['id'].toString(), 'rejected'),
+                                child: Text(
+                                  "Reject",
+                                  style: TextStyle(color: Colors.red),
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ],
@@ -1050,6 +1047,179 @@ class _MyLoadsState extends State<MyLoads> {
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
+    }
+  }
+
+  void _acceptOrderAndNavigate(Map<String, dynamic> order) async {
+    try {
+      print("=== ACCEPT ORDER DEBUG ===");
+      print("Order data: $order");
+      
+      // First update the order status to accepted
+      final apiProvider = ApiProvider();
+      final result = await apiProvider.updateOrderStatus(
+        orderId: order['id'].toString(),
+        status: 'accepted',
+      );
+      
+      if (result['success'] == true) {
+        print("✅ Order status updated successfully, now starting navigation...");
+        
+        // Start navigation
+        _startNavigation(order);
+        
+      } else {
+        Get.snackbar(
+          'Error',
+          result['message'] ?? 'Failed to accept order',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      print("Error in _acceptOrderAndNavigate: $e");
+      Get.snackbar(
+        'Error',
+        'Failed to accept order: $e',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  void _startNavigation(Map<String, dynamic> order) async {
+    try {
+      print("=== NAVIGATION DEBUG ===");
+      print("Order data received:");
+      print("Order ID: ${order['id']}");
+      
+      // Check if coordinates are available
+      if (order['pick_lat'] != null && order['pick_lng'] != null && 
+          order['drop_lat'] != null && order['drop_lng'] != null) {
+        
+        try {
+          final pickupLat = double.parse(order['pick_lat'].toString());
+          final pickupLng = double.parse(order['pick_lng'].toString());
+          final dropoffLat = double.parse(order['drop_lat'].toString());
+          final dropoffLng = double.parse(order['drop_lng'].toString());
+          
+          print("✅ Valid coordinates found:");
+          print("Pickup: $pickupLat, $pickupLng");
+          print("Dropoff: $dropoffLat, $dropoffLng");
+          
+          // Navigate to live navigation screen
+          Get.to(() => LiveNavigationScreen(
+            orderData: order,
+            pickupLat: pickupLat,
+            pickupLng: pickupLng,
+            dropoffLat: dropoffLat,
+            dropoffLng: dropoffLng,
+          ));
+          
+          // Refresh the data
+          myLoadsController.fetchDataFromApi();
+          
+        } catch (e) {
+          print("❌ Error parsing coordinates: $e");
+          _tryFetchOrderDetails(order);
+        }
+        
+      } else {
+        print("⚠️ No coordinates available, fetching detailed order information");
+        _tryFetchOrderDetails(order);
+      }
+      
+    } catch (e) {
+      print('Error starting navigation: $e');
+      Get.snackbar('Navigation Error', 'Failed to start navigation: $e');
+    }
+  }
+
+  Future<void> _tryFetchOrderDetails(Map<String, dynamic> order) async {
+    try {
+      print("=== FETCHING ORDER DETAILS ===");
+      
+      // Show loading dialog
+      Get.dialog(
+        const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Fetching order details...'),
+            ],
+          ),
+        ),
+        barrierDismissible: false,
+      );
+      
+      // Get user ID from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final userDataString = prefs.getString("userData");
+      if (userDataString != null) {
+        final userData = jsonDecode(userDataString);
+        final userId = userData["id"].toString();
+        
+        // Call API to get detailed order information
+        final apiProvider = ApiProvider();
+        final orderDetails = await apiProvider.getDriverOrderDetails(
+          driverId: userId,
+          orderId: order['id'].toString(),
+        );
+        
+        // Close loading dialog
+        Get.back();
+        
+        if (orderDetails != null && 
+            orderDetails['pick_lat'] != null && 
+            orderDetails['pick_lng'] != null &&
+            orderDetails['drop_lat'] != null && 
+            orderDetails['drop_lng'] != null) {
+          
+          try {
+            final pickupLat = double.parse(orderDetails['pick_lat'].toString());
+            final pickupLng = double.parse(orderDetails['pick_lng'].toString());
+            final dropoffLat = double.parse(orderDetails['drop_lat'].toString());
+            final dropoffLng = double.parse(orderDetails['drop_lng'].toString());
+            
+            print("✅ Got coordinates from API:");
+            print("Pickup: $pickupLat, $pickupLng");
+            print("Dropoff: $dropoffLat, $dropoffLng");
+            
+            // Navigate to live navigation screen
+            Get.to(() => LiveNavigationScreen(
+              orderData: order,
+              pickupLat: pickupLat,
+              pickupLng: pickupLng,
+              dropoffLat: dropoffLat,
+              dropoffLng: dropoffLng,
+            ));
+            
+            return;
+            
+          } catch (e) {
+            print("❌ Error parsing coordinates: $e");
+            Get.snackbar('Error', 'Failed to parse coordinates');
+          }
+          
+        } else {
+          print("❌ No coordinates in API response");
+          Get.snackbar(
+            'Navigation Not Available', 
+            'This order does not have map coordinates. Please contact the dispatcher.',
+            duration: const Duration(seconds: 5),
+          );
+        }
+        
+      } else {
+        Get.back(); // Close loading dialog
+        Get.snackbar('Error', 'User not logged in');
+      }
+      
+    } catch (e) {
+      print("❌ Error fetching order details: $e");
+      Get.back(); // Close loading dialog
+      Get.snackbar('Error', 'Failed to fetch order details: $e');
     }
   }
 } 

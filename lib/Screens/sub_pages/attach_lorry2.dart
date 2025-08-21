@@ -54,7 +54,7 @@ class _AttachLorry2State extends State<AttachLorry2> {
     debugPrint("======== init address ======== ${address}");
     debugPrint("======== init gallery ======== ${attachLorryController.galleryListOfImages}");
     super.initState();
-    getGkey();
+    // getGkey() removed - now using HERE Maps exclusively
     getUidFromLocle();
   }
 
@@ -69,13 +69,14 @@ class _AttachLorry2State extends State<AttachLorry2> {
   double locationLatitude = 0.00;
   double locationLongtitude = 0.00;
 
-  String gkey = "";
-  getGkey() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      gkey = prefs.getString("gkey") ?? googleMapkey;
-    });
-  }
+  // Google Maps key removed - now using HERE Maps exclusively
+  // String gkey = "";
+  // getGkey() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   setState(() {
+  //     gkey = prefs.getString("gkey") ?? googleMapkey;
+  //   });
+  // }
 
   getUidFromLocle() async {
     locationPermission().then((value) {

@@ -12,7 +12,7 @@ class MyLoadsController extends GetxController implements GetxService {
   String uid = '';
   String currency = "\$";
   
-  // For assigned orders
+  // For all driver orders (including assigned, accepted, rejected, etc.)
   List<Map<String, dynamic>> assignedOrders = [];
   bool isLoadingOrders = true;
   setIsLoading(bool value) {
@@ -75,13 +75,13 @@ class MyLoadsController extends GetxController implements GetxService {
       setIsLoading(false);
     });
 
-    // Fetch assigned orders for drivers
+    // Fetch all driver orders (assigned, accepted, rejected, etc.)
     try {
       final apiProvider = ApiProvider();
       final orders = await apiProvider.getDriverOrders(uid);
       setAssignedOrders(orders);
     } catch (e) {
-      print('Error fetching assigned orders: $e');
+      print('Error fetching driver orders: $e');
       setAssignedOrders([]);
     }
   }
