@@ -4,21 +4,22 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:geocoding/geocoding.dart'; // Removed - now using HERE Maps API
 import '../../Api_Provider/api_provider.dart';
 import '../../AppConstData/api_config.dart';
 import 'dart:math' as math;
 import 'dart:convert';
+import 'dart:async';
 import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/typographyy.dart';
+import 'package:http/http.dart' as http; // Added for http package
 
 /// Result class for Flexible Polyline decoding
-class _FlexiblePolylineResult {
-  final double value;
-  final int nextIndex;
+class _FlexiblePolylineHeader {
+  final int precision2d;
+  final int type3d;
   
-  _FlexiblePolylineResult(this.value, this.nextIndex);
+  _FlexiblePolylineHeader(this.precision2d, this.type3d);
 }
 
 class LiveNavigationScreen extends StatefulWidget {
@@ -42,30 +43,264 @@ class LiveNavigationScreen extends StatefulWidget {
 }
 
 class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
-  final MapController _mapController = MapController();
+  MapController? _mapController;
   Position? _currentPosition;
   bool _isLoading = true;
   bool _hasLocationPermission = false;
   bool _isNavigating = false;
   bool _isMapReady = false; // Add flag to track map readiness
-  String _currentAddress = "Getting location...";
+
   String _distanceToDestination = "";
   String _timeToDestination = "";
   String _nextManeuver = "";
   String _currentSpeed = "0 km/h";
-  String _eta = "";
+  
+  // Error handling variables
+  String? _lastError;
+  bool _shouldShowErrorDialog = false;
   
   List<LatLng> _routePoints = [];
   LatLng? _pickupLocation;
   LatLng? _dropoffLocation;
   LatLng? _currentLocation;
   
-  @override
+  // Add address variables
+  String _pickupAddress = "Loading address...";
+  String _dropoffAddress = "Loading address...";
+  
+  // Fake movement simulation variables
+  int _fakeRouteIndex = 0;
+  Timer? _fakeMovementTimer;
+  bool _isSimulatingMovement = false;
+  String _fakeCurrentSpeed = "0 km/h";
+  
+  /// Safely gets the map controller, creating one if needed
+  MapController _getMapController() {
+    if (_mapController == null) {
+      print('⚠️ Map controller was null, creating new one');
+      _mapController = MapController();
+    }
+    
+    // Double-check that the controller is valid
+    if (_mapController == null) {
+      print('❌ Failed to create map controller, creating emergency fallback');
+      _mapController = MapController();
+    }
+    
+    return _mapController!;
+  }
+
+  /// Safely checks if the map is ready and accessible
+  bool _isMapAccessible() {
+    return _isMapReady && _mapController != null && _mapController!.camera.zoom != null;
+  }
+
+  /// Shows an error dialog to the user
+  void _showErrorDialog(String title, String message) {
+    if (!mounted) return;
+    
+    setState(() {
+      _lastError = message;
+      _shouldShowErrorDialog = true;
+    });
+    
+    // Auto-hide error after 5 seconds if user doesn't dismiss it
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted && _shouldShowErrorDialog) {
+        setState(() {
+          _shouldShowErrorDialog = false;
+        });
+      }
+    });
+  }
+
+  /// Dismisses the error dialog
+  void _dismissErrorDialog() {
+    if (mounted) {
+      setState(() {
+        _shouldShowErrorDialog = false;
+        _lastError = null;
+      });
+    }
+  }
+  
+  /// Advances to the next navigation instruction
+  void _nextTurn() {
+    if (_routePoints.length < 2) {
+      print('⚠️ No route points available for navigation');
+      return;
+    }
+    
+    setState(() {
+      _fakeRouteIndex++;
+      
+      // Update current location to next route point
+      if (_fakeRouteIndex < _routePoints.length) {
+        _currentLocation = _routePoints[_fakeRouteIndex];
+      }
+      
+      // Update navigation info
+      _updateNavigationInfo();
+    });
+    
+    print('🔄 Advanced to turn $_fakeRouteIndex');
+    
+    // Fit map to show current position
+    if (_currentLocation != null) {
+      _fitMapToCurrentLocation();
+    }
+  }
+  
+  /// Updates navigation info for current position
+  void _updateNavigationInfo() {
+    if (_fakeRouteIndex >= _routePoints.length - 1) {
+      setState(() {
+        _nextManeuver = "You have arrived at your destination";
+        _distanceToDestination = "0.0 km";
+        _timeToDestination = "0 min";
+      });
+      return;
+    }
+    
+    // Calculate remaining distance
+    double remainingDistance = 0;
+    for (int i = _fakeRouteIndex; i < _routePoints.length - 1; i++) {
+      remainingDistance += _calculateDistance(
+        _routePoints[i].latitude, _routePoints[i].longitude,
+        _routePoints[i + 1].latitude, _routePoints[i + 1].longitude
+      );
+    }
+    
+    // Calculate remaining time (assuming average speed of 45 km/h)
+    final remainingTimeMinutes = (remainingDistance / 45.0) * 60;
+    
+    setState(() {
+      _distanceToDestination = '${remainingDistance.toStringAsFixed(1)} km';
+      _timeToDestination = '${remainingTimeMinutes.round()} min';
+      
+      // Generate fake turn-by-turn navigation
+      _nextManeuver = _generateFakeManeuver();
+    });
+    
+    print('📊 Updated navigation info:');
+    print('   • Distance remaining: $_distanceToDestination');
+    print('   • Time remaining: $_timeToDestination');
+    print('   • Next maneuver: $_nextManeuver');
+  }
+  
+  /// Generates fake turn-by-turn navigation messages
+  String _generateFakeManeuver() {
+    if (_fakeRouteIndex >= _routePoints.length - 1) {
+      return "You have arrived at your destination";
+    }
+    
+    final random = math.Random();
+    final maneuvers = [
+      "Continue straight ahead",
+      "Turn right in 200m",
+      "Turn left in 150m",
+      "Keep right",
+      "Merge onto highway",
+      "Take exit 3",
+      "Follow signs for city center",
+      "Stay in left lane",
+      "Roundabout ahead - take 2nd exit",
+      "Traffic light ahead",
+      "Speed limit 50 km/h",
+      "Sharp turn ahead",
+      "Bridge crossing",
+      "Tunnel ahead",
+      "Rest area in 2 km"
+    ];
+    
+    return maneuvers[random.nextInt(maneuvers.length)];
+  }
+  
+  /// Fits map to show current fake truck location
+  void _fitMapToCurrentLocation() {
+    if (_currentLocation == null || !_isMapAccessible()) return;
+    
+    try {
+      _getMapController().move(_currentLocation!, 15.0); // Zoom level 15
+      print('🗺️ Map moved to fake truck location');
+    } catch (e) {
+      print('❌ Error moving map to fake truck location: $e');
+    }
+  }
+
+  /// Converts coordinates to readable addresses using HERE Geocoding API
+  Future<String> _getAddressFromCoordinates(double lat, double lng) async {
+    try {
+      final url = 'https://revgeocode.search.hereapi.com/v1/revgeocode?at=${lat.toStringAsFixed(6)},${lng.toStringAsFixed(6)}&apiKey=${ApiConfig.hereMapsApiKey}';
+      
+      print('🌍 Geocoding coordinates: $lat, $lng');
+      print('🔗 URL: $url');
+      
+      // Use http package for simple GET request
+      final response = await http.get(Uri.parse(url));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          final item = data['items'][0];
+          final address = item['address'];
+          
+          if (address != null) {
+            // Build a readable address
+            final parts = <String>[];
+            
+            if (address['street'] != null) parts.add(address['street']);
+            if (address['houseNumber'] != null) parts.add(address['houseNumber']);
+            if (address['city'] != null) parts.add(address['city']);
+            if (address['state'] != null) parts.add(address['state']);
+            if (address['countryCode'] != null) parts.add(address['countryCode']);
+            
+            final readableAddress = parts.join(', ');
+            print('📍 Geocoded address: $readableAddress');
+            return readableAddress.isNotEmpty ? readableAddress : 'Address not found';
+          }
+        }
+      }
+      
+      print('⚠️ Could not geocode coordinates, using fallback');
+      _showErrorDialog(
+        'Geocoding Warning',
+        'Could not get address for coordinates. Using coordinates instead.',
+      );
+      return '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}';
+      
+    } catch (e) {
+      print('❌ Geocoding error: $e');
+      _showErrorDialog(
+        'Geocoding Error',
+        'Failed to get address: ${e.toString()}. Using coordinates instead.',
+      );
+      return '${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}';
+    }
+  }
+  
+       @override
   void initState() {
     super.initState();
-    print('LiveNavigationScreen initState called');
-    print('Pickup: ${widget.pickupLat}, ${widget.pickupLng}');
-    print('Dropoff: ${widget.dropoffLat}, ${widget.dropoffLng}');
+    
+    // Initialize map controller
+    _mapController = MapController();
+    
+    // Ensure controller is properly initialized
+    if (_mapController != null) {
+      print('🗺️ Map controller initialized successfully');
+    } else {
+      print('❌ Failed to initialize map controller');
+    }
+     
+     print('LiveNavigationScreen initState called');
+     print('📍 Pickup coordinates: ${widget.pickupLat}, ${widget.pickupLng}');
+     print('🎯 Dropoff coordinates: ${widget.dropoffLat}, ${widget.dropoffLng}');
+     print('🗺️ Map will center on: ${widget.pickupLat}, ${widget.pickupLng}');
+     print('🗺️ Map controller created: ${_mapController != null}');
+     print('🔑 HERE API Key: ${ApiConfig.hereMapsApiKey}');
+     print('🔑 API Key length: ${ApiConfig.hereMapsApiKey.length}');
+     print('🔑 API Key empty: ${ApiConfig.hereMapsApiKey.isEmpty}');
     
     _initializeNavigation();
     
@@ -90,19 +325,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         ),
         backgroundColor: priMaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          if (_isNavigating)
-            IconButton(
-              icon: const Icon(Icons.stop),
-              onPressed: _stopNavigation,
-              tooltip: 'Stop Navigation',
-            ),
-                     IconButton(
-             icon: const Icon(Icons.navigation),
-             onPressed: _startInAppNavigation,
-             tooltip: 'Start In-App Navigation',
-           ),
-        ],
+        actions: [],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -114,10 +337,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
                     Expanded(
                       child: _buildMapView(),
                     ),
-                                         if (_isNavigating) _buildNavigationControls(),
-                     _buildExternalNavigationOption(),
+                    if (_isNavigating) _buildNavigationControls(),
                   ],
                 ),
+      
     );
   }
 
@@ -186,20 +409,92 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
            ),
           const SizedBox(height: 12),
           
-          // Current location
+
+          
+          // Pickup and Dropoff addresses
           Row(
             children: [
-              Icon(Icons.my_location, color: Colors.blue[600]),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange[300]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, color: Colors.orange[700], size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pickup',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _pickupAddress,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.orange[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  _currentAddress,
-                  style: TextStyle(fontSize: 14, color: Colors.blue[700], fontWeight: FontWeight.w500),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red[300]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.location_off, color: Colors.red[700], size: 16),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Dropoff',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _dropoffAddress,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.red[600],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
+          
           const SizedBox(height: 12),
+          
+
           
           // Route info cards
           Row(
@@ -218,36 +513,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
             ],
           ),
           
-          // ETA
-          if (_eta.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green[300]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.schedule, color: Colors.green[700]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'ETA: $_eta',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[700],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          
-                     // Next maneuver
+          // Next maneuver
            if (_isNavigating && _nextManeuver.isNotEmpty) ...[
              const SizedBox(height: 12),
              Container(
@@ -257,17 +523,66 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
                  borderRadius: BorderRadius.circular(8),
                  border: Border.all(color: Colors.blue[300]!),
                ),
-               child: Row(
+               child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start,
                  children: [
-                   Icon(Icons.turn_right, color: Colors.blue[700]),
-                   const SizedBox(width: 8),
-                   Expanded(
-                     child: Text(
-                       _nextManeuver,
-                       style: TextStyle(
-                         fontSize: 16,
-                         fontWeight: FontWeight.bold,
-                         color: Colors.blue[700],
+                   Row(
+                     children: [
+                       Icon(Icons.turn_right, color: Colors.blue[700]),
+                       const SizedBox(width: 8),
+                       Expanded(
+                         child: Text(
+                           _nextManeuver,
+                           style: TextStyle(
+                             fontSize: 16,
+                             fontWeight: FontWeight.bold,
+                             color: Colors.blue[700],
+                           ),
+                         ),
+                                          ),
+                 ],
+               ),
+
+               // Start Navigation button
+                   SizedBox(
+                     width: double.infinity,
+                     child: ElevatedButton.icon(
+                       onPressed: _routePoints.isNotEmpty ? () {
+                         setState(() {
+                           _isNavigating = true;
+                           _fakeRouteIndex = 0;
+                           _currentLocation = _routePoints.first;
+                           _updateNavigationInfo();
+                         });
+                         print('🚛 Navigation started manually');
+                       } : null,
+                       icon: const Icon(Icons.play_arrow, size: 18),
+                       label: const Text('Start Navigation'),
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: Colors.green[600],
+                         foregroundColor: Colors.white,
+                         padding: const EdgeInsets.symmetric(vertical: 8),
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(8),
+                         ),
+                       ),
+                     ),
+                   ),
+                   const SizedBox(height: 8),
+                   // Next Turn button
+                   SizedBox(
+                     width: double.infinity,
+                     child: ElevatedButton.icon(
+                       onPressed: _routePoints.isNotEmpty && _isNavigating ? _nextTurn : null,
+                       icon: const Icon(Icons.navigation, size: 18),
+                       label: const Text('Next Turn'),
+                       style: ElevatedButton.styleFrom(
+                         backgroundColor: Colors.blue[600],
+                         foregroundColor: Colors.white,
+                         padding: const EdgeInsets.symmetric(vertical: 8),
+                         shape: RoundedRectangleBorder(
+                           borderRadius: BorderRadius.circular(8),
+                         ),
                        ),
                      ),
                    ),
@@ -276,62 +591,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
              ),
            ],
            
-                       // Route source info
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.purple[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.purple[300]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.route, color: Colors.purple[700]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Route calculated using free OpenRouteService (no API key needed)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.purple[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                       
             
-            // Map status indicator
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: _isMapReady ? Colors.green[100] : Colors.orange[100],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: _isMapReady ? Colors.green[300]! : Colors.orange[300]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    _isMapReady ? Icons.map : Icons.hourglass_empty,
-                    color: _isMapReady ? Colors.green[700] : Colors.orange[700],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _isMapReady ? 'Map Ready - Navigation Available' : 'Map Initializing...',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _isMapReady ? Colors.green[700] : Colors.orange[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            
         ],
       ),
     );
@@ -361,170 +623,432 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     );
   }
 
-  Widget _buildMapView() {
+  Widget _buildNavigationControls() {
     return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(
-            initialCenter: _pickupLocation ?? LatLng(widget.pickupLat, widget.pickupLng),
-            initialZoom: 12,
-            onMapReady: _onMapReady,
+      padding: const EdgeInsets.all(16),
+      color: Colors.grey[50],
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: _stopNavigation,
+          icon: const Icon(Icons.stop, size: 18),
+          label: const Text('Stop Navigation'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red[600],
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
           ),
-          children: [
-            // Use the _buildMapTiles() method for consistent tile configuration
-            _buildMapTiles(),
-            
-            // Route polyline
-            if (_routePoints.isNotEmpty)
-              PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: _routePoints,
-                    strokeWidth: 6,
-                    color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapView() {
+    try {
+      print('🗺️ Building map view...');
+      print('📍 Pickup location: $_pickupLocation');
+      print('📍 Dropoff location: $_dropoffLocation');
+      print('📍 Current location: $_currentLocation');
+      
+      // Safety check: ensure map controller is available
+      if (_mapController == null) {
+        print('⚠️ Map controller not available yet, showing loading...');
+        // Try to create a new controller
+        _mapController = MapController();
+      }
+      
+      return Container(
+        margin: const EdgeInsets.all(8),
+        height: 400, // Add fixed height to ensure map has dimensions
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey[300]!),
+          color: Colors.blue[50], // Add background color for debugging
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              // Debug info overlay
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ],
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Map Debug: ${_isMapReady ? "Ready" : "Loading..."}',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                      SizedBox(height: 4),
+                      // Addresses are now shown below with bold styling
+                      SizedBox(height: 4),
+                      Text(
+                        'Pickup: $_pickupAddress',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Dropoff: $_dropoffAddress',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'Map Center: ${_isMapAccessible() && _getMapController().camera.center != null ? '${_getMapController().camera.center!.latitude.toStringAsFixed(6)}, ${_getMapController().camera.center!.longitude.toStringAsFixed(6)}' : 'Loading...'}',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            
-            // Markers
-            MarkerLayer(
-              markers: [
-                // Pickup marker
-                if (_pickupLocation != null)
-                  Marker(
-                    point: _pickupLocation!,
-                    width: 40,
-                    height: 40,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+              // Map status indicator
+              Positioned(
+                top: 10,
+                right: 10,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Map Status: ${_isMapReady ? "Ready" : "Loading"}',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
-                      child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                      SizedBox(height: 4),
+                      Text(
+                        'Zoom: ${_isMapAccessible() ? _getMapController().camera.zoom.toStringAsFixed(1) : "N/A"}',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Simple test widget to verify map container
+              Positioned(
+              bottom: 10,
+              left: 10,
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Container: ${MediaQuery.of(context).size.width}x${MediaQuery.of(context).size.height}',
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              ),
+            ),
+              // Test if map is actually rendering
+              Positioned(
+                bottom: 10,
+                right: 10,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Map Status:',
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        'Ready: $_isMapReady',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      Text(
+                        'Controller: ${_mapController != null ? "OK" : "NULL"}',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                      Text(
+                        'Camera: ${_isMapAccessible() ? "OK" : "Loading"}',
+                        style: TextStyle(color: Colors.white, fontSize: 10),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Error Dialog Overlay
+              if (_shouldShowErrorDialog && _lastError != null)
+                Positioned.fill(
+                child: Container(
+                  color: Colors.black54,
+                  child: Center(
+                    child: Container(
+                      margin: const EdgeInsets.all(32),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            color: Colors.red,
+                            size: 48,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red[700],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _lastError!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _dismissErrorDialog,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'OK',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                
-                // Dropoff marker
-                if (_dropoffLocation != null)
-                  Marker(
-                    point: _dropoffLocation!,
-                    width: 40,
-                    height: 40,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
+                ),
+              ),
+            // Fallback message if map fails
+            if (!_isMapReady)
+              Center(
+                child: Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.map, color: Colors.white, size: 32),
+                      SizedBox(height: 8),
+                      Text(
+                        'Map Loading...',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
-                      child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                      SizedBox(height: 4),
+                      Text(
+                        'If this persists, check internet connection',
+                        style: TextStyle(color: Colors.white, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Fallback message if map fails
+              if (!_isMapReady)
+                Center(
+                  child: Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.map, color: Colors.white, size: 32),
+                        SizedBox(height: 8),
+                        Text(
+                          'Map Loading...',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'If this persists, check internet connection',
+                          style: TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ],
                     ),
                   ),
-                
-                // Current location marker
-                if (_currentLocation != null)
-                  Marker(
-                    point: _currentLocation!,
-                    width: 40,
-                    height: 40,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                      child: const Icon(Icons.my_location, color: Colors.white, size: 24),
-                    ),
+                ),
+              FlutterMap(
+                mapController: _getMapController(),
+                options: MapOptions(
+                  initialCenter: LatLng(widget.pickupLat, widget.pickupLng),
+                  initialZoom: 12,
+                  onMapReady: _onMapReady,
+                  onMapEvent: (MapEvent event) {
+                    print('🗺️ Map event: ${event.runtimeType}');
+                  },
+                ),
+                children: [
+                  // Use the _buildMapTiles() method for consistent tile configuration
+                  _buildMapTiles(),
+                  
+                  // Fallback to OpenStreetMap if HERE tiles fail
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.moverslorryowner.app',
+                    maxZoom: 18,
+                    minZoom: 1,
+                    // This layer will only show if HERE tiles fail
+                    fallbackUrl: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   ),
+                  
+                  // Route polyline
+                  if (_routePoints.isNotEmpty)
+                    PolylineLayer(
+                      polylines: [
+                        Polyline(
+                          points: _routePoints,
+                          strokeWidth: 6,
+                          color: Colors.blue,
+                        ),
+                      ],
+                    ),
+                  
+                  // Markers
+                  MarkerLayer(
+                   markers: [
+                     // Pickup marker - always show using widget coordinates
+                     Marker(
+                       point: LatLng(widget.pickupLat, widget.pickupLng),
+                       width: 40,
+                       height: 40,
+                       child: Container(
+                         decoration: BoxDecoration(
+                           color: Colors.green,
+                           shape: BoxShape.circle,
+                           border: Border.all(color: Colors.white, width: 2),
+                         ),
+                         child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                       ),
+                     ),
+                     
+                     // Dropoff marker - always show using widget coordinates
+                     Marker(
+                       point: LatLng(widget.dropoffLat, widget.dropoffLng),
+                       width: 40,
+                       height: 40,
+                       child: Container(
+                         decoration: BoxDecoration(
+                           color: Colors.red,
+                           shape: BoxShape.circle,
+                           border: Border.all(color: Colors.white, width: 2),
+                         ),
+                         child: const Icon(Icons.location_on, color: Colors.white, size: 24),
+                       ),
+                     ),
+                     
+                     // Current location marker
+                     if (_currentLocation != null)
+                       Marker(
+                         point: _currentLocation!,
+                         width: 40,
+                         height: 40,
+                         child: Container(
+                           decoration: BoxDecoration(
+                             color: Colors.blue,
+                             shape: BoxShape.circle,
+                             border: Border.all(color: Colors.white, width: 2),
+                           ),
+                           child: const Icon(Icons.my_location, color: Colors.white, size: 24),
+                         ),
+                       ),
+                   ],
+                 ),
               ],
             ),
           ],
         ),
       ),
     );
+    } catch (e, stackTrace) {
+      print('❌ Error building map view: $e');
+      print('📚 Stack trace: $stackTrace');
+      
+      // Return a fallback widget on error
+      return Container(
+        margin: const EdgeInsets.all(8),
+        height: 400,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red[300]!),
+          color: Colors.red[50],
+        ),
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error, color: Colors.red, size: 48),
+              SizedBox(height: 16),
+              Text('Map Error', style: TextStyle(fontWeight: FontWeight.bold)),
+              SizedBox(height: 8),
+              Text('Please try again or restart the app'),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   // Callback when map is ready
   void _onMapReady() {
-    print('🗺️ Map is ready!');
+    print('��️ Map is ready!');
     setState(() {
       _isMapReady = true;
     });
+    
+    // Ensure map controller is properly initialized
+    if (!_isMapAccessible()) {
+      print('⚠️ Map controller camera not fully initialized, waiting...');
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          setState(() {});
+        }
+      });
+    }
   }
 
-  Widget _buildNavigationControls() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.grey[100],
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _isNavigating ? _stopNavigation : _startNavigation,
-              icon: Icon(_isNavigating ? Icons.stop : Icons.navigation),
-              label: Text(_isNavigating ? 'Stop Navigation' : 'Start Navigation'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isNavigating ? Colors.red : Colors.green,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: _isMapReady ? _startInAppNavigation : null,
-              icon: const Icon(Icons.navigation),
-              label: Text(_isMapReady ? 'Start Navigation' : 'Map Loading...'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isMapReady ? Colors.green : Colors.grey,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildExternalNavigationOption() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.orange[50],
-      child: Row(
-        children: [
-          Icon(Icons.open_in_new, color: Colors.orange[700]),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Need external navigation?',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.orange[700],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: _openInExternalMaps,
-            icon: const Icon(Icons.launch),
-            label: const Text('Open HERE Web'),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.orange[700],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
+
 
   Future<void> _initializeNavigation() async {
     try {
@@ -564,26 +1088,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         _currentLocation = LatLng(position.latitude, position.longitude);
       });
       
-      await _getAddressFromCoordinates(position.latitude, position.longitude);
       _startLocationUpdates();
     } catch (e) {
       print('Error getting current location: $e');
     }
   }
 
-  Future<void> _getAddressFromCoordinates(double lat, double lng) async {
-    try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      if (placemarks.isNotEmpty) {
-        Placemark place = placemarks[0];
-        setState(() {
-          _currentAddress = "${place.street ?? 'Unknown Street'}, ${place.locality ?? 'Unknown City'}";
-        });
-      }
-    } catch (e) {
-      print('Error getting address: $e');
-    }
-  }
+
 
   void _startLocationUpdates() {
     const LocationSettings locationSettings = LocationSettings(
@@ -608,6 +1119,19 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   Future<void> _setupRoute() async {
     _pickupLocation = LatLng(widget.pickupLat, widget.pickupLng);
     _dropoffLocation = LatLng(widget.dropoffLat, widget.dropoffLng);
+    
+    // Geocode coordinates to get readable addresses
+    print('🌍 Geocoding pickup and dropoff addresses...');
+    final pickupAddress = await _getAddressFromCoordinates(widget.pickupLat, widget.pickupLng);
+    final dropoffAddress = await _getAddressFromCoordinates(widget.dropoffLat, widget.dropoffLng);
+    
+    setState(() {
+      _pickupAddress = pickupAddress;
+      _dropoffAddress = dropoffAddress;
+    });
+    
+    print('📍 Pickup address: $_pickupAddress');
+    print('🎯 Dropoff address: $_dropoffAddress');
     
     // Wait for map to be ready before calculating route
     await _waitForMapReady();
@@ -683,17 +1207,17 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         print('   • Route Keys: ${(routeResult['route'] as Map).keys.toList()}');
         if (routeResult['route']['sections'] != null) {
           print('   • Sections Count: ${(routeResult['route']['sections'] as List).length}');
-          print('   • First Section Keys: ${(routeResult['route']['sections'][0] as Map).keys.toList()}');
-          
-          // Check for polyline in sections
           final sections = routeResult['route']['sections'] as List;
           for (int i = 0; i < sections.length; i++) {
             final section = sections[i];
+            print('   • Section $i Keys: ${section.keys.toList()}');
             if (section['polyline'] != null) {
-              print('   • Section $i has polyline: ${section['polyline']}');
+              print('     - Polyline Type: ${section['polyline'].runtimeType}');
+              print('     - Polyline Preview: ${section['polyline'].toString().substring(0, 100)}...');
             }
             if (section['shape'] != null) {
-              print('   • Section $i has shape: ${section['shape']}');
+              print('     - Shape Type: ${section['shape'].runtimeType}');
+              print('     - Shape Preview: ${section['shape'].toString().substring(0, 100)}...');
             }
           }
         }
@@ -703,22 +1227,24 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         print('   • Polyline Type: ${routeResult['polyline'].runtimeType}');
         print('   • Polyline Content: ${routeResult['polyline']}');
       }
+      
+      // Also check for other possible route data formats
+      print('   • All available keys: ${routeResult.keys.toList()}');
+      print('   • Response type: ${routeResult.runtimeType}');
       print('');
       
       if (routeResult['success'] == true) {
         print('✅ Route calculated successfully using API provider');
         
-        // Update route info from API response
-        setState(() {
-          _distanceToDestination = routeResult['distance'] ?? 'N/A';
-          _timeToDestination = routeResult['duration'] ?? 'N/A';
-          _eta = _calculateETAFromDuration(routeResult['duration'] ?? '0 min');
-        });
-        
-        print('📊 Route Info Updated:');
-        print('   • Distance: $_distanceToDestination');
-        print('   • Time: $_timeToDestination');
-        print('   • ETA: $_eta');
+                 // Update route info from API response
+         setState(() {
+           _distanceToDestination = routeResult['distance'] ?? 'N/A';
+           _timeToDestination = routeResult['duration'] ?? 'N/A';
+         });
+         
+         print('📊 Route Info Updated:');
+         print('   • Distance: $_distanceToDestination');
+         print('   • Time: $_timeToDestination');
         print('');
         
                  // Parse route data from HERE API - prioritize polyline over shape for better accuracy
@@ -736,37 +1262,104 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
              _routePoints = _extractPolylineFromSections(route['sections']);
              if (_routePoints.isNotEmpty) {
                print('📍 Extracted ${_routePoints.length} REAL route points from section polylines');
-             } else {
-               print('⚠️ No polyline found in sections, trying shape data...');
-               _routePoints = _extractRouteShapeFromSections(route['sections']);
-               print('📍 Extracted ${_routePoints.length} REAL route points from section shapes');
-             }
-           } else {
-             print('⚠️ No sections found in route data');
-             _routePoints = _createIntermediateRoutePoints();
-           }
+                   } else {
+        print('⚠️ No polyline found in sections, trying shape data...');
+        _routePoints = _extractRouteShapeFromSections(route['sections']);
+        print('📍 Extracted ${_routePoints.length} REAL route points from section shapes');
+        
+        // If still no points, try to extract from the raw route data
+        if (_routePoints.isEmpty) {
+          print('🔄 No shape data either, trying to extract from raw route data...');
+          _routePoints = _extractFromRawRouteData(route);
+          if (_routePoints.isNotEmpty) {
+            print('📍 Extracted ${_routePoints.length} points from raw route data');
+          }
+        }
+      }
+                    } else {
+           print('⚠️ No sections found in route data');
+           print('🔄 No route data available - will show direct line only');
+           _routePoints = []; // No fallback route - just show pickup and dropoff
+         }
          } else if (routeResult['polyline'] != null) {
            print('🔗 No route data, but found polyline - parsing...');
-           _routePoints = _parsePolylineToRoutePoints(routeResult['polyline']);
-           print('📍 Parsed ${_routePoints.length} REAL route points from polyline');
+           
+           // Check if polyline is already decoded coordinates or encoded string
+           if (routeResult['polyline'] is List) {
+             print('📍 Polyline is already List<LatLng> - using directly');
+             _routePoints = List<LatLng>.from(routeResult['polyline']);
+             print('📍 Using ${_routePoints.length} pre-decoded coordinates from polyline');
+           } else {
+             print('📍 Polyline is encoded string - decoding...');
+             _routePoints = _parsePolylineToRoutePoints(routeResult['polyline']);
+             print('📍 Parsed ${_routePoints.length} REAL route points from polyline');
+           }
          } else {
-           print('⚠️ No route or polyline data available from HERE API, creating realistic fallback route');
-           // Fallback to realistic route points if no route data
-           _routePoints = _createRealisticRoutePoints();
-           print('📍 Created ${_routePoints.length} realistic fallback route points');
+           print('⚠️ No route or polyline data available from HERE API');
+           print('🔄 No route data available - will show direct line only');
+           print('💡 This usually means the HERE Maps API response was empty or malformed');
+           _routePoints = []; // No fallback route - just show pickup and dropoff
          }
         
         print('🗺️ Route Points Summary:');
         print('   • Total Points: ${_routePoints.length}');
-        print('   • Start: ${_routePoints.first.latitude}, ${_routePoints.first.longitude}');
-        print('   • End: ${_routePoints.last.latitude}, ${_routePoints.last.longitude}');
-        
-        // Check if we're using real or fake coordinates
-        if (_routePoints.length > 2) {
-          print('   • Route Type: REAL road coordinates from HERE API 🎯');
-          print('   • Contains: Actual road turns, curves, and intersections');
+        if (_routePoints.isNotEmpty) {
+          print('   • Start: ${_routePoints.first.latitude}, ${_routePoints.first.longitude}');
+          print('   • End: ${_routePoints.last.latitude}, ${_routePoints.last.longitude}');
+          
+          // Check if coordinates look realistic
+          final firstPoint = _routePoints.first;
+          final lastPoint = _routePoints.last;
+          final expectedStart = LatLng(widget.pickupLat, widget.pickupLng);
+          final expectedEnd = LatLng(widget.dropoffLat, widget.dropoffLng);
+          
+          print('   • Expected Start: ${expectedStart.latitude}, ${expectedStart.longitude}');
+          print('   • Expected End: ${expectedEnd.latitude}, ${expectedEnd.longitude}');
+          
+          // Check if we're using real or fake coordinates
+          if (_routePoints.length > 2) {
+            print('   • Route Type: ${_routePoints.length} points from HERE API');
+            
+            // Check if coordinates are realistic (not tiny increments)
+            bool hasRealisticCoordinates = true;
+            for (int i = 0; i < _routePoints.length; i++) {
+              final point = _routePoints[i];
+              if (point.latitude.abs() < 0.001 || point.longitude.abs() < 0.001) {
+                print('   ⚠️ Point $i has suspicious coordinates: ${point.latitude}, ${point.longitude}');
+                hasRealisticCoordinates = false;
+              }
+            }
+            
+            if (hasRealisticCoordinates) {
+              print('   • ✅ Coordinates look realistic (real road data)');
+            } else {
+              print('   • ❌ Coordinates look suspicious (tiny increments)');
+              print('   • This explains the scribbled appearance!');
+            }
+          } else if (_routePoints.length == 2) {
+            print('   • Route Type: Simple direct line (pickup to dropoff) 📍');
+            print('   • This is clean and straight - no scribbles');
+          }
         } else {
-          print('   • Route Type: Fallback coordinates (not real road data) ⚠️');
+          print('   • Route Type: No route data available ⚠️');
+          print('   • Creating simple direct line to avoid scribbles');
+          // Create a simple direct line between pickup and dropoff
+          _routePoints = [
+            LatLng(widget.pickupLat, widget.pickupLng),
+            LatLng(widget.dropoffLat, widget.dropoffLng),
+          ];
+          print('📍 Created simple direct line with ${_routePoints.length} points');
+        }
+        
+        // Initialize navigation for fake movement
+        if (_routePoints.isNotEmpty) {
+          setState(() {
+            _isNavigating = true;
+            _fakeRouteIndex = 0;
+            _currentLocation = _routePoints.first;
+            _updateNavigationInfo();
+          });
+          print('🚛 Navigation initialized - ready for Next Turn button');
         }
         print('');
         
@@ -776,10 +1369,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         
              } else {
          print('❌ Route calculation failed: ${routeResult['message']}');
-         print('🔄 Falling back to realistic route points...');
-         // Create realistic route points on failure
-         _routePoints = _createRealisticRoutePoints();
-         print('📍 Created ${_routePoints.length} realistic fallback route points');
+         _showErrorDialog(
+           'Route Calculation Failed',
+           'Failed to calculate route: ${routeResult['message']}. No route will be displayed.',
+         );
+         print('🔄 No fallback route created - will show direct line only');
+         _routePoints = []; // No fallback route
        }
       
       print('🚛 ====== HERE API ROUTE CALCULATION END ======');
@@ -788,10 +1383,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
          } catch (e) {
        print('💥 ====== ERROR IN ROUTE CALCULATION ======');
        print('❌ Error getting route from API provider: $e');
-       print('🔄 Falling back to realistic route points...');
-       // Create realistic route points on error
-       _routePoints = _createRealisticRoutePoints();
-       print('📍 Created ${_routePoints.length} realistic fallback route points');
+       _showErrorDialog(
+         'Route Calculation Error',
+         'Failed to calculate route: ${e.toString()}. No route will be displayed.',
+       );
+       print('🔄 No fallback route created - will show direct line only');
+       _routePoints = []; // No fallback route
        print('💥 ====== ERROR HANDLED ======');
        print('');
      }
@@ -821,10 +1418,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     } catch (e) {
       print('💥 ====== POLYLINE PARSING ERROR ======');
       print('❌ Error parsing polyline: $e');
-      print('🔄 Falling back to intermediate route points...');
+      _showErrorDialog(
+        'Route Parsing Error',
+        'Failed to parse route data: ${e.toString()}. No route will be displayed.',
+      );
+      print('🔄 No fallback route created');
       print('💥 ====== POLYLINE PARSING ERROR END ======');
       print('');
-      return _createIntermediateRoutePoints();
+      return []; // Return empty list instead of fallback route
     }
   }
   
@@ -1041,12 +1642,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         print('✅ Successfully extracted ${allPoints.length} REAL route points from sections');
         return allPoints;
       } else {
-        print('⚠️ No route points extracted from sections, using fallback');
-        return _createIntermediateRoutePoints();
+        print('⚠️ No route points extracted from sections');
+        return []; // Return empty list instead of fallback
       }
     } catch (e) {
       print('❌ Error extracting route shape from sections: $e');
-      return _createIntermediateRoutePoints();
+      return []; // Return empty list instead of fallback
     }
   }
   
@@ -1071,6 +1672,56 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       return points;
     } catch (e) {
       print('❌ Error extracting points from waypoints: $e');
+      return [];
+    }
+  }
+
+  /// Tries to extract route points from raw route data in any format
+  List<LatLng> _extractFromRawRouteData(Map<String, dynamic> route) {
+    print('🔍 Trying to extract route points from raw route data...');
+    print('📝 Route keys: ${route.keys.toList()}');
+    
+    final List<LatLng> points = [];
+    
+    try {
+      // Try different possible data structures
+      if (route['geometry'] != null) {
+        print('📍 Found geometry data');
+        return _parsePolylineToRoutePoints(route['geometry']);
+      }
+      
+      if (route['coordinates'] != null) {
+        print('📍 Found coordinates data');
+        return _parsePolylineToRoutePoints(route['coordinates']);
+      }
+      
+      if (route['points'] != null) {
+        print('📍 Found points data');
+        return _parsePolylineToRoutePoints(route['points']);
+      }
+      
+      if (route['path'] != null) {
+        print('📍 Found path data');
+        return _parsePolylineToRoutePoints(route['path']);
+      }
+      
+      // Try to find any array that might contain coordinates
+      for (String key in route.keys) {
+        final value = route[key];
+        if (value is List && value.isNotEmpty) {
+          print('🔍 Checking key "$key" with ${value.length} items...');
+          if (value.first is Map && (value.first['lat'] != null || value.first['latitude'] != null)) {
+            print('📍 Found coordinate array in key "$key"');
+            return _parsePolylineToRoutePoints(value);
+          }
+        }
+      }
+      
+      print('⚠️ No recognizable route data found in raw route');
+      return [];
+      
+    } catch (e) {
+      print('❌ Error extracting from raw route data: $e');
       return [];
     }
   }
@@ -1124,82 +1775,175 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   }
 
   /// Decodes HERE API Flexible Polyline Encoding (FPE) into actual coordinates
-  /// HERE API v8 uses Flexible Polyline Encoding, not Google's polyline format
+  /// Based on official HERE Maps documentation: https://github.com/heremaps/flexible-polyline
   List<LatLng> _decodeHerePolyline(String encodedPolyline) {
     print('🔐 Decoding HERE Flexible Polyline: ${encodedPolyline.length} characters');
     print('📝 Polyline preview: ${encodedPolyline.length > 100 ? '${encodedPolyline.substring(0, 100)}...' : encodedPolyline}');
     
     try {
-      final List<LatLng> points = [];
-      int index = 0;
-      double lat = 0.0, lng = 0.0;
+      // Check minimum length (need at least 2 header characters)
+      if (encodedPolyline.length < 2) {
+        print('❌ Polyline too short: ${encodedPolyline.length} characters');
+        return [];
+      }
       
-      while (index < encodedPolyline.length) {
-        // Decode latitude using Flexible Polyline Encoding
-        final latResult = _decodeFlexiblePolylineValue(encodedPolyline, index);
-        if (latResult == null) break;
-        
-        lat += latResult.value;
-        index = latResult.nextIndex;
-        
-        // Decode longitude
-        final lngResult = _decodeFlexiblePolylineValue(encodedPolyline, index);
-        if (lngResult == null) break;
-        
-        lng += lngResult.value;
-        index = lngResult.nextIndex;
-        
-        // Add the decoded coordinate
-        points.add(LatLng(lat, lng));
-        
-        // Log every 10th point to avoid spam
-        if (points.length % 10 == 0) {
-          print('   📍 Decoded point ${points.length}: $lat, $lng');
+      // Decode header according to HERE Maps specification
+      final headerResult = _decodeFlexiblePolylineHeader(encodedPolyline);
+      if (headerResult == null) {
+        print('❌ Failed to decode polyline header');
+        return [];
+      }
+      
+      print('   📊 Header decoded: precision=${headerResult.precision2d}, type3d=${headerResult.type3d}');
+      
+      // Decode all coordinate deltas
+      final deltas = _decodeFlexiblePolylineDeltas(encodedPolyline.substring(2));
+      if (deltas.isEmpty) {
+        print('❌ No coordinate deltas decoded');
+        return [];
+      }
+      
+      print('   📍 Decoded ${deltas.length} coordinate deltas');
+      
+      // Convert deltas to absolute coordinates
+      final List<LatLng> points = [];
+      double lat = 0.0;
+      double lng = 0.0;
+      
+      // Process deltas in pairs (lat, lng)
+      for (int i = 0; i < deltas.length; i += 2) {
+        if (i + 1 < deltas.length) {
+          // Convert delta to coordinate using precision from header
+          lat += deltas[i] / math.pow(10, headerResult.precision2d);
+          lng += deltas[i + 1] / math.pow(10, headerResult.precision2d);
+          
+          points.add(LatLng(lat, lng));
+          
+          // Debug first few points
+          if (points.length <= 5) {
+            print('     📍 Point ${points.length}: $lat, $lng (delta: ${deltas[i]}, ${deltas[i + 1]})');
+          }
         }
       }
       
       if (points.isNotEmpty) {
         print('✅ Successfully decoded ${points.length} REAL route points from HERE Flexible Polyline');
+        print('   • First point: ${points.first.latitude}, ${points.first.longitude}');
+        print('   • Last point: ${points.last.latitude}, ${points.last.longitude}');
+        
+        // Check if coordinates look realistic (not tiny values)
+        bool hasRealisticCoordinates = true;
+        for (int i = 0; i < points.length; i++) {
+          final point = points[i];
+          if (point.latitude.abs() < 0.001 || point.longitude.abs() < 0.001) {
+            print('   ⚠️ Point $i has suspicious coordinates: ${point.latitude}, ${point.longitude}');
+            hasRealisticCoordinates = false;
+          }
+        }
+        
+        if (hasRealisticCoordinates) {
+          print('   ✅ Coordinates look realistic (real road data)');
+        } else {
+          print('   ❌ Coordinates look suspicious (tiny values)');
+        }
+        
         return points;
       } else {
         print('⚠️ No points decoded from Flexible Polyline');
-        return _createIntermediateRoutePoints();
+        return [];
       }
       
     } catch (e) {
       print('❌ Error decoding HERE Flexible Polyline: $e');
       print('📝 Polyline string: $encodedPolyline');
-      return _createIntermediateRoutePoints();
+      return [];
     }
   }
   
-  /// Decodes a single value from Flexible Polyline Encoding
-  /// Returns a result with the decoded value and next index position
-  _FlexiblePolylineResult? _decodeFlexiblePolylineValue(String polyline, int startIndex) {
+  /// Decodes the header of a Flexible Polyline according to HERE Maps specification
+  _FlexiblePolylineHeader? _decodeFlexiblePolylineHeader(String encodedPolyline) {
     try {
-      int index = startIndex;
-      int result = 0;
-      int shift = 0;
+      // First character: version (should be 1 for current format)
+      final version = _decodeFlexiblePolylineChar(encodedPolyline[0]);
+      if (version != 1) {
+        print('⚠️ Unexpected polyline version: $version (expected 1)');
+      }
       
-      do {
-        if (index >= polyline.length) return null;
-        
-        int byte = polyline.codeUnitAt(index++) - 63;
-        result |= (byte & 0x1f) << shift;
-        shift += 5;
-      } while (result >= 0x20);
+      // Second character: precision and 3D info
+      final headerContent = _decodeFlexiblePolylineChar(encodedPolyline[1]);
       
-      // Handle negative values
-      int value = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+      // Extract precision and 3D info according to spec
+      final precision2d = headerContent & 0xF;
+      final type3d = (headerContent >> 4) & 0x7;
       
-      // Convert to coordinate (HERE uses 1e-5 precision)
-      double coordinate = value / 100000.0;
+      print('   📊 Header: version=$version, precision2d=$precision2d, type3d=$type3d');
       
-      return _FlexiblePolylineResult(coordinate, index);
+      return _FlexiblePolylineHeader(precision2d, type3d);
       
     } catch (e) {
-      print('❌ Error decoding Flexible Polyline value: $e');
+      print('❌ Error decoding polyline header: $e');
       return null;
+    }
+  }
+  
+  /// Decodes all coordinate deltas from the polyline
+  List<int> _decodeFlexiblePolylineDeltas(String encodedDeltas) {
+    final List<int> deltas = [];
+    int index = 0;
+    
+    while (index < encodedDeltas.length) {
+      int value = 0;
+      int shift = 0;
+      
+      // Decode varint (variable-length integer)
+      do {
+        if (index >= encodedDeltas.length) break;
+        
+        final chunk = _decodeFlexiblePolylineChar(encodedDeltas[index++]);
+        final isLastChunk = (chunk & 0x20) == 0;
+        final chunkValue = chunk & 0x1F;
+        
+        value |= (chunkValue << shift);
+        shift += 5;
+        
+        if (isLastChunk) {
+          // Convert to signed integer
+          if ((value & 1) == 1) {
+            // Negative value
+            value = -((value + 1) >> 1);
+          } else {
+            // Positive value
+            value = value >> 1;
+          }
+          
+          deltas.add(value);
+          break;
+        }
+      } while (true);
+    }
+    
+    return deltas;
+  }
+  
+  /// Decodes a single character from Flexible Polyline character set
+  int _decodeFlexiblePolylineChar(String char) {
+    // According to HERE Maps spec, characters A-Z, a-z, 0-9, -, _ are used
+    // A=0, B=1, ..., Z=25, a=26, ..., z=51, 0=52, ..., 9=61, -=62, _=63
+    final code = char.codeUnitAt(0);
+    
+    if (code >= 65 && code <= 90) { // A-Z
+      return code - 65;
+    } else if (code >= 97 && code <= 122) { // a-z
+      return code - 97 + 26;
+    } else if (code >= 48 && code <= 57) { // 0-9
+      return code - 48 + 52;
+    } else if (char == '-') {
+      return 62;
+    } else if (char == '_') {
+      return 63;
+    } else {
+      print('⚠️ Unknown polyline character: $char (code: $code)');
+      return 0;
     }
   }
   
@@ -1209,67 +1953,46 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     print('🎯 Dropoff: ${widget.dropoffLat}, ${widget.dropoffLng}');
     print('');
     
-    // Create intermediate waypoints between pickup and dropoff
-    // This ensures we have more than just 2 points for a better route visualization
+    // Create a simple direct line - no curves, no scribbles!
     
-    final List<LatLng> points = [];
-    final int numIntermediatePoints = 20; // Create 20 intermediate points for smoother route
+    final List<LatLng> points = [
+      LatLng(widget.pickupLat, widget.pickupLng),
+      LatLng(widget.dropoffLat, widget.dropoffLng),
+    ];
     
-    print('📍 Creating $numIntermediatePoints intermediate route points...');
+    final double directDistance = _calculateDistance(
+      widget.pickupLat, widget.pickupLng,
+      widget.dropoffLat, widget.dropoffLng
+    );
     
-    for (int i = 0; i <= numIntermediatePoints; i++) {
-      final double ratio = i / numIntermediatePoints;
-      
-      // Add some curve to make it look more realistic (not just straight line)
-      final double curveOffset = 0.0001 * math.sin(ratio * math.pi * 2); // Small curve
-      
-      // Linear interpolation between pickup and dropoff with curve
-      final double lat = widget.pickupLat + (widget.dropoffLat - widget.pickupLat) * ratio + curveOffset;
-      final double lng = widget.pickupLng + (widget.dropoffLng - widget.pickupLng) * ratio + curveOffset;
-      
-      points.add(LatLng(lat, lng));
-      
-      // Log every 5th point for debugging
-      if (i % 5 == 0 || i == numIntermediatePoints) {
-        print('   • Point $i: $lat, $lng (ratio: ${ratio.toStringAsFixed(2)})');
-      }
-    }
-    
-    print('✅ Successfully created ${points.length} intermediate route points');
+    print('✅ Created simple direct line with ${points.length} points for ${directDistance.toStringAsFixed(2)} km journey');
+    print('💡 This is a clean straight line - no scribbles!');
     print('🔄 ====== INTERMEDIATE ROUTE POINTS CREATION END ======');
     print('');
     
-    // Calculate route info using the intermediate points
+    // Calculate route info using the points
     _calculateRouteInfoWithPoints(points);
     
     return points;
   }
   
-  /// Creates a more realistic route with simulated road turns
-  List<LatLng> _createRealisticRoutePoints() {
-    print('🛣️ ====== REALISTIC ROUTE CREATION ======');
+  /// Creates a simple direct line between pickup and dropoff (no scribbles)
+  List<LatLng> _createSimpleDirectLine() {
+    print('📍 ====== SIMPLE DIRECT LINE CREATION ======');
     
-    final List<LatLng> points = [];
+    final List<LatLng> points = [
+      LatLng(widget.pickupLat, widget.pickupLng),
+      LatLng(widget.dropoffLat, widget.dropoffLng),
+    ];
     
-    // Start with pickup
-    points.add(LatLng(widget.pickupLat, widget.pickupLng));
+    final double directDistance = _calculateDistance(
+      widget.pickupLat, widget.pickupLng,
+      widget.dropoffLat, widget.dropoffLng
+    );
     
-    // Add some intermediate waypoints that simulate road turns
-    final double midLat = (widget.pickupLat + widget.dropoffLat) / 2;
-    final double midLng = (widget.pickupLng + widget.dropoffLng) / 2;
-    
-    // Add a waypoint that's slightly offset to simulate a road turn
-    final double turnOffset = 0.001; // Small offset for realistic turns
-    final double turnLat = midLat + turnOffset;
-    final double turnLng = midLng - turnOffset;
-    
-    points.add(LatLng(turnLat, turnLng));
-    
-    // End with dropoff
-    points.add(LatLng(widget.dropoffLat, widget.dropoffLng));
-    
-    print('✅ Created realistic route with ${points.length} points including simulated turn');
-    print('🛣️ ====== REALISTIC ROUTE CREATION END ======');
+    print('✅ Created simple direct line with ${points.length} points for ${directDistance.toStringAsFixed(2)} km journey');
+    print('💡 This is a clean straight line - no scribbles!');
+    print('📍 ====== SIMPLE DIRECT LINE CREATION END ======');
     
     return points;
   }
@@ -1313,16 +2036,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       final estimatedTime = totalDistance * 1.2; // 1.2 minutes per km
       print('⏱️ Estimated time: ${estimatedTime.round()} minutes');
       
-      setState(() {
-        _distanceToDestination = '${totalDistance.toStringAsFixed(1)} km';
-        _timeToDestination = '${estimatedTime.round()} min';
-        _eta = _calculateETA(estimatedTime);
-      });
-      
-      print('📊 Route Info Updated:');
-      print('   • Distance: $_distanceToDestination');
-      print('   • Time: $_timeToDestination');
-      print('   • ETA: $_eta');
+             setState(() {
+         _distanceToDestination = '${totalDistance.toStringAsFixed(1)} km';
+         _timeToDestination = '${estimatedTime.round()} min';
+       });
+       
+       print('📊 Route Info Updated:');
+       print('   • Distance: $_distanceToDestination');
+       print('   • Time: $_timeToDestination');
       print('📊 ====== ROUTE INFO CALCULATION END ======');
       print('');
       
@@ -1335,10 +2056,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   }
   
   void _fallbackRouteCalculation() {
-    // Create intermediate route points instead of just 2 points
-    _routePoints = _createIntermediateRoutePoints();
+    // Create simple direct line instead of complex route
+    _routePoints = [
+      LatLng(widget.pickupLat, widget.pickupLng),
+      LatLng(widget.dropoffLat, widget.dropoffLng),
+    ];
     
-    // Route info is already calculated in _createIntermediateRoutePoints
+    // Calculate simple route info
+    _calculateRouteInfo();
   }
   
   void _calculateRouteInfo() {
@@ -1354,11 +2079,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       // Estimate time (assuming average speed of 50 km/h for truck)
       final estimatedTime = distance * 1.2; // 1.2 minutes per km
       
-      setState(() {
-        _distanceToDestination = '${distance.toStringAsFixed(1)} km';
-        _timeToDestination = '${estimatedTime.round()} min';
-        _eta = _calculateETA(estimatedTime);
-      });
+             setState(() {
+         _distanceToDestination = '${distance.toStringAsFixed(1)} km';
+         _timeToDestination = '${estimatedTime.round()} min';
+       });
     } catch (e) {
       print('Error calculating route info: $e');
     }
@@ -1378,19 +2102,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     return distanceInKm;
   }
 
-  String _calculateETA(double estimatedMinutes) {
-    final now = DateTime.now();
-    final eta = now.add(Duration(minutes: estimatedMinutes.round()));
-    return '${eta.hour.toString().padLeft(2, '0')}:${eta.minute.toString().padLeft(2, '0')}';
-  }
-  
   String _calculateETAFromDuration(String duration) {
     try {
       // Parse duration string like "45 min" to get minutes
       final match = RegExp(r'(\d+)').firstMatch(duration);
       if (match != null) {
         final minutes = int.tryParse(match.group(1) ?? '0') ?? 0;
-        return _calculateETA(minutes.toDouble());
+        return '${minutes.toString().padLeft(2, '0')}:00'; // Assuming ETA is in HH:MM format
       }
       return 'N/A';
     } catch (e) {
@@ -1410,9 +2128,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     if (_routePoints.isNotEmpty) {
       print('Fitting map to ${_routePoints.length} route points');
       try {
-        if (_isMapReady) {
+        if (_isMapAccessible()) {
           final bounds = LatLngBounds.fromPoints(_routePoints);
-          _mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50)));
+          _getMapController().fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(50)));
         } else {
           print('Map not ready yet, will fit map when ready');
           // Schedule the fit operation for when the map is ready
@@ -1424,6 +2142,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         }
       } catch (e) {
         print('Error fitting map to route: $e');
+        _showErrorDialog(
+          'Map Error',
+          'Failed to fit map to route: ${e.toString()}.',
+        );
       }
     } else {
       print('No route points to fit map to');
@@ -1445,37 +2167,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     );
   }
 
-  void _updateNavigationInfo() {
-    if (_currentLocation != null && _dropoffLocation != null) {
-      // Calculate distance to destination
-      final distanceToDest = _calculateDistance(
-        _currentLocation!.latitude,
-        _currentLocation!.longitude,
-        _dropoffLocation!.latitude,
-        _dropoffLocation!.longitude,
-      );
-      
-      // Update ETA
-      final remainingTime = distanceToDest * 1.2;
-      final eta = DateTime.now().add(Duration(minutes: remainingTime.round()));
-      
-      setState(() {
-        _eta = '${eta.hour.toString().padLeft(2, '0')}:${eta.minute.toString().padLeft(2, '0')}';
-        _nextManeuver = _getNextManeuver();
-      });
-      
-      // Center map on current location - add null check and error handling
-      try {
-        if (_isMapReady) {
-          _mapController.move(_currentLocation!, 15);
-        } else {
-          print('Map not ready yet, skipping move operation');
-        }
-      } catch (e) {
-        print('Error moving map: $e');
-      }
-    }
-  }
+
 
   String _getNextManeuver() {
     if (_currentLocation == null || _dropoffLocation == null) return "";
@@ -1570,56 +2262,40 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     });
   }
 
-  Future<void> _openInExternalMaps() async {
-    try {
-      // Use HERE web navigation URL format
-      final url = 'https://wego.here.com/directions/mix/${widget.pickupLat},${widget.pickupLng}/${widget.dropoffLat},${widget.dropoffLng}';
-      
-      print('🌐 Opening HERE web navigation: $url');
-      
-      if (await canLaunchUrl(Uri.parse(url))) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-        
-        Get.snackbar(
-          'Success',
-          'HERE navigation opened in browser',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-      } else {
-        Get.snackbar(
-          'Error',
-          'Could not open HERE navigation',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      print('Error opening HERE navigation: $e');
-      Get.snackbar(
-        'Error',
-        'Failed to open navigation: $e',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
 
-     /// Builds map tiles using HERE Maps
+
+     /// Builds map tiles using HERE Maps with fallback to OpenStreetMap
    Widget _buildMapTiles() {
-        // Use HERE Maps tiles with your API key
+        print('🗺️ Building map tiles...');
+        print('🔑 HERE API Key: ${ApiConfig.hereMapsApiKey}');
+        print('🔑 API Key length: ${ApiConfig.hereMapsApiKey.length}');
+        
+        // Use HERE Maps raster tiles with alternative format
         return TileLayer(
-          urlTemplate: 'https://maps.hereapi.com/v3/staticmap?apiKey=${ApiConfig.hereMapsApiKey}&style=alps&poix0=${widget.pickupLat},${widget.pickupLng};red;12;12&poix1=${widget.dropoffLat},${widget.dropoffLng};green;12;12&w=800&h=600&z=12',
-          userAgentPackageName: 'com.example.app',
+          urlTemplate: 'https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png8?style=satellite.day&apiKey=${ApiConfig.hereMapsApiKey}',
+          userAgentPackageName: 'com.moverslorryowner.app',
           maxZoom: 18,
+          minZoom: 1,
           errorTileCallback: (tile, error, stackTrace) {
-            print("HERE Maps tile error: $error for tile: $tile");
+            print("🚨 HERE Maps tile error: $error");
+            print("🔑 API Key used: ${ApiConfig.hereMapsApiKey}");
+            print("🌐 Full URL: https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png8?style=satellite.day&apiKey=${ApiConfig.hereMapsApiKey}");
+            print("📚 Stack trace: $stackTrace");
+          },
+          // Add tile loading callbacks for debugging
+          tileBuilder: (context, child, tile) {
+            print("✅ Tile loaded successfully");
+            return child;
           },
         );
    }
 
    @override
    void dispose() {
+     if (_mapController != null) {
+       _mapController!.dispose();
+       _mapController = null;
+     }
      super.dispose();
    }
 }

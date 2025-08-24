@@ -24,6 +24,7 @@ import '../Screens/congratulations_screen.dart';
 import '../Screens/sub_pages/assigned_orders_screen.dart';
 import '../Screens/sub_pages/assign_order_screen.dart';
 import '../Screens/sub_pages/fuel_stations_screen.dart';
+import '../Screens/sub_pages/navigation_test_screen.dart';
 
 
 class Routes {
@@ -49,6 +50,7 @@ class Routes {
   static const String assignOrder = '/assignOrder';
   static const String assignedOrders = '/assignedOrders';
   static const String fuelStations = '/fuel-stations';
+  static const String navigationTest = '/navigation-test';
 
 
 }
@@ -142,6 +144,10 @@ final getpage = [
   GetPage(
     name: Routes.fuelStations,
     page: () => const FuelStationsScreen(),
+  ),
+  GetPage(
+    name: Routes.navigationTest,
+    page: () => const NavigationTestScreen(),
   ),
 
 

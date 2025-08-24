@@ -692,7 +692,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         children: [
                                           TileLayer(
-                                            urlTemplate: 'https://maps.hereapi.com/v3/staticmap?apiKey=${ApiConfig.hereMapsApiKey}&style=alps&w=800&h=600&z={z}&x={x}&y={y}',
+                                            urlTemplate: 'https://maps.hereapi.com/v3/maptile/newest/normal.traffic.day/{z}/{x}/{y}/256/png8?apikey=${ApiConfig.hereMapsApiKey}',
                                             userAgentPackageName: 'com.moverslorryowner.app',
                                           ),
                                           if (_currentPosition != null)

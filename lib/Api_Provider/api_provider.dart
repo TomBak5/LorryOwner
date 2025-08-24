@@ -1656,6 +1656,88 @@ class ApiProvider {
     }
   }
 
+  // Get address from coordinates using HERE Reverse Geocoding API with API key
+  Future<Map<String, dynamic>> getAddressFromCoordinates(double lat, double lng) async {
+    try {
+      debugPrint("Getting address for coordinates: $lat, $lng");
+      
+      // Check if API key is properly configured
+      if (ApiConfig.hereApiKey == 'YOUR_VALID_HERE_API_KEY_HERE') {
+        debugPrint("❌ HERE API key not configured properly");
+        return {
+          'success': false,
+          'message': 'HERE API key not configured. Please update your API configuration.',
+        };
+      }
+      
+      debugPrint("✅ Using API key for reverse geocoding request");
+      
+      // HERE Reverse Geocoding API endpoint
+      final reverseGeocodingUrl = 'https://revgeocode.search.hereapi.com/v1/revgeocode';
+      
+      final response = await api.sendRequest.get(
+        reverseGeocodingUrl,
+        queryParameters: {
+          'at': '$lat,$lng',
+          'limit': 1,
+          'apiKey': ApiConfig.hereApiKey,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        debugPrint("✅ Reverse geocoding response received: $data");
+        
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          final item = data['items'][0];
+          final address = item['address'];
+          
+          if (address != null) {
+            // Build a readable address from the components
+            final List<String> addressParts = [];
+            
+            if (address['street'] != null) addressParts.add(address['street']);
+            if (address['houseNumber'] != null) addressParts.add(address['houseNumber']);
+            if (address['city'] != null) addressParts.add(address['city']);
+            if (address['state'] != null) addressParts.add(address['state']);
+            if (address['countryCode'] != null) addressParts.add(address['countryCode']);
+            
+            final readableAddress = addressParts.isNotEmpty ? addressParts.join(', ') : 'Unknown Address';
+            
+            debugPrint("✅ Address extracted: $readableAddress");
+            return {
+              'success': true,
+              'address': readableAddress,
+              'title': item['title'] ?? 'Current Location',
+              'street': address['street'],
+              'city': address['city'],
+              'state': address['state'],
+              'country': address['countryCode'],
+            };
+          }
+        }
+        
+        debugPrint("⚠️ No valid address found in response");
+        return {
+          'success': false,
+          'message': 'No address found for these coordinates',
+        };
+      } else {
+        debugPrint("❌ Reverse geocoding failed with status: ${response.statusCode}");
+        return {
+          'success': false,
+          'message': 'Failed to get address',
+        };
+      }
+    } catch (e) {
+      debugPrint("❌ Error getting address: $e");
+      return {
+        'success': false,
+        'message': 'Error getting address: $e',
+      };
+    }
+  }
+
   // Helper function to make API key requests to HERE API
   Future<Response> makeApiKeyRequest(
     String url, {

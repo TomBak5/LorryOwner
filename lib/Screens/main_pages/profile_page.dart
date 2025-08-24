@@ -336,9 +336,12 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                         );
-                                      } else if (index == profileController.pagesPath.length - 2) {
+                                      } else if (index == profileController.pagesPath.length - 3) {
                                         // Test HERE API button
                                         _testHereApiAuthorization();
+                                      } else if (index == profileController.pagesPath.length - 2) {
+                                        // Navigation Test button
+                                        Get.toNamed(Routes.navigationTest);
                                       } else if (index == profileController.pagesPath.length - 1) {
                                         homePageController.removeData();
                                         ManagePageCalling().setLogin(true);

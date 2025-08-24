@@ -47,7 +47,7 @@ dependencies:
   provider: ^6.0.5
   image_picker: ^1.0.4
   carousel_slider: ^5.0.0
-  google_places_flutter: ^2.0.6
+  # google_places_flutter: ^2.0.6  # Removed - now using HERE Maps exclusively
   flutter_html: ^3.0.0-beta.2
   flutter_rating_bar: ^4.0.1
   url_launcher: ^6.2.6
