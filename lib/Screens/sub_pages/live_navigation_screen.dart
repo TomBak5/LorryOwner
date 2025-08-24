@@ -304,12 +304,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     
     _initializeNavigation();
     
-    // Auto-start navigation within the app after a longer delay to ensure map is ready
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        _startInAppNavigation();
-      }
-    });
+    // Remove auto-start navigation - let user manually start navigation by pressing "Confirm & Go"
   }
 
   @override
@@ -317,7 +312,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _isNavigating ? 'HERE Navigation Active' : 'HERE Navigation',
+          '',
           style: TextStyle(
             fontFamily: fontFamilyBold,
             color: Colors.white,
@@ -374,254 +369,385 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   Widget _buildNavigationHeader() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.blue[50],
+      color: Colors.white,
       child: Column(
         children: [
-                     // Navigation status message
-           Container(
-             padding: const EdgeInsets.all(12),
-             decoration: BoxDecoration(
-               color: _isNavigating ? Colors.green[100] : Colors.blue[100],
-               borderRadius: BorderRadius.circular(8),
-               border: Border.all(color: _isNavigating ? Colors.green[300]! : Colors.blue[300]!),
-             ),
-             child: Row(
-               children: [
-                 Icon(
-                   _isNavigating ? Icons.navigation : Icons.location_on,
-                   color: _isNavigating ? Colors.green[700] : Colors.blue[700],
-                 ),
-                 const SizedBox(width: 8),
-                 Expanded(
-                   child: Text(
-                     _isNavigating 
-                       ? 'Navigation Active - Following Route'
-                       : 'Ready to Start Navigation',
-                     style: TextStyle(
-                       fontSize: 16,
-                       fontWeight: FontWeight.bold,
-                       color: _isNavigating ? Colors.green[700] : Colors.blue[700],
-                     ),
-                   ),
-                 ),
-               ],
-             ),
-           ),
-          const SizedBox(height: 12),
-          
-
-          
-          // Pickup and Dropoff addresses
+          // Header title
           Row(
             children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.orange[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.orange[300]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.location_on, color: Colors.orange[700], size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Pickup',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.orange[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _pickupAddress,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.orange[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red[100],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[300]!),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.location_off, color: Colors.red[700], size: 16),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Dropoff',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _dropoffAddress,
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.red[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                             Text(
+                 'New Delivery',
+                 style: TextStyle(
+                   fontSize: 18,
+                   fontWeight: FontWeight.w500,
+                   color: Colors.black,
+                   fontFamily: 'Poppins',
+                 ),
+               ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Get.back(),
+                icon: const Icon(Icons.close, color: Colors.grey),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
           
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           
-
-          
-          // Route info cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildInfoCard(Icons.straighten, 'Distance', _distanceToDestination, Colors.green),
+          // Show different content based on navigation state
+          if (!_isNavigating) ...[
+            // Distance section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildInfoCard(Icons.access_time, 'Time', _timeToDestination, Colors.orange),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.access_time,
+                      color: Colors.blue.shade600,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Distance',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${_timeToDestination} (${_distanceToDestination}) total',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildInfoCard(Icons.speed, 'Speed', _currentSpeed, Colors.purple),
-              ),
-            ],
-          ),
-          
-          // Next maneuver
-           if (_isNavigating && _nextManeuver.isNotEmpty) ...[
-             const SizedBox(height: 12),
-             Container(
-               padding: const EdgeInsets.all(12),
-               decoration: BoxDecoration(
-                 color: Colors.blue[100],
-                 borderRadius: BorderRadius.circular(8),
-                 border: Border.all(color: Colors.blue[300]!),
-               ),
-               child: Column(
-                 crossAxisAlignment: CrossAxisAlignment.start,
-                 children: [
-                   Row(
-                     children: [
-                       Icon(Icons.turn_right, color: Colors.blue[700]),
-                       const SizedBox(width: 8),
-                       Expanded(
-                         child: Text(
-                           _nextManeuver,
-                           style: TextStyle(
-                             fontSize: 16,
-                             fontWeight: FontWeight.bold,
-                             color: Colors.blue[700],
-                           ),
-                         ),
-                                          ),
-                 ],
-               ),
-
-               // Start Navigation button
-                   SizedBox(
-                     width: double.infinity,
-                     child: ElevatedButton.icon(
-                       onPressed: _routePoints.isNotEmpty ? () {
-                         setState(() {
-                           _isNavigating = true;
-                           _fakeRouteIndex = 0;
-                           _currentLocation = _routePoints.first;
-                           _updateNavigationInfo();
-                         });
-                         print('🚛 Navigation started manually');
-                       } : null,
-                       icon: const Icon(Icons.play_arrow, size: 18),
-                       label: const Text('Start Navigation'),
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.green[600],
-                         foregroundColor: Colors.white,
-                         padding: const EdgeInsets.symmetric(vertical: 8),
-                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(8),
-                         ),
-                       ),
-                     ),
-                   ),
-                   const SizedBox(height: 8),
-                   // Next Turn button
-                   SizedBox(
-                     width: double.infinity,
-                     child: ElevatedButton.icon(
-                       onPressed: _routePoints.isNotEmpty && _isNavigating ? _nextTurn : null,
-                       icon: const Icon(Icons.navigation, size: 18),
-                       label: const Text('Next Turn'),
-                       style: ElevatedButton.styleFrom(
-                         backgroundColor: Colors.blue[600],
-                         foregroundColor: Colors.white,
-                         padding: const EdgeInsets.symmetric(vertical: 8),
-                         shape: RoundedRectangleBorder(
-                           borderRadius: BorderRadius.circular(8),
-                         ),
-                       ),
-                     ),
-                   ),
-                 ],
-               ),
-             ),
-           ],
-           
-                       
+            ),
             
+            const SizedBox(height: 16),
             
+            // Pickup address section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.location_on,
+                      color: Colors.orange.shade600,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Pick up address',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _pickupAddress,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Dropoff address section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.flag,
+                      color: Colors.red.shade600,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Drop off address',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.blue.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _dropoffAddress,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // Navigation mode - show current speed and navigation info
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // Current Speed
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.speed,
+                          color: Colors.blue.shade700,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Current Speed',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.blue.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _currentSpeed,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Navigation Info
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.navigation,
+                          color: Colors.green.shade700,
+                          size: 20,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Navigation',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _nextManeuver.isNotEmpty ? _nextManeuver : 'Following route...',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.green.shade800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ], // Close the else block
+          
+          const SizedBox(height: 20),
+          
+          // Confirm & Go button
+          if (_routePoints.isNotEmpty) ...[
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _isNavigating = true;
+                    _fakeRouteIndex = 0;
+                    _currentLocation = _routePoints.first;
+                    _updateNavigationInfo();
+                  });
+                  print('🚛 Navigation started manually');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade600,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Confirm & Go',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: fontFamilyBold,
+                  ),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Next Turn button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _isNavigating ? _nextTurn : null,
+                icon: const Icon(Icons.navigation, size: 18),
+                label: const Text('Next Turn'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade100,
+                  foregroundColor: Colors.grey.shade700,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 0,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildInfoCard(IconData icon, String title, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(height: 2),
-          Text(title, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
-          const SizedBox(height: 2),
-          Text(
-            value,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: color),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+
 
   Widget _buildNavigationControls() {
     return Container(
@@ -1351,15 +1477,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           print('📍 Created simple direct line with ${_routePoints.length} points');
         }
         
-        // Initialize navigation for fake movement
+        // Initialize route points but DON'T start navigation automatically
         if (_routePoints.isNotEmpty) {
           setState(() {
-            _isNavigating = true;
             _fakeRouteIndex = 0;
             _currentLocation = _routePoints.first;
-            _updateNavigationInfo();
+            // Don't set _isNavigating = true here - let user press "Confirm & Go" first
           });
-          print('🚛 Navigation initialized - ready for Next Turn button');
+          print('🚛 Route points initialized - waiting for user to press "Confirm & Go"');
         }
         print('');
         
@@ -2234,13 +2359,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     // Check if map is ready before starting navigation
     if (!_isMapReady) {
       print('Map not ready yet, waiting for initialization...');
-      Get.snackbar(
-        'Please Wait',
-        'Map is still initializing...',
-        backgroundColor: Colors.orange,
-        colorText: Colors.white,
-        duration: const Duration(seconds: 2),
-      );
       return;
     }
     

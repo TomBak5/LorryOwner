@@ -18,14 +18,12 @@ class ProfileController extends GetxController implements GetxService {
   List pagesPath = [
     Routes.walletScreen,
     Routes.reviewScreen,
-    Routes.reviewScreen,
+    '', // Empty route for Language (shows language picker)
     Routes.privacyPolicy,
     Routes.termsConditions,
     Routes.contactus,
     Routes.faq,
-    Routes.faq,
-    '', // Empty route for test button
-    Routes.navigationTest, // Navigation test screen
+    '', // Empty route for Logout (handled separately)
   ];
 
   List itemIcons = [
@@ -37,8 +35,6 @@ class ProfileController extends GetxController implements GetxService {
     "assets/icons/ic_profile_pages.svg",
     "assets/icons/ic_faq.svg",
     "assets/icons/ic_logout.svg",
-    "assets/icons/ic_profile_pages.svg", // Icon for test button
-    "assets/icons/ic_faq.svg", // Icon for navigation test
   ];
 
   List nameOfCountry = [
@@ -72,21 +68,5 @@ class ProfileController extends GetxController implements GetxService {
     "Contact Us",
     "FAQ",
     "LogOut",
-    "Test HERE API", // New test menu item
-    "Navigation Test", // Navigation test menu item
   ];
 }
-
-// image.value = await picker.pickImage(
-// source: ImageSource.gallery,
-// );
-//
-// // Make a form data body
-// final _body = {
-// "image": MultipartFile(await image.value.readAsBytes(), filename: image.value.name),
-// "notes": "testing",
-// };
-// FormData formData = FormData(_body);
-//
-// // Sending with GetConnect
-// post("/target-endpoint", formData, contentType: "multipart/form-data");

@@ -336,13 +336,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                             ),
                                           ),
                                         );
-                                      } else if (index == profileController.pagesPath.length - 3) {
-                                        // Test HERE API button
-                                        _testHereApiAuthorization();
-                                      } else if (index == profileController.pagesPath.length - 2) {
-                                        // Navigation Test button
-                                        Get.toNamed(Routes.navigationTest);
-                                      } else if (index == profileController.pagesPath.length - 1) {
+                                      } else if (index == profileController.items.length - 1) {
+                                        // Logout button
                                         homePageController.removeData();
                                         ManagePageCalling().setLogin(true);
                                         Get.offAllNamed(Routes.loginScreen);
@@ -602,112 +597,5 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Test method for HERE API authorization
-  Future<void> _testHereApiAuthorization() async {
-    try {
-      // Show loading dialog
-      Get.dialog(
-        const Center(
-          child: CircularProgressIndicator(),
-        ),
-        barrierDismissible: false,
-      );
 
-      // Run the test
-      final result = await ApiProvider().testHereApiAuthorization();
-      
-      // Hide loading dialog
-      Get.back();
-
-      // Show results
-      Get.dialog(
-        AlertDialog(
-          title: Text(
-            result['success'] == true ? '✅ Test Successful' : '❌ Test Failed',
-            style: TextStyle(
-              color: result['success'] == true ? Colors.green : Colors.red,
-              fontFamily: fontFamilyBold,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                result['message'] ?? 'No message available',
-                style: TextStyle(
-                  fontFamily: fontFamilyRegular,
-                  fontSize: 16,
-                ),
-              ),
-              if (result['success'] == true) ...[
-                const SizedBox(height: 16),
-                Text(
-                  'Test Results:',
-                  style: TextStyle(
-                    fontFamily: fontFamilyBold,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text('• API Key: ${result['api_key_working'] == true ? '✅ Working' : '❌ Failed'}'),
-                Text('• Routing: ${result['routing_working'] == true ? '✅ Working' : '❌ Failed'}'),
-                Text('• Geocoding: ${result['geocoding_working'] == true ? '✅ Working' : '❌ Failed'}'),
-                Text('• Search: ${result['search_working'] == true ? '✅ Working' : '❌ Failed'}'),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: Text(
-                'Close',
-                style: TextStyle(
-                  fontFamily: fontFamilyRegular,
-                  color: priMaryColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-
-    } catch (e) {
-      // Hide loading dialog
-      Get.back();
-      
-      // Show error
-      Get.dialog(
-        AlertDialog(
-          title: Text(
-            '❌ Test Error',
-            style: TextStyle(
-              color: Colors.red,
-              fontFamily: fontFamilyBold,
-            ),
-          ),
-          content: Text(
-            'An error occurred during testing: $e',
-            style: TextStyle(
-              fontFamily: fontFamilyRegular,
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Get.back(),
-              child: Text(
-                'Close',
-                style: TextStyle(
-                  fontFamily: fontFamilyRegular,
-                  color: priMaryColor,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-  }
 }

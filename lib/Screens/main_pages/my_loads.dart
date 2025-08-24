@@ -617,17 +617,6 @@ class _MyLoadsState extends State<MyLoads> {
           if (myLoadsController.assignedOrders.isNotEmpty) ...[
             if (myLoadsController.currentData.loadHistoryData.isNotEmpty)
               const SizedBox(height: 20),
-                         Padding(
-               padding: const EdgeInsets.all(10),
-               child: Text(
-                 "Driver Orders".tr,
-                 style: TextStyle(
-                   fontSize: 16,
-                   fontWeight: FontWeight.bold,
-                   color: textBlackColor,
-                 ),
-               ),
-             ),
             ListView.separated(
               physics: const NeverScrollableScrollPhysics(),
               padding: const EdgeInsets.all(10),
@@ -1139,19 +1128,7 @@ class _MyLoadsState extends State<MyLoads> {
     try {
       print("=== FETCHING ORDER DETAILS ===");
       
-      // Show loading dialog
-      Get.dialog(
-        const AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 16),
-              Text('Fetching order details...'),
-            ],
-          ),
-        ),
-        barrierDismissible: false,
-      );
+      // No loading dialog needed
       
       // Get user ID from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
@@ -1167,8 +1144,7 @@ class _MyLoadsState extends State<MyLoads> {
           orderId: order['id'].toString(),
         );
         
-        // Close loading dialog
-        Get.back();
+                 // Loading dialog removed
         
         if (orderDetails != null && 
             orderDetails['pick_lat'] != null && 
@@ -1211,15 +1187,15 @@ class _MyLoadsState extends State<MyLoads> {
           );
         }
         
-      } else {
-        Get.back(); // Close loading dialog
-        Get.snackbar('Error', 'User not logged in');
-      }
+             } else {
+         // Loading dialog removed
+         Get.snackbar('Error', 'User not logged in');
+       }
       
-    } catch (e) {
-      print("❌ Error fetching order details: $e");
-      Get.back(); // Close loading dialog
-      Get.snackbar('Error', 'Failed to fetch order details: $e');
-    }
+         } catch (e) {
+       print("❌ Error fetching order details: $e");
+       // Loading dialog removed
+       Get.snackbar('Error', 'Failed to fetch order details: $e');
+     }
   }
 } 

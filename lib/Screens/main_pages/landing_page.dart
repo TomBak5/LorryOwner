@@ -54,11 +54,9 @@ class _LandingPageState extends State<LandingPage> {
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
-                                        SvgPicture.asset(
+                                        _buildIcon(
                                           landingPageController.bottomItemsIcons[index],
-                                          width: 22,
-                                          height: 22,
-                                          color: landingPageController.selectPageIndex == index
+                                          landingPageController.selectPageIndex == index
                                               ? secondaryColor
                                               : textGreyColor,
                                         ),
@@ -96,5 +94,30 @@ class _LandingPageState extends State<LandingPage> {
         );
       },
     );
+  }
+
+  Widget _buildIcon(String iconPath, Color color) {
+    if (iconPath.endsWith('.svg')) {
+      return SvgPicture.asset(
+        iconPath,
+        width: 22,
+        height: 22,
+        color: color,
+      );
+    } else if (iconPath.endsWith('.png')) {
+      return Image.asset(
+        iconPath,
+        width: 22,
+        height: 22,
+        color: color,
+      );
+    } else {
+      // Fallback for other file types
+      return Icon(
+        Icons.error,
+        size: 22,
+        color: color,
+      );
+    }
   }
 }
