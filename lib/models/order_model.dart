@@ -6,6 +6,9 @@ class OrderModel {
   final String details;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? assignedTruckId;  // Add truck assignment
+  final String? assignedTruckNo;  // Add truck number for display
+  final String? assignedTruckTitle; // Add truck title for display
 
   OrderModel({
     required this.orderId,
@@ -15,6 +18,9 @@ class OrderModel {
     required this.details,
     required this.createdAt,
     required this.updatedAt,
+    this.assignedTruckId,
+    this.assignedTruckNo,
+    this.assignedTruckTitle,
   });
 
   factory OrderModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +32,9 @@ class OrderModel {
       details: json['details'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
+      assignedTruckId: json['assigned_truck_id'],
+      assignedTruckNo: json['assigned_truck_no'],
+      assignedTruckTitle: json['assigned_truck_title'],
     );
   }
 
@@ -38,6 +47,9 @@ class OrderModel {
       'details': details,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'assigned_truck_id': assignedTruckId,
+      'assigned_truck_no': assignedTruckNo,
+      'assigned_truck_title': assignedTruckTitle,
     };
   }
 } 

@@ -1852,4 +1852,31 @@ class ApiProvider {
     }
   }
 
+  // Get assigned trucks for a specific driver
+  Future<Map<String, dynamic>> getAssignedTrucks({required String driverId}) async {
+    try {
+      debugPrint("🚛 Getting assigned trucks for driver: $driverId");
+      
+      Map body = {"driver_id": driverId};
+      final response = await api.sendRequest.post(
+        "${basUrlApi}Api/get_assigned_trucks.php",
+        data: body,
+      );
+      
+      debugPrint("============ Get Assigned Trucks body ========= ${body}");
+      debugPrint("========== Get Assigned Trucks response ======= ${response.data}");
+      
+      var data = response.data;
+      return data;
+      
+    } catch (e) {
+      debugPrint("❌ Error getting assigned trucks: $e");
+      return {
+        'Result': 'false',
+        'ResponseMsg': 'Failed to get assigned trucks: $e',
+        'AssignedTrucks': [],
+      };
+    }
+  }
+
 }
