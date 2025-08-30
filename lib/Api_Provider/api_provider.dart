@@ -25,6 +25,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../AppConstData/api_config.dart';
 import 'package:latlong2/latlong.dart';
+import 'dart:math' as math;
 
 // Google Maps API key removed - now using HERE Maps exclusively
 // String googleMapkey = "AIzaSyAVOjpp1c4YXhmfO06ch3CurcxJBUgbyAw";
@@ -1471,6 +1472,11 @@ class ApiProvider {
         final data = response.data;
         debugPrint("Route calculation response: $data");
         
+        // Log the full response JSON for debugging
+        debugPrint("🔍 FULL HERE API RESPONSE JSON:");
+        debugPrint("${json.encode(data)}");
+        debugPrint("🔍 END OF RESPONSE JSON");
+        
         if (data['routes'] != null && data['routes'].isNotEmpty) {
           final route = data['routes'][0];
           final section = route['sections'][0];
@@ -1496,7 +1502,25 @@ class ApiProvider {
           
           // Extract polyline from shape field (HERE API v8 format)
           List<LatLng> polylinePoints = [];
-          if (section['shape'] != null) {
+          
+          // Debug: Check what fields are available
+          debugPrint("🔍 Section keys: ${section.keys.toList()}");
+          debugPrint("🔍 Section data: $section");
+          
+          // First try to get polyline from the polyline field (HERE API v8 format)
+          if (section['polyline'] != null) {
+            debugPrint("🔍 Found polyline field: ${section['polyline']}");
+            try {
+              polylinePoints = _decodePolyline(section['polyline']);
+              debugPrint("✅ Decoded polyline: ${polylinePoints.length} points");
+            } catch (e) {
+              debugPrint("❌ Failed to decode polyline: $e");
+            }
+          }
+          
+          // Fallback to shape field if polyline field doesn't work
+          if (polylinePoints.isEmpty && section['shape'] != null) {
+            debugPrint("🔍 Found shape data: ${section['shape']}");
             final shape = section['shape'] as List?;
             if (shape != null) {
               for (var point in shape) {
@@ -1512,7 +1536,7 @@ class ApiProvider {
           
           // If no shape data, generate fallback polyline
           if (polylinePoints.isEmpty) {
-            debugPrint("⚠️ No shape data from HERE API, generating fallback polyline");
+            debugPrint("⚠️ No polyline data from HERE API, generating fallback polyline");
             polylinePoints = _generateFallbackPolyline(
               originLat, originLng, destinationLat, destinationLng
             );
@@ -1593,6 +1617,136 @@ class ApiProvider {
     
     debugPrint("🔄 Generated fallback polyline with ${points.length} points");
     return points;
+  }
+  
+  // Decode encoded polyline string (Google's polyline algorithm) - OPTIMIZED VERSION
+  List<LatLng> _decodePolyline(String encoded) {
+    List<LatLng> poly = [];
+    int index = 0, len = encoded.length;
+    int lat = 0, lng = 0;
+    
+    try {
+      // Pre-allocate list capacity for better performance
+      poly = List<LatLng>.filled(len ~/ 2, LatLng(0, 0), growable: true);
+      int polyIndex = 0;
+      
+      while (index < len) {
+        // Decode latitude
+        int b, shift = 0, result = 0;
+        do {
+          if (index >= len) break;
+          b = encoded.codeUnitAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+        
+        // Decode longitude
+        shift = 0;
+        result = 0;
+        do {
+          if (index >= len) break;
+          b = encoded.codeUnitAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+        
+        poly[polyIndex++] = LatLng(lat / 1E5, lng / 1E5);
+      }
+      
+      // Trim to actual size and optimize route points
+      poly = poly.take(polyIndex).toList();
+      return _optimizeRoutePoints(poly);
+      
+    } catch (e) {
+      debugPrint("❌ Polyline decoding error: $e");
+      return [];
+    }
+  }
+  
+  // NEW: Optimize route points for smooth navigation performance
+  List<LatLng> _optimizeRoutePoints(List<LatLng> originalPoints) {
+    if (originalPoints.length <= 2) return originalPoints;
+    
+    List<LatLng> optimized = [];
+    optimized.add(originalPoints.first); // Always keep first point
+    
+    // Douglas-Peucker algorithm for route simplification
+    double tolerance = 0.0001; // Adjust this value for more/less detail
+    
+    for (int i = 1; i < originalPoints.length - 1; i++) {
+      double distance = _perpendicularDistance(
+        originalPoints[i], 
+        originalPoints.first, 
+        originalPoints.last
+      );
+      
+      if (distance > tolerance) {
+        optimized.add(originalPoints[i]);
+      }
+    }
+    
+    optimized.add(originalPoints.last); // Always keep last point
+    
+    debugPrint("🔄 Route optimization: ${originalPoints.length} → ${optimized.length} points");
+    return optimized;
+  }
+  
+  // NEW: Calculate perpendicular distance for route optimization
+  double _perpendicularDistance(LatLng point, LatLng lineStart, LatLng lineEnd) {
+    if (lineStart.latitude == lineEnd.latitude && lineStart.longitude == lineEnd.longitude) {
+      return _calculateHaversineDistance(
+        point.latitude, point.longitude,
+        lineStart.latitude, lineStart.longitude
+      );
+    }
+    
+    double A = point.latitude - lineStart.latitude;
+    double B = point.longitude - lineStart.longitude;
+    double C = lineEnd.latitude - lineStart.latitude;
+    double D = lineEnd.longitude - lineStart.longitude;
+    
+    double dot = A * C + B * D;
+    double lenSq = C * C + D * D;
+    double param = dot / lenSq;
+    
+    double xx, yy;
+    if (param < 0) {
+      xx = lineStart.latitude;
+      yy = lineStart.longitude;
+    } else if (param > 1) {
+      xx = lineEnd.latitude;
+      yy = lineEnd.longitude;
+    } else {
+      xx = lineStart.latitude + param * C;
+      yy = lineStart.longitude + param * D;
+    }
+    
+    return _calculateHaversineDistance(point.latitude, point.longitude, xx, yy);
+  }
+  
+  // NEW: Calculate Haversine distance between two points
+  double _calculateHaversineDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371000; // Earth's radius in meters
+    
+    double dLat = _degreesToRadians(lat2 - lat1);
+    double dLon = _degreesToRadians(lon2 - lon1);
+    
+    double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+                math.cos(_degreesToRadians(lat1)) * math.cos(_degreesToRadians(lat2)) *
+                math.sin(dLon / 2) * math.sin(dLon / 2);
+    
+    double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    
+    return earthRadius * c;
+  }
+  
+  // NEW: Convert degrees to radians
+  double _degreesToRadians(double degrees) {
+    return degrees * (math.pi / 180);
   }
 
   // Get coordinates from address using HERE Geocoding API with API key
