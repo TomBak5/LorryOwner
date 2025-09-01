@@ -1,4 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flexible_polyline_dart/flutter_flexible_polyline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:get/get.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -31,7 +35,7 @@ class LiveNavigationScreen extends StatefulWidget {
   State<LiveNavigationScreen> createState() => _LiveNavigationScreenState();
 }
 
-class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
+class _LiveNavigationScreenState extends State<LiveNavigationScreen> with TickerProviderStateMixin {
   MapController? _mapController;
   bool _isLoading = true;
   bool _hasLocationPermission = false;
@@ -50,6 +54,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   LatLng? _dropoffLocation;
   LatLng? _currentLocation;
   
+  List<Map<String, dynamic>>? _hereApiWaypoints;
+  
   String _pickupAddress = "Loading address...";
   String _dropoffAddress = "Loading address...";
   
@@ -64,11 +70,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   // API provider for route calculation
   final ApiProvider _apiProvider = ApiProvider();
   
-  // PERFORMANCE MONITORING: Track performance metrics
   int _totalCalculations = 0;
   int _cachedHits = 0;
   DateTime _navigationStartTime = DateTime.now();
-  
+
+  late final _animatedMapController = AnimatedMapController(vsync: this);
+
   void _logPerformanceMetrics() {
     final duration = DateTime.now().difference(_navigationStartTime);
     final cacheHitRate = _totalCalculations > 0 ? (_cachedHits / _totalCalculations * 100).toStringAsFixed(1) : '0.0';
@@ -82,7 +89,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     print('   • Current Index: $_fakeRouteIndex');
   }
   
-  // DEBUG: Test map functionality
   Future<void> _debugMap() async {
     print('🐛 DEBUG MAP FUNCTIONALITY:');
     print('   • Route points count: ${_routePoints.length}');
@@ -96,6 +102,23 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     if (_routePoints.isNotEmpty) {
       print('   • First route point: ${_routePoints.first}');
       print('   • Last route point: ${_routePoints.last}');
+    }
+    
+    // Show HERE API waypoints if available
+    if (_hereApiWaypoints != null && _hereApiWaypoints!.isNotEmpty) {
+      print('🗺️ HERE API Waypoints (${_hereApiWaypoints!.length}):');
+      for (int i = 0; i < _hereApiWaypoints!.length; i++) {
+        var waypoint = _hereApiWaypoints![i];
+        print('   ${i + 1}. ${waypoint['instruction'] ?? 'No instruction'}');
+        if (waypoint['distance'] != null) {
+          print('      Distance: ${waypoint['distance']}');
+        }
+        if (waypoint['icon'] != null) {
+          print('      Icon: ${waypoint['icon']}');
+        }
+      }
+    } else {
+      print('⚠️ No HERE API waypoints available');
     }
     
     // Force route generation if empty
@@ -126,40 +149,57 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     }
   }
   
-  // PERFORMANCE OPTIMIZATION: Caching system for expensive calculations
+
   final Map<String, double> _cachedBearing = {};
   final Map<String, double> _cachedDistances = {};
   final Map<int, String> _cachedStreetNames = {};
   final Map<int, String> _cachedTurnInstructions = {};
   
-  // PERFORMANCE OPTIMIZATION: Update intervals to reduce lag
-  static const int _movementUpdateInterval = 3000; // 3 seconds instead of 2
-  static const int _navigationInfoUpdateInterval = 2000; // 2 seconds
-  static const int _mapUpdateInterval = 1000; // 1 second
+
+  static const int _movementUpdateInterval = 250;
+  static const int _navigationInfoUpdateInterval = 2000;
+  static const int _mapUpdateInterval = 1000;
   
   DateTime _lastNavigationInfoUpdate = DateTime.now();
   DateTime _lastMapUpdate = DateTime.now();
   
-  // Method to calculate upcoming turns and navigation instructions - OPTIMIZED
   void _calculateUpcomingTurns() {
     if (_routePoints.isEmpty || _fakeRouteIndex >= _routePoints.length - 1) return;
     
     try {
-      // PERFORMANCE OPTIMIZATION: Check if we need to update (throttling)
       final now = DateTime.now();
       if (now.difference(_lastNavigationInfoUpdate).inMilliseconds < _navigationInfoUpdateInterval) {
         return; // Skip update if too soon
       }
       _lastNavigationInfoUpdate = now;
       
-      // Find the next significant turn in the route
+      if (_hereApiWaypoints != null && _hereApiWaypoints!.isNotEmpty) {
+        int currentProgress = (_fakeRouteIndex / _routePoints.length * _hereApiWaypoints!.length).round();
+        if (currentProgress < _hereApiWaypoints!.length) {
+          var nextWaypoint = _hereApiWaypoints![currentProgress];
+          
+          _nextTurnInstruction = nextWaypoint['instruction'] ?? "Continue straight";
+          _nextStreetName = nextWaypoint['instruction'] ?? "Current route";
+          
+          if (currentProgress < _hereApiWaypoints!.length - 1) {
+            double distanceToNext = _calculateDistanceToPoint(_fakeRouteIndex, 
+              (_routePoints.length * (currentProgress + 1) / _hereApiWaypoints!.length).round());
+            _nextTurnDistance = "${distanceToNext.toStringAsFixed(0)} m";
+          } else {
+            _nextTurnDistance = "Destination";
+          }
+          
+          print('🔄 HERE API turn: $_nextTurnInstruction in $_nextTurnDistance on $_nextStreetName');
+          return;
+        }
+      }
+      
       int currentIndex = _fakeRouteIndex;
       int nextTurnIndex = _findNextTurn(currentIndex);
       
       if (nextTurnIndex > currentIndex) {
         _nextTurnIndex = nextTurnIndex;
         
-        // PERFORMANCE OPTIMIZATION: Use cached distance calculation
         String distanceKey = '${currentIndex}_${nextTurnIndex}';
         double distanceToTurn;
         if (_cachedDistances.containsKey(distanceKey)) {
@@ -170,7 +210,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         }
         _nextTurnDistance = "${distanceToTurn.toStringAsFixed(0)} m";
         
-        // PERFORMANCE OPTIMIZATION: Use cached turn instruction
         if (_cachedTurnInstructions.containsKey(nextTurnIndex)) {
           _nextTurnInstruction = _cachedTurnInstructions[nextTurnIndex]!;
         } else {
@@ -178,7 +217,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           _cachedTurnInstructions[nextTurnIndex] = _nextTurnInstruction;
         }
         
-        // PERFORMANCE OPTIMIZATION: Use cached street name
         if (_cachedStreetNames.containsKey(nextTurnIndex)) {
           _nextStreetName = _cachedStreetNames[nextTurnIndex]!;
         } else {
@@ -186,7 +224,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           _cachedStreetNames[nextTurnIndex] = _nextStreetName;
         }
         
-        print('🔄 Next turn: $_nextTurnInstruction in $_nextTurnDistance on $_nextStreetName');
+        print('🔄 Calculated turn: $_nextTurnInstruction in $_nextTurnDistance on $_nextStreetName');
       } else {
         _nextTurnInstruction = "Arriving at destination";
         _nextTurnDistance = "";
@@ -197,11 +235,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     }
   }
   
-  // Find the next significant turn in the route - OPTIMIZED
   int _findNextTurn(int currentIndex) {
     if (currentIndex >= _routePoints.length - 2) return _routePoints.length - 1;
     
-    // PERFORMANCE OPTIMIZATION: Reduce lookahead from 10 to 5 points
     int lookAhead = math.min(5, _routePoints.length - currentIndex - 1);
     
     for (int i = currentIndex + 1; i < currentIndex + lookAhead; i++) {
@@ -213,11 +249,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     return _routePoints.length - 1; // No significant turn found
   }
   
-  // Check if there's a significant turn between two points - OPTIMIZED
   bool _isSignificantTurn(int fromIndex, int toIndex) {
     if (fromIndex >= _routePoints.length - 1 || toIndex >= _routePoints.length) return false;
     
-    // PERFORMANCE OPTIMIZATION: Use cached bearing calculations
     String bearing1Key = '${fromIndex}_${fromIndex + 1}';
     String bearing2Key = '${toIndex - 1}_${toIndex}';
     
@@ -244,16 +278,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     return bearingDiff > 15;
   }
   
-  // Calculate bearing between two points - OPTIMIZED with caching
   double _calculateBearing(LatLng from, LatLng to) {
-    // PERFORMANCE OPTIMIZATION: Check cache first
     String key = '${from.latitude.toStringAsFixed(6)}_${from.longitude.toStringAsFixed(6)}_${to.latitude.toStringAsFixed(6)}_${to.longitude.toStringAsFixed(6)}';
     if (_cachedBearing.containsKey(key)) {
-      _cachedHits++; // Track cache hits
+      _cachedHits++;
       return _cachedBearing[key]!;
     }
     
-    _totalCalculations++; // Track total calculations
+    _totalCalculations++;
     
     double lat1 = _degreesToRadians(from.latitude);
     double lat2 = _degreesToRadians(to.latitude);
@@ -270,11 +302,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     return result;
   }
   
-  // Calculate distance between two route points - OPTIMIZED
   double _calculateDistanceToPoint(int fromIndex, int toIndex) {
     if (fromIndex >= _routePoints.length || toIndex >= _routePoints.length) return 0;
     
-    // PERFORMANCE OPTIMIZATION: Check cache first
     String key = '${fromIndex}_${toIndex}';
     if (_cachedDistances.containsKey(key)) {
       return _cachedDistances[key]!;
@@ -290,84 +320,54 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       );
     }
     
-    double result = totalDistance * 1000; // Convert to meters
+    double result = totalDistance * 1000;
     
-    // Cache the result
     _cachedDistances[key] = result;
     return result;
   }
   
-  // Determine turn direction based on bearing change - OPTIMIZED
+  // Determine turn direction based on bearing change - OPTIMIZED with real HERE API data
   String _getTurnDirection(int fromIndex, int toIndex) {
     if (fromIndex >= _routePoints.length - 1 || toIndex >= _routePoints.length) return "Continue straight";
     
-    // PERFORMANCE OPTIMIZATION: Use cached bearings
-    String bearing1Key = '${fromIndex}_${fromIndex + 1}';
-    String bearing2Key = '${toIndex - 1}_${toIndex}';
-    
-    double bearing1, bearing2;
-    
-    if (_cachedBearing.containsKey(bearing1Key)) {
-      bearing1 = _cachedBearing[bearing1Key]!;
-    } else {
-      bearing1 = _calculateBearing(_routePoints[fromIndex], _routePoints[fromIndex + 1]);
-      _cachedBearing[bearing1Key] = bearing1;
+    // Try to get real turn instruction from HERE API waypoints if available
+    if (_hereApiWaypoints != null && _hereApiWaypoints!.isNotEmpty) {
+      // Find the closest waypoint to this route point
+      int waypointIndex = (toIndex / _routePoints.length * _hereApiWaypoints!.length).round();
+      if (waypointIndex < _hereApiWaypoints!.length) {
+        var waypoint = _hereApiWaypoints![waypointIndex];
+        if (waypoint['instruction'] != null) {
+          return waypoint['instruction'];
+        }
+      }
     }
     
-    if (_cachedBearing.containsKey(bearing2Key)) {
-      bearing2 = _cachedBearing[bearing2Key]!;
-    } else {
-      bearing2 = _calculateBearing(_routePoints[toIndex - 1], _routePoints[toIndex]);
-      _cachedBearing[bearing2Key] = bearing2;
-    }
-    
-    double bearingDiff = bearing2 - bearing1;
-    if (bearingDiff > 180) bearingDiff -= 360;
-    if (bearingDiff < -180) bearingDiff += 360;
-    
-    if (bearingDiff > 45) return "Turn right";
-    if (bearingDiff < -45) return "Turn left";
-    if (bearingDiff.abs() > 15) return "Slight turn";
-    
-    return "Continue straight";
+    // If no HERE API data, return empty string
+    return "";
   }
   
-  // Get street name for a specific point (simplified) - OPTIMIZED
   String _getStreetNameForPoint(int pointIndex) {
-    if (pointIndex >= _routePoints.length) return "Unknown street";
+    if (pointIndex >= _routePoints.length) return "Unknown location";
     
-    // PERFORMANCE OPTIMIZATION: Check cache first
     if (_cachedStreetNames.containsKey(pointIndex)) {
       return _cachedStreetNames[pointIndex]!;
     }
     
-    // Use Lithuanian street names instead of American ones
-    final streets = [
-      "Draugystės g.",
-      "Kovo 11-osios g.",
-      "Pramonės pr.",
-      "Vilniaus g.",
-      "Kauno g.",
-      "Mindaugo g.",
-      "Gedimino pr.",
-      "Laisvės al.",
-      "Naujoji g.",
-      "Senamiesčio g.",
-      "Transporto g.",
-      "Krovinio g.",
-      "Pristatymo g.",
-      "Logistikos g.",
-      "Tūro g."
-    ];
+    if (_hereApiWaypoints != null && _hereApiWaypoints!.isNotEmpty) {
+      int waypointIndex = (pointIndex / _routePoints.length * _hereApiWaypoints!.length).round();
+      if (waypointIndex < _hereApiWaypoints!.length) {
+        var waypoint = _hereApiWaypoints![waypointIndex];
+        if (waypoint['instruction'] != null) {
+          String result = waypoint['instruction'];
+          _cachedStreetNames[pointIndex] = result;
+          return result;
+        }
+      }
+    }
     
-    String result = streets[pointIndex % streets.length];
-    
-    // Cache the result
-    _cachedStreetNames[pointIndex] = result;
-    return result;
+    return "";
   }
 
-  // Method to show full route overview with optimized tile loading
   void _showFullRouteOverview() {
     try {
       if (_mapController != null && 
@@ -375,25 +375,22 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           _dropoffLocation != null &&
           mounted) {
         
-        // Calculate bounds for the route
         double minLat = math.min(_pickupLocation!.latitude, _dropoffLocation!.latitude);
         double maxLat = math.max(_pickupLocation!.latitude, _dropoffLocation!.latitude);
         double minLng = math.min(_pickupLocation!.longitude, _dropoffLocation!.longitude);
         double maxLng = math.max(_pickupLocation!.longitude, _dropoffLocation!.longitude);
         
-        // Add padding to bounds
         double latPadding = (maxLat - minLat) * 0.1;
         double lngPadding = (maxLng - minLng) * 0.1;
         
-        // Fit map to show entire route with padding
-        _mapController!.fitBounds(
-          LatLngBounds(
-            LatLng(minLat - latPadding, minLng - lngPadding),
-            LatLng(maxLat + latPadding, maxLng + lngPadding),
-          ),
-          options: const FitBoundsOptions(
-            padding: EdgeInsets.all(50),
-            maxZoom: 10, // Lower max zoom to reduce tile requests
+        _mapController!.fitCamera(
+          CameraFit.bounds(
+            bounds: LatLngBounds(
+              LatLng(minLat - latPadding, minLng - lngPadding),
+              LatLng(maxLat + latPadding, maxLng + lngPadding),
+            ),
+            padding: const EdgeInsets.all(50),
+            maxZoom: 10,
           ),
         );
         
@@ -404,6 +401,38 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     } catch (e) {
       print('❌ Error showing route overview: $e');
     }
+  }
+  
+  List<Map<String, dynamic>> _getUpcomingTurnsForDisplay() {
+    print('🔍 Getting upcoming turns for display:');
+    print('   • HERE API waypoints: ${_hereApiWaypoints?.length ?? 0}');
+    print('   • Route points: ${_routePoints.length}');
+    print('   • Current index: $_fakeRouteIndex');
+    
+    if (_hereApiWaypoints == null || _hereApiWaypoints!.isEmpty) {
+      print('⚠️ No HERE API waypoints available');
+      return [];
+    }
+    
+    int currentProgress = (_fakeRouteIndex / _routePoints.length * _hereApiWaypoints!.length).round();
+    print('   • Current progress: $currentProgress');
+    
+    List<Map<String, dynamic>> upcomingTurns = [];
+    
+    for (int i = currentProgress; i < _hereApiWaypoints!.length && upcomingTurns.length < 4; i++) {
+      var waypoint = _hereApiWaypoints![i];
+      print('   • Processing waypoint $i: $waypoint');
+      
+      upcomingTurns.add({
+        'instruction': waypoint['instruction'] ?? 'Continue straight',
+        'distance': waypoint['distance'] ?? '',
+        'icon': waypoint['icon'] ?? '📍',
+        'isNext': i == currentProgress,
+      });
+    }
+    
+    print('   • Generated upcoming turns: ${upcomingTurns.length}');
+    return upcomingTurns;
   }
 
   @override
@@ -422,6 +451,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
     _cachedDistances.clear();
     _cachedStreetNames.clear();
     _cachedTurnInstructions.clear();
+    _animatedMapController.dispose();
     
     super.dispose();
   }
@@ -515,11 +545,84 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       );
       
       print('🔄 Route calculation result: $result');
+      print('🔍 HERE API Response Analysis:');
+      print('   • Success: ${result['success']}');
+      print('   • Available keys: ${result.keys.toList()}');
+      print('   • Has polyline: ${result['polyline'] != null}');
+      print('   • Has waypoints: ${result['waypoints'] != null}');
+      print('   • Has route: ${result['route'] != null}');
       
-      if (result['success'] == true && result['polyline'] != null) {
+      // Deep dive into the response structure
+      if (result['route'] != null) {
+        print('🔍 Route object keys: ${result['route'].keys.toList()}');
+        if (result['route']['sections'] != null) {
+          print('🔍 Sections count: ${result['route']['sections'].length}');
+          if (result['route']['sections'].isNotEmpty) {
+            var firstSection = result['route']['sections'][0];
+            print('🔍 First section keys: ${firstSection.keys.toList()}');
+            print('🔍 First section data: $firstSection');
+            
+            // Check for waypoints in the section
+            if (firstSection['waypoints'] != null) {
+              print('🔍 Section waypoints count: ${firstSection['waypoints'].length}');
+              print('🔍 Section waypoints: ${firstSection['waypoints']}');
+            }
+            
+            // Check for other navigation data
+            if (firstSection['actions'] != null) {
+              print('🔍 Section actions: ${firstSection['actions']}');
+            }
+            
+            if (firstSection['guidance'] != null) {
+              print('🔍 Section guidance: ${firstSection['guidance']}');
+            }
+          }
+        }
+      }
+      
+      if (result['success'] == true && result['polyline'] != null && result['route']['sections'] != null) {
         // Use the real route polyline from HERE API
-        _routePoints = List<LatLng>.from(result['polyline']);
-        print('✅ Real route loaded: ${_routePoints.length} points');
+        // _routePoints = List<LatLng>.from(result['polyline']);
+        // print('✅ Real route loaded: ${_routePoints.length} points');
+
+        // encoded path
+        final encodedPolyline = result['route']['sections'][0]['polyline'];
+        final decodedPoints = FlexiblePolyline.decode(encodedPolyline);
+
+        _routePoints = decodedPoints.map((p) => LatLng(p.lat, p.lng)).toList();
+
+        if (result['waypoints'] != null) {
+          _hereApiWaypoints = List<Map<String, dynamic>>.from(result['waypoints']);
+          print('✅ HERE API waypoints loaded: ${_hereApiWaypoints!.length} instructions');
+          print('   • Waypoints: $_hereApiWaypoints');
+          
+          // Debug each waypoint structure
+          for (int i = 0; i < _hereApiWaypoints!.length; i++) {
+            var waypoint = _hereApiWaypoints![i];
+            print('   🔍 Waypoint $i:');
+            print('     • Keys: ${waypoint.keys.toList()}');
+            print('     • Instruction: ${waypoint['instruction']}');
+            print('     • Distance: ${waypoint['distance']}');
+            print('     • Icon: ${waypoint['icon']}');
+            print('     • Full data: $waypoint');
+          }
+        } else {
+          print('⚠️ No waypoints from HERE API');
+          print('   • Available keys in result: ${result.keys.toList()}');
+          print('   • Full result structure: $result');
+          
+          // Check if waypoints might be in a different location
+          if (result['route'] != null && result['route']['sections'] != null) {
+            print('🔍 Checking route sections for waypoints...');
+            for (int i = 0; i < result['route']['sections'].length; i++) {
+              var section = result['route']['sections'][i];
+              print('   • Section $i keys: ${section.keys.toList()}');
+              if (section['waypoints'] != null) {
+                print('   • Section $i has waypoints: ${section['waypoints']}');
+              }
+            }
+          }
+        }
         
         // Update distance and time from API response
         if (result['distance'] != null) {
@@ -723,7 +826,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       _fakeRouteIndex = 0;
       _currentLocation = _routePoints.first;
     });
-    
+
     // Start with manual movement by default
     _isAutomaticMovement = false;
     _updateNavigationInfo();
@@ -732,6 +835,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
 
   // Simulate movement along the route for testing turn-by-turn navigation - OPTIMIZED
   void _startFakeMovement() {
+    if (_fakeMovementTimer != null) return;
+
+    setState(() {
+      _isNavigating = true;
+      _fakeRouteIndex = 0;
+      _currentLocation = _routePoints.first;
+    });
+
     _fakeMovementTimer = Timer.periodic(Duration(milliseconds: _movementUpdateInterval), (timer) {
       if (_fakeRouteIndex < _routePoints.length - 1) {
         // PERFORMANCE OPTIMIZATION: Batch updates to reduce setState calls
@@ -739,22 +850,24 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           _fakeRouteIndex++;
           _currentLocation = _routePoints[_fakeRouteIndex];
         });
+        debugPrint("_fakeRouteIndex=${_fakeRouteIndex}");
         
         // PERFORMANCE OPTIMIZATION: Update navigation info less frequently
         _updateNavigationInfo();
-        
-        // PERFORMANCE OPTIMIZATION: Update map less frequently
+
+        // // PERFORMANCE OPTIMIZATION: Update map less frequently
         final now = DateTime.now();
         if (now.difference(_lastMapUpdate).inMilliseconds >= _mapUpdateInterval) {
           _fitMapToCurrentLocation();
           _lastMapUpdate = now;
         }
-        
-        // Check if we've reached the destination
-        if (_fakeRouteIndex >= _routePoints.length - 1) {
-          timer.cancel();
-          _showArrivalDialog();
-        }
+
+        // kaip ir nereikalinga
+        // // Check if we've reached the destination
+        // if (_fakeRouteIndex >= _routePoints.length - 1) {
+        //   timer.cancel();
+        //   _showArrivalDialog();
+        // }
       } else {
         timer.cancel();
         _showArrivalDialog();
@@ -899,9 +1012,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   }
 
   void _fitMapToCurrentLocation() {
-    if (_currentLocation != null && _mapController != null) {
-      _mapController!.move(_currentLocation!, 15.0);
-    }
+    // if (_currentLocation != null && _mapController != null) {
+    //   _mapController!.move(_currentLocation!, 15.0);
+    // }
+    _animatedMapController.animateTo(dest: _currentLocation!);
   }
 
   void _showArrivalDialog() {
@@ -997,6 +1111,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         // Top navigation instruction bar
         if (_isNavigating) _buildTopNavigationBar(),
         
+        // Upcoming turns display (automatically shown)
+        if (_isNavigating) _buildUpcomingTurnsDisplay(),
+        
         // Floating controls on the right
         if (_isNavigating) _buildFloatingControls(),
         
@@ -1024,7 +1141,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -1070,6 +1187,109 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUpcomingTurnsDisplay() {
+    List<Map<String, dynamic>> upcomingTurns = _getUpcomingTurnsForDisplay();
+    
+    print('🔍 Building upcoming turns display:');
+    print('   • HERE API waypoints: ${_hereApiWaypoints?.length ?? 0}');
+    print('   • Upcoming turns: ${upcomingTurns.length}');
+    print('   • Route points: ${_routePoints.length}');
+    print('   • Current index: $_fakeRouteIndex');
+    
+    if (upcomingTurns.isEmpty) {
+      print('⚠️ No upcoming turns to display');
+      return const SizedBox.shrink(); // Don't show anything if no turns
+    }
+    
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 120, // Below the top navigation bar
+      left: 16,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.list_alt, color: Colors.indigo[600], size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Upcoming Turns',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo[700],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            // Turn instructions list
+            ...upcomingTurns.where((turn) => turn['instruction'].isNotEmpty).map((turn) => Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: turn['isNext'] ? Colors.indigo[50] : Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: turn['isNext'] ? Colors.indigo[200]! : Colors.grey[200]!,
+                  width: turn['isNext'] ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    turn['icon'],
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          turn['instruction'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: turn['isNext'] ? FontWeight.bold : FontWeight.normal,
+                            color: turn['isNext'] ? Colors.indigo[700] : Colors.grey[700],
+                          ),
+                        ),
+                        if (turn['distance'].isNotEmpty)
+                          Text(
+                            turn['distance'],
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            )).toList(),
           ],
         ),
       ),
@@ -1132,9 +1352,34 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
             iconColor: Colors.white,
           ),
           const SizedBox(height: 12),
+
           _buildFloatingButton(
             icon: Icons.search,
-            onTap: () {},
+            onTap: () {
+              _animatedMapController.animateTo(dest: _currentLocation!);
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.grey[700]!,
+          ),
+          const SizedBox(height: 12),
+          _buildFloatingButton(
+            icon: Icons.zoom_in,
+            onTap: () {
+              _animatedMapController.animatedZoomIn();
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.grey[700]!,
+          ),
+          _buildFloatingButton(
+            icon: Icons.zoom_out,
+            onTap: () {
+              _animatedMapController.animatedZoomOut();
+              // setState(() {
+              //   _mapController!.move(
+              //       _mapController!.camera.center, _mapController!.camera.zoom - 1
+              //   );
+              // });
+            },
             backgroundColor: Colors.white,
             iconColor: Colors.grey[700]!,
           ),
@@ -1175,7 +1420,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1201,7 +1446,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -1291,7 +1536,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -1335,7 +1580,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -1429,6 +1674,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
                 ),
               ),
             ),
+            
+
           ],
         ),
       ),
@@ -1453,7 +1700,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: iconColor, size: 20),
@@ -1489,7 +1736,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
   }
 
   Widget _buildMapView() {
-    // Debug: Check if we have route points
     if (_routePoints.isEmpty) {
       print('⚠️ No route points available for map');
       return Container(
@@ -1529,7 +1775,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
         border: Border.all(color: Colors.red, width: 2), // Red border to see container
       ),
       child: FlutterMap(
-        mapController: _mapController,
+        // mapController: _mapController,
+        mapController: _animatedMapController.mapController,
         options: MapOptions(
           initialCenter: LatLng(widget.pickupLat, widget.pickupLng),
           initialZoom: 10, // Lower zoom to reduce tile requests
@@ -1538,29 +1785,27 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
             setState(() {});
           },
           // PERFORMANCE OPTIMIZATION: Reduce tile requests by limiting zoom range
-          maxZoom: 10, // Reduced to avoid 404 errors
-          minZoom: 8,
+          maxZoom: 20, // Reduced to avoid 404 errors
+          minZoom: 4,
           // PERFORMANCE OPTIMIZATION: Disable smooth scrolling to reduce tile requests
-          enableScrollWheel: false,
-          enableMultiFingerGestureRace: false,
+          interactionOptions: const InteractionOptions(
+            enableScrollWheel: false,
+            enableMultiFingerGestureRace: false,
+          ),
         ),
       children: [
-        // PERFORMANCE OPTIMIZATION: HERE Raster Tiles ONLY (no fallback)
         TileLayer(
           urlTemplate: 'https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?apiKey=${ApiConfig.hereMapsApiKey}',
-          userAgentPackageName: 'com.moverslorryowner.app',
-          // PERFORMANCE OPTIMIZATION: Enable tile caching to reduce API calls
-          tileProvider: NetworkTileProvider(),
-          // PERFORMANCE OPTIMIZATION: Reduce tile size for fewer requests
+          userAgentPackageName: 'com.truckbuddy.app',
+          tileProvider: CachedNetworkTileProvider(cacheManager: DefaultCacheManager()),
           tileSize: 256,
-          // PERFORMANCE OPTIMIZATION: Use safer zoom levels to avoid 404 errors
-          maxZoom: 10, // Further reduced to avoid 404 errors
-          minZoom: 8,
-          // PERFORMANCE OPTIMIZATION: Add error handling without requiring assets
-          tileBuilder: (context, child, tile) {
-            print('🧩 Tile loaded: ${tile.coordinates}');
-            return child;
-          },
+          maxZoom: 20,
+          minZoom: 4,
+          // // PERFORMANCE OPTIMIZATION: Add error handling without requiring assets
+          // tileBuilder: (context, child, tile) {
+          //   print('🧩 Tile loaded: ${tile.coordinates}');
+          //   return child;
+          // },
           // PERFORMANCE OPTIMIZATION: Add error handling for failed tiles
           errorTileCallback: (tile, error, stackTrace) {
             print('❌ HERE Raster Tile error: $error for tile ${tile.coordinates}');
@@ -1636,5 +1881,20 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> {
       ],
       ),
     );
+  }
+}
+
+class CachedNetworkTileProvider extends NetworkTileProvider {
+  final BaseCacheManager cacheManager;
+
+  CachedNetworkTileProvider({
+    required this.cacheManager,
+  }) : super();
+
+  @override
+  ImageProvider getImage(TileCoordinates coordinates, dynamic options) {
+    final String tileUrl = getTileUrl(coordinates, options);
+    return CachedNetworkImageProvider(tileUrl,
+        cacheManager: cacheManager, headers: headers);
   }
 }
