@@ -1459,7 +1459,7 @@ class ApiProvider {
           'origin=${originLat},${originLng}'
           '&destination=${destinationLat},${destinationLng}'
           '&transportMode=${transportMode}'
-          '&return=polyline,summary'
+          '&return=polyline,summary,actions,instructions'
           '&routingMode=fast'
           '&apiKey=${ApiConfig.hereApiKey}';
       
@@ -1486,9 +1486,40 @@ class ApiProvider {
           final distance = summary['length'] ?? 0;
           final duration = summary['duration'] ?? 0;
           
-          // Extract waypoints for turn-by-turn navigation
+          // Extract maneuvers for turn-by-turn navigation
           List<Map<String, dynamic>> waypoints = [];
-          if (section['waypoints'] != null) {
+          
+          // Check for maneuvers in the section
+          if (section['maneuvers'] != null) {
+            debugPrint("🔍 Found maneuvers: ${section['maneuvers'].length}");
+            for (var maneuver in section['maneuvers']) {
+              if (maneuver['instruction'] != null) {
+                waypoints.add({
+                  'instruction': maneuver['instruction'],
+                  'distance': maneuver['length'] != null ? '${(maneuver['length'] / 1000).toStringAsFixed(1)} km' : '',
+                  'icon': _getTurnIcon(maneuver['instruction']),
+                });
+              }
+            }
+          }
+          
+          // Fallback: Check for actions if maneuvers are not available
+          if (waypoints.isEmpty && section['actions'] != null) {
+            debugPrint("🔍 Found actions: ${section['actions'].length}");
+            for (var action in section['actions']) {
+              if (action['instruction'] != null) {
+                waypoints.add({
+                  'instruction': action['instruction'],
+                  'distance': action['length'] != null ? '${(action['length'] / 1000).toStringAsFixed(1)} km' : '',
+                  'icon': _getTurnIcon(action['instruction']),
+                });
+              }
+            }
+          }
+          
+          // Fallback: Check for waypoints if maneuvers and actions are not available
+          if (waypoints.isEmpty && section['waypoints'] != null) {
+            debugPrint("🔍 Found waypoints: ${section['waypoints'].length}");
             for (var waypoint in section['waypoints']) {
               if (waypoint['instruction'] != null) {
                 waypoints.add({
@@ -1543,6 +1574,12 @@ class ApiProvider {
           }
           
           debugPrint("✅ Extracted ${polylinePoints.length} polyline points from shape");
+          debugPrint("✅ Extracted ${waypoints.length} waypoints for turn-by-turn navigation");
+          
+          // Log the first few waypoints for debugging
+          for (int i = 0; i < waypoints.length && i < 3; i++) {
+            debugPrint("   Waypoint $i: ${waypoints[i]['instruction']} (${waypoints[i]['distance']})");
+          }
           
           return {
             'success': true,
@@ -1579,14 +1616,24 @@ class ApiProvider {
 
   // Helper method to get turn icon based on instruction
   String _getTurnIcon(String instruction) {
-    if (instruction.toLowerCase().contains('left')) {
-      return '🔄'; // Left turn icon
-    } else if (instruction.toLowerCase().contains('right')) {
-      return '🔄'; // Right turn icon
-    } else if (instruction.toLowerCase().contains('straight')) {
+    String lowerInstruction = instruction.toLowerCase();
+    
+    if (lowerInstruction.contains('left')) {
+      return '↰'; // Left turn icon
+    } else if (lowerInstruction.contains('right')) {
+      return '↱'; // Right turn icon
+    } else if (lowerInstruction.contains('straight') || lowerInstruction.contains('continue')) {
       return '➡️'; // Straight icon
-    } else if (instruction.toLowerCase().contains('u-turn')) {
-      return '🔄'; // U-turn icon
+    } else if (lowerInstruction.contains('u-turn') || lowerInstruction.contains('uturn')) {
+      return '↶'; // U-turn icon
+    } else if (lowerInstruction.contains('merge')) {
+      return '🔀'; // Merge icon
+    } else if (lowerInstruction.contains('exit') || lowerInstruction.contains('ramp')) {
+      return '↗️'; // Exit/ramp icon
+    } else if (lowerInstruction.contains('roundabout')) {
+      return '🔄'; // Roundabout icon
+    } else if (lowerInstruction.contains('destination') || lowerInstruction.contains('arrive')) {
+      return '🏁'; // Destination icon
     } else {
       return '📍'; // Default location icon
     }

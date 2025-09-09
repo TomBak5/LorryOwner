@@ -403,37 +403,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     }
   }
   
-  List<Map<String, dynamic>> _getUpcomingTurnsForDisplay() {
-    print('🔍 Getting upcoming turns for display:');
-    print('   • HERE API waypoints: ${_hereApiWaypoints?.length ?? 0}');
-    print('   • Route points: ${_routePoints.length}');
-    print('   • Current index: $_fakeRouteIndex');
-    
-    if (_hereApiWaypoints == null || _hereApiWaypoints!.isEmpty) {
-      print('⚠️ No HERE API waypoints available');
-      return [];
-    }
-    
-    int currentProgress = (_fakeRouteIndex / _routePoints.length * _hereApiWaypoints!.length).round();
-    print('   • Current progress: $currentProgress');
-    
-    List<Map<String, dynamic>> upcomingTurns = [];
-    
-    for (int i = currentProgress; i < _hereApiWaypoints!.length && upcomingTurns.length < 4; i++) {
-      var waypoint = _hereApiWaypoints![i];
-      print('   • Processing waypoint $i: $waypoint');
-      
-      upcomingTurns.add({
-        'instruction': waypoint['instruction'] ?? 'Continue straight',
-        'distance': waypoint['distance'] ?? '',
-        'icon': waypoint['icon'] ?? '📍',
-        'isNext': i == currentProgress,
-      });
-    }
-    
-    print('   • Generated upcoming turns: ${upcomingTurns.length}');
-    return upcomingTurns;
-  }
 
   @override
   void initState() {
@@ -1111,9 +1080,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         // Top navigation instruction bar
         if (_isNavigating) _buildTopNavigationBar(),
         
-        // Upcoming turns display (automatically shown)
-        if (_isNavigating) _buildUpcomingTurnsDisplay(),
-        
         // Floating controls on the right
         if (_isNavigating) _buildFloatingControls(),
         
@@ -1147,45 +1113,23 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.navigation,
-                  color: Colors.white,
-                  size: 24,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _nextTurnInstruction,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            Icon(
+              Icons.navigation,
+              color: Colors.white,
+              size: 24,
             ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const SizedBox(width: 36), // Align with text above
-                Expanded(
-                  child: Text(
-                    '$_nextStreetName • $_nextTurnDistance',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _nextTurnInstruction,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -1193,108 +1137,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     );
   }
 
-  Widget _buildUpcomingTurnsDisplay() {
-    List<Map<String, dynamic>> upcomingTurns = _getUpcomingTurnsForDisplay();
-    
-    print('🔍 Building upcoming turns display:');
-    print('   • HERE API waypoints: ${_hereApiWaypoints?.length ?? 0}');
-    print('   • Upcoming turns: ${upcomingTurns.length}');
-    print('   • Route points: ${_routePoints.length}');
-    print('   • Current index: $_fakeRouteIndex');
-    
-    if (upcomingTurns.isEmpty) {
-      print('⚠️ No upcoming turns to display');
-      return const SizedBox.shrink(); // Don't show anything if no turns
-    }
-    
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 120, // Below the top navigation bar
-      left: 16,
-      right: 16,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(Icons.list_alt, color: Colors.indigo[600], size: 20),
-                const SizedBox(width: 8),
-                Text(
-                  'Upcoming Turns',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.indigo[700],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            
-            // Turn instructions list
-            ...upcomingTurns.where((turn) => turn['instruction'].isNotEmpty).map((turn) => Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: turn['isNext'] ? Colors.indigo[50] : Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: turn['isNext'] ? Colors.indigo[200]! : Colors.grey[200]!,
-                  width: turn['isNext'] ? 2 : 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Text(
-                    turn['icon'],
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          turn['instruction'],
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: turn['isNext'] ? FontWeight.bold : FontWeight.normal,
-                            color: turn['isNext'] ? Colors.indigo[700] : Colors.grey[700],
-                          ),
-                        ),
-                        if (turn['distance'].isNotEmpty)
-                          Text(
-                            turn['distance'],
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            )).toList(),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildFloatingControls() {
     return Positioned(
