@@ -600,40 +600,6 @@ class _HomePageState extends State<HomePage> {
                                          ),
                                        ),
                                        // Status badge
-                                       Container(
-                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                         decoration: BoxDecoration(
-                                           color: Colors.green.shade400,
-                                           borderRadius: BorderRadius.circular(20),
-                                           boxShadow: [
-                                             BoxShadow(
-                                               color: Colors.green.withOpacity(0.3),
-                                               blurRadius: 8,
-                                               offset: const Offset(0, 4),
-                                             ),
-                                           ],
-                                         ),
-                                         child: Row(
-                                           mainAxisSize: MainAxisSize.min,
-                                           children: [
-                                             Icon(
-                                               Icons.check_circle,
-                                               color: Colors.white,
-                                               size: 16,
-                                             ),
-                                             const SizedBox(width: 6),
-                                             Text(
-                                               'ACTIVE',
-                                               style: TextStyle(
-                                                 fontSize: 12,
-                                                 color: Colors.white,
-                                                 fontWeight: FontWeight.bold,
-                                                 letterSpacing: 0.5,
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                       ),
                                      ],
                                    ),
                                    const SizedBox(height: 24),
@@ -650,52 +616,6 @@ class _HomePageState extends State<HomePage> {
                                      ),
                                      child: Row(
                                        children: [
-                                         // Truck image
-                                         Container(
-                                           width: 100,
-                                           height: 100,
-                                           decoration: BoxDecoration(
-                                             borderRadius: BorderRadius.circular(16),
-                                             border: Border.all(
-                                               color: Colors.white.withOpacity(0.3),
-                                               width: 2,
-                                             ),
-                                             boxShadow: [
-                                               BoxShadow(
-                                                 color: Colors.black.withOpacity(0.2),
-                                                 blurRadius: 10,
-                                                 offset: const Offset(0, 5),
-                                               ),
-                                             ],
-                                           ),
-                                           child: ClipRRect(
-                                             borderRadius: BorderRadius.circular(14),
-                                             child: homePageController.getCurrentAssignedTruck()?['truck_image'] != null
-                                                 ? Image.network(
-                                                     "$basUrl${homePageController.getCurrentAssignedTruck()!['truck_image']}",
-                                                     fit: BoxFit.cover,
-                                                     errorBuilder: (context, error, stackTrace) {
-                                                       return Container(
-                                                         color: Colors.blue.shade400,
-                                                         child: Icon(
-                                                           Icons.local_shipping,
-                                                           color: Colors.white,
-                                                           size: 40,
-                                                         ),
-                                                       );
-                                                     }
-                                                 )
-                                                 : Container(
-                                                     color: Colors.blue.shade400,
-                                                     child: Icon(
-                                                       Icons.local_shipping,
-                                                       color: Colors.white,
-                                                       size: 40,
-                                                     ),
-                                                   ),
-                                           ),
-                                         ),
-                                         const SizedBox(width: 20),
                                          // Truck information
                                          Expanded(
                                            child: Column(
@@ -916,26 +836,6 @@ class _HomePageState extends State<HomePage> {
                                            label: Text('View Details'),
                                            style: ElevatedButton.styleFrom(
                                              backgroundColor: Colors.white.withOpacity(0.2),
-                                             foregroundColor: Colors.white,
-                                             padding: const EdgeInsets.symmetric(vertical: 12),
-                                             shape: RoundedRectangleBorder(
-                                               borderRadius: BorderRadius.circular(12),
-                                             ),
-                                             elevation: 0,
-                                           ),
-                                         ),
-                                       ),
-                                       const SizedBox(width: 12),
-                                       Expanded(
-                                         child: ElevatedButton.icon(
-                                           onPressed: () {
-                                             // TODO: Navigate to assigned orders
-                                             Get.toNamed(Routes.assignedOrders);
-                                           },
-                                           icon: Icon(Icons.assignment, size: 18),
-                                           label: Text('View Orders'),
-                                           style: ElevatedButton.styleFrom(
-                                             backgroundColor: Colors.green.shade500,
                                              foregroundColor: Colors.white,
                                              padding: const EdgeInsets.symmetric(vertical: 12),
                                              shape: RoundedRectangleBorder(
