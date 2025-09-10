@@ -19,6 +19,7 @@ class _NavigationTestScreenState extends State<NavigationTestScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('HERE Navigation Test'),
         backgroundColor: Colors.blue,

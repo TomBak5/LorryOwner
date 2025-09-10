@@ -72,6 +72,9 @@ class MyApp extends StatelessWidget {
             translations: AppTranslations(),
             theme: ThemeData(
               useMaterial3: false,
+              scaffoldBackgroundColor: Colors.white,
+              canvasColor: Colors.white,
+              cardColor: Colors.white,
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               hoverColor: Colors.transparent,
@@ -80,6 +83,8 @@ class MyApp extends StatelessWidget {
               primaryColor: const Color(0xff1347FF),
               colorScheme: ColorScheme.fromSwatch().copyWith(
                 primary: const Color(0xff194BFB),
+                background: Colors.white,
+                surface: Colors.white,
               ),
               // Fix for text input issues
               inputDecorationTheme: InputDecorationTheme(
@@ -94,6 +99,23 @@ class MyApp extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: const Color(0xff194BFB)),
                 ),
+              ),
+            ),
+            darkTheme: ThemeData(
+              useMaterial3: false,
+              scaffoldBackgroundColor: Colors.white,
+              canvasColor: Colors.white,
+              cardColor: Colors.white,
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              dividerColor: Colors.transparent,
+              fontFamily: "urbani_regular",
+              primaryColor: const Color(0xff1347FF),
+              colorScheme: ColorScheme.fromSwatch().copyWith(
+                primary: const Color(0xff194BFB),
+                background: Colors.white,
+                surface: Colors.white,
               ),
             ),
             home: const SplashScreen(),

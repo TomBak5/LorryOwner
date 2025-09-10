@@ -86,6 +86,7 @@ class _NearLoadState extends State<NearLoad> {
     return GetBuilder<NearLoadController>(
       builder: (nearLoadController) {
         return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: priMaryColor,

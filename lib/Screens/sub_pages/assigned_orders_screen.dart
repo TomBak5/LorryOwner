@@ -39,6 +39,7 @@ class _AssignedOrdersScreenState extends State<AssignedOrdersScreen> {
     return GetBuilder<OrderController>(
       builder: (orderController) {
         return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(title: Text('Assigned Orders')),
           body: orderController.isLoading
               ? Center(child: CircularProgressIndicator())

@@ -73,6 +73,7 @@ class _BookedDetailsState extends State<BookedDetails> {
       child: GetBuilder<BookedHistoryController>(
         builder: (bookedHistoryController) {
           return Scaffold(
+            backgroundColor: Colors.white,
             bottomNavigationBar: bookedHistoryController.isLoading
                 ? const SizedBox()
                 : (bookedHistoryController.historyData.loadDetails.flowId == "4" || bookedHistoryController.historyData.loadDetails.flowId == "7")
@@ -252,7 +253,6 @@ class _BookedDetailsState extends State<BookedDetails> {
                             ),
                           )
                         : null,
-            backgroundColor: Colors.white,
             appBar: AppBar(
               centerTitle: true,
               elevation: 0,

@@ -97,6 +97,7 @@ class _AttachLorry1State extends State<AttachLorry1> {
     return GetBuilder<AttachLorryController>(
       builder: (attachLorryController) {
         return Scaffold(
+          backgroundColor: Colors.white,
           resizeToAvoidBottomInset: false,
           bottomSheet: PreferredSize(
             preferredSize: const Size.fromHeight(42),
@@ -127,7 +128,6 @@ class _AttachLorry1State extends State<AttachLorry1> {
                     ),
             ),
           ),
-          backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: priMaryColor,

@@ -17,6 +17,7 @@ class LoadRouteMapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(title: Text('Load Route Map')),
       body: Center(
         child: Column(

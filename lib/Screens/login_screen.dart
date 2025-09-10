@@ -58,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         return Scaffold(
+          backgroundColor: Colors.white,
           body: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
             child: Column(

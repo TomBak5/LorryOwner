@@ -1,8 +1,10 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -35,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   MapController? _mapController;
   Position? _currentPosition;
   bool _isLocationLoading = true;
+  Timer? _debounceTimer;
   
   @override
   void initState() {
@@ -55,6 +58,13 @@ class _HomePageState extends State<HomePage> {
       ManagePageCalling().setLogin(false);
     });
     ManagePageCalling().setLogin(false);
+  }
+
+  @override
+  void dispose() {
+    _debounceTimer?.cancel();
+    _mapController?.dispose();
+    super.dispose();
   }
 
   Future<void> _getCurrentLocation() async {
@@ -151,41 +161,14 @@ class _HomePageState extends State<HomePage> {
                   preferredSize: const Size.fromHeight(100),
                   child: AppBar(
                       toolbarHeight: 100,
-                      backgroundColor: priMaryColor,
+                      backgroundColor: Colors.white,
                       elevation: 0,
                       titleSpacing: 0,
                       title: Column(
                         children: [
                           ListTile(
                             dense: true,
-                            leading: homePageController.userData?.proPic.toString() == "null"
-                                ? const CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    backgroundImage: AssetImage(
-                                      "assets/image/05.png",
-                                    ),
-                                    radius: 25,
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor: Colors.transparent,
-                                    backgroundImage: NetworkImage(
-                                      "$basUrl${homePageController.userData?.proPic}",
-                                    ),
-                                    radius: 25,
-                                    child: Image.network(
-                                      "$basUrl${homePageController.userData?.proPic}",
-                                      color: Colors.transparent,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
-                                        return commonSimmer(height: 50, width: 50);
-                                      },
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        return (loadingProgress == null)
-                                            ? child
-                                            : commonSimmer(height: 50, width: 50);
-                                      },
-                                    ),
-                                  ),
+                            leading: const SizedBox(width: 0),
                             trailing: InkWell(
                               onTap: () {
                                 Get.toNamed(Routes.notification);
@@ -207,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w400,
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontFamily: "urbani_regular",
                                 ),
                               ),
@@ -220,7 +203,7 @@ class _HomePageState extends State<HomePage> {
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w400,
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     fontFamily: "urbani_extrabold",
                                   ),
                                 ),
@@ -230,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                                   Text(
                                     'Role: ${homePageController.userData?.userRole}',
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       fontWeight: FontWeight.w500,
                                       fontFamily: "urbani_extrabold",
                                       fontSize: 14,
@@ -250,7 +233,7 @@ class _HomePageState extends State<HomePage> {
                           Expanded(
                             child: Container(
                               padding: const EdgeInsets.all(24),
-                              color: priMaryColor,
+                              color: Colors.white,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -259,7 +242,7 @@ class _HomePageState extends State<HomePage> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w500,
                                       fontSize: 32,
-                                      color: Color(0xff18FF13),
+                                      color: Colors.black,
                                       fontFamily: "urbani_extrabold",
                                     ),
                                   ),
@@ -271,7 +254,7 @@ class _HomePageState extends State<HomePage> {
                                           homePageController.homePageData?.homeData?.topMsg?.tr ?? '',
                                           style: const TextStyle(
                                             fontFamily: "urbani_extrabold",
-                                            color: Colors.white,
+                                            color: Colors.black,
                                             fontSize: 15,
                                             fontWeight: FontWeight.w500,
                                           ),
@@ -493,9 +476,9 @@ class _HomePageState extends State<HomePage> {
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.orange.shade100,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.orange.shade300),
+                          border: Border.all(color: Colors.grey.shade300),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -505,25 +488,25 @@ class _HomePageState extends State<HomePage> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.orange.shade800,
+                                color: Colors.black,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'User Role: ${homePageController.userData?.userRole ?? 'null'}',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                              style: TextStyle(fontSize: 12, color: Colors.black),
                             ),
                             Text(
                               'Has Assigned Truck: ${homePageController.hasAssignedTruck}',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                              style: TextStyle(fontSize: 12, color: Colors.black),
                             ),
                             Text(
                               'Assigned Trucks Count: ${homePageController.assignedTrucks.length}',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                              style: TextStyle(fontSize: 12, color: Colors.black),
                             ),
                             Text(
                               'User ID: ${homePageController.userData?.id ?? 'null'}',
-                              style: TextStyle(fontSize: 12, color: Colors.orange.shade700),
+                              style: TextStyle(fontSize: 12, color: Colors.black),
                             ),
                           ],
                         ),
@@ -533,15 +516,11 @@ class _HomePageState extends State<HomePage> {
                        Container(
                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                          decoration: BoxDecoration(
-                           gradient: LinearGradient(
-                             colors: [Colors.blue.shade600, Colors.blue.shade800],
-                             begin: Alignment.topLeft,
-                             end: Alignment.bottomRight,
-                           ),
+                           color: Colors.white,
                            borderRadius: BorderRadius.circular(20),
                            boxShadow: [
                              BoxShadow(
-                               color: Colors.blue.withOpacity(0.3),
+                               color: Colors.grey.withOpacity(0.3),
                                blurRadius: 15,
                                offset: const Offset(0, 8),
                              ),
@@ -605,7 +584,7 @@ class _HomePageState extends State<HomePage> {
                                                style: TextStyle(
                                                  fontSize: 20,
                                                  fontWeight: FontWeight.bold,
-                                                 color: Colors.white,
+                                                 color: Colors.black,
                                                  fontFamily: fontFamilyBold,
                                                ),
                                              ),
@@ -613,7 +592,7 @@ class _HomePageState extends State<HomePage> {
                                                'Currently assigned to you',
                                                style: TextStyle(
                                                  fontSize: 14,
-                                                 color: Colors.white.withOpacity(0.8),
+                                                 color: Colors.grey[600],
                                                  fontWeight: FontWeight.w400,
                                                ),
                                              ),

@@ -49,6 +49,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return GetBuilder<ReviewController>(
       builder: (reviewController) {
         return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: priMaryColor,

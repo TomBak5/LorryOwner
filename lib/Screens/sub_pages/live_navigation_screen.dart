@@ -1036,6 +1036,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : !_hasLocationPermission

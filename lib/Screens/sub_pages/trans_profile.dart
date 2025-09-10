@@ -46,6 +46,7 @@ class _TransProfileState extends State<TransProfile> {
     return GetBuilder<ProfileDetilsController>(
       builder: (reviewController) {
         return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
             elevation: 0,
             backgroundColor: priMaryColor,
