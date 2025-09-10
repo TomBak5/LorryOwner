@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:movers_lorry_owner/AppConstData/typographyy.dart';
@@ -38,6 +39,11 @@ class _HomePageState extends State<HomePage> {
   Position? _currentPosition;
   bool _isLocationLoading = true;
   Timer? _debounceTimer;
+  String _currentAddress = 'Getting location...';
+  
+  // Set your real location coordinates here
+  static const double _realLatitude = 54.6872;  // Change to your latitude
+  static const double _realLongitude = 25.2797; // Change to your longitude
   
   @override
   void initState() {
@@ -69,22 +75,29 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _getCurrentLocation() async {
     try {
+      debugPrint('Starting location request...');
+      
       // Check if location services are enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      debugPrint('Location services enabled: $serviceEnabled');
       if (!serviceEnabled) {
         setState(() {
           _isLocationLoading = false;
+          _currentAddress = 'Location services disabled';
         });
         return;
       }
 
       // Check location permission
       LocationPermission permission = await Geolocator.checkPermission();
+      debugPrint('Initial permission: $permission');
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
+        debugPrint('Permission after request: $permission');
         if (permission == LocationPermission.denied) {
           setState(() {
             _isLocationLoading = false;
+            _currentAddress = 'Location permission denied';
           });
           return;
         }
@@ -93,19 +106,27 @@ class _HomePageState extends State<HomePage> {
       if (permission == LocationPermission.deniedForever) {
         setState(() {
           _isLocationLoading = false;
+          _currentAddress = 'Location permission permanently denied';
         });
         return;
       }
 
       // Get current position
+      debugPrint('Requesting current position...');
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
+      
+      debugPrint('Position received: Lat: ${position.latitude}, Lng: ${position.longitude}');
 
       setState(() {
         _currentPosition = position;
         _isLocationLoading = false;
       });
+
+      // Get address from coordinates
+      debugPrint('Getting address from coordinates...');
+      await _getAddressFromCoordinates(position.latitude, position.longitude);
 
       // Move camera to current location if map controller is available
       if (_mapController != null && _currentPosition != null) {
@@ -116,8 +137,72 @@ class _HomePageState extends State<HomePage> {
       }
     } catch (e) {
       debugPrint('Error getting location: $e');
+      // Fallback to a default location if GPS fails
+      debugPrint('Using fallback location...');
+      Position fallbackPosition = Position(
+        latitude: _realLatitude, // Your real location
+        longitude: _realLongitude,
+        timestamp: DateTime.now(),
+        accuracy: 10.0,
+        altitude: 0.0,
+        altitudeAccuracy: 0.0,
+        heading: 0.0,
+        headingAccuracy: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0,
+      );
+      
       setState(() {
+        _currentPosition = fallbackPosition;
         _isLocationLoading = false;
+      });
+      
+      await _getAddressFromCoordinates(fallbackPosition.latitude, fallbackPosition.longitude);
+    }
+  }
+
+  Future<void> _getAddressFromCoordinates(double latitude, double longitude) async {
+    try {
+      debugPrint('Geocoding coordinates: Lat: $latitude, Lng: $longitude');
+      List<Placemark> placemarks = await placemarkFromCoordinates(latitude, longitude);
+      debugPrint('Found ${placemarks.length} placemarks');
+      
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+        debugPrint('Place details: Street: ${place.street}, Locality: ${place.locality}, AdminArea: ${place.administrativeArea}, Country: ${place.country}');
+        
+        String address = '';
+        
+        if (place.street != null && place.street!.isNotEmpty) {
+          address += place.street!;
+        }
+        if (place.locality != null && place.locality!.isNotEmpty) {
+          if (address.isNotEmpty) address += ', ';
+          address += place.locality!;
+        }
+        if (place.administrativeArea != null && place.administrativeArea!.isNotEmpty) {
+          if (address.isNotEmpty) address += ', ';
+          address += place.administrativeArea!;
+        }
+        if (place.country != null && place.country!.isNotEmpty) {
+          if (address.isNotEmpty) address += ', ';
+          address += place.country!;
+        }
+        
+        debugPrint('Final address: $address');
+        setState(() {
+          _currentAddress = address.isNotEmpty ? address : 'Address not available';
+        });
+      } else {
+        debugPrint('No placemarks found');
+        setState(() {
+          _currentAddress = 'Address not available';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting address: $e');
+      setState(() {
+        _currentAddress = 'Address not available';
       });
     }
   }
@@ -156,10 +241,10 @@ class _HomePageState extends State<HomePage> {
                 );
               },
               child: Scaffold(
-                backgroundColor: Colors.white,
-                appBar: PreferredSize(
-                  preferredSize: const Size.fromHeight(100),
-                  child: AppBar(
+                    backgroundColor: Colors.white,
+                    appBar: PreferredSize(
+                      preferredSize: const Size.fromHeight(100),
+                      child: AppBar(
                       toolbarHeight: 100,
                       backgroundColor: Colors.white,
                       elevation: 0,
@@ -183,48 +268,11 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               ),
                             ),
-                            title: Transform.translate(
-                              offset: const Offset(0, -5),
-                              child: Text(
-                                "Hello..".tr,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.black,
-                                  fontFamily: "urbani_regular",
-                                ),
-                              ),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  homePageController.userData?.name ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.black,
-                                    fontFamily: "urbani_extrabold",
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                // User Role text styled like Find Loads button
-                                if (homePageController.userData?.userRole != null)
-                                  Text(
-                                    'Role: ${homePageController.userData?.userRole}',
-                                    style: TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w500,
-                                      fontFamily: "urbani_extrabold",
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                              ],
-                            ),
                           ),
                         ],
-                      )),
-                ),
+                      ),
+                    ),
+                  ),
                 body: SingleChildScrollView(
                   child: Column(
                     children: [
@@ -237,42 +285,6 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    "Post your truck and get loads".tr,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 32,
-                                      color: Colors.black,
-                                      fontFamily: "urbani_extrabold",
-                                    ),
-                                  ),
-                                  const SizedBox(height: 15),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          homePageController.homePageData?.homeData?.topMsg?.tr ?? '',
-                                          style: const TextStyle(
-                                            fontFamily: "urbani_extrabold",
-                                            color: Colors.black,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Transform.translate(
-                                        offset: const Offset(0, -1),
-                                        child: SvgPicture.asset(
-                                          homePageController.verification!,
-                                          height: 18,
-                                          width: 18,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                   const SizedBox(height: 24),
                                   SingleChildScrollView(
                                     scrollDirection: Axis.horizontal,
@@ -589,7 +601,7 @@ class _HomePageState extends State<HomePage> {
                                                ),
                                              ),
                                              Text(
-                                               'Currently assigned to you',
+                                               _currentAddress,
                                                style: TextStyle(
                                                  fontSize: 14,
                                                  color: Colors.grey[600],
