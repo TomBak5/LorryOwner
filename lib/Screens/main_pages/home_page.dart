@@ -580,7 +580,7 @@ class _HomePageState extends State<HomePage> {
                                            crossAxisAlignment: CrossAxisAlignment.start,
                                            children: [
                                              Text(
-                                               'Your Assigned Truck',
+                                               homePageController.userData?.name ?? 'Driver',
                                                style: TextStyle(
                                                  fontSize: 20,
                                                  fontWeight: FontWeight.bold,
