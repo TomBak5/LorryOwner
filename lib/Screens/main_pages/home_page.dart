@@ -273,9 +273,11 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                body: SingleChildScrollView(
-                  child: Column(
-                    children: [
+                body: Stack(
+                  children: [
+                    SingleChildScrollView(
+                      child: Column(
+                        children: [
                       Row(
                         children: [
                           Expanded(
@@ -1149,8 +1151,21 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                        ],
+                      ),
+                    ),
+                    // TruckBuddy logo positioned at coordinates 14:71
+                    Positioned(
+                      left: 14,
+                      top: 71,
+                      child: Image.asset(
+                        "assets/logo/truckbuddy_logo.png",
+                        height: 24,
+                        width: 295,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
