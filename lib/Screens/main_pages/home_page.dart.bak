@@ -214,9 +214,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
+    return Scaffold(
       backgroundColor: Colors.white,
       body: GetBuilder<HomePageController>(
         builder: (homePageController) {
@@ -275,43 +273,38 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                body: OverflowBox(
-                  alignment: Alignment.topLeft,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
+                body: Stack(
+                  children: [
                     SingleChildScrollView(
-                      clipBehavior: Clip.none,
                       child: Column(
                         children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              clipBehavior: Clip.none,
-                              padding: const EdgeInsets.all(24),
-                              color: Colors.white,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 24),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: [
-                                        // Check if user is dispatcher or driver
-                                        if (homePageController.userData?.userRole == 'dispatcher')
-                                          // Dispatcher menu
-                                          for (int a = 0; a < 4; a++)
-                                            Row(
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    // Allow Create Order without verification (case 0)
-                                                    if (a == 0) {
-                                                      Get.toNamed(Routes.assignOrder);
-                                                    } else if (homePageController.userData?.isVerify == "2") {
-                                                      switch (a) {
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: const EdgeInsets.all(24),
+                                  color: Colors.white,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const SizedBox(height: 24),
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          children: [
+                                            // Check if user is dispatcher or driver
+                                            if (homePageController.userData?.userRole == 'dispatcher')
+                                              // Dispatcher menu
+                                              for (int a = 0; a < 4; a++)
+                                                Row(
+                                                  children: [
+                                                    InkWell(
+                                                      onTap: () {
+                                                        // Allow Create Order without verification (case 0)
+                                                        if (a == 0) {
+                                                          Get.toNamed(Routes.assignOrder);
+                                                        } else if (homePageController.userData?.isVerify == "2") {
+                                                          switch (a) {
                                                         case 1:
                                                           Get.to(Subdrivers()); // Manage Drivers
                                                           break;
@@ -1155,33 +1148,31 @@ class _HomePageState extends State<HomePage> {
                                          ),
                                     ],
                                   ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                        ],
+                      ],
+                    ),
+                    // TruckBuddy logo positioned at coordinates 14:71
+                    Positioned(
+                      left: 14,
+                      top: 71,
+                      child: Image.asset(
+                        "assets/logo/truckbuddy_logo.png",
+                        height: 24,
+                        width: 295,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ],
                 ),
-                  ),
-                ),
+              ),
             );
           }
         },
       ),
-        ),
-        // TruckBuddy logo positioned at coordinates 14:71
-        Positioned(
-          left: -40,
-          top: 71,
-          child: Image.asset(
-            "assets/logo/truckbuddy_logo.png",
-            height: 24,
-            width: 295,
-            fit: BoxFit.contain,
-          ),
-        ),
-      ],
     );
   }
 }
