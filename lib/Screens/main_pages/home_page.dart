@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -12,7 +11,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:movers_lorry_owner/AppConstData/typographyy.dart';
 import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
 import 'package:movers_lorry_owner/Screens/sub_pages/subdrivers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,6 +21,7 @@ import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
 import '../../AppConstData/api_config.dart';
+import '../../AppConstData/typographyy.dart';
 import '../../models/home_model.dart';
 import '../../widgets/widgets.dart';
 
@@ -323,7 +322,7 @@ class _HomePageState extends State<HomePage> {
                                                           break;
                                                       }
                                                     } else if (homePageController.userData?.isVerify == "1") {
-                                                      if (("verification Under Process" ?? "").trim().isNotEmpty) {
+                                                      if ("verification Under Process".trim().isNotEmpty) {
                                                         showCommonToast("verification Under Process");
                                                       }
                                                     } else {
@@ -393,7 +392,7 @@ class _HomePageState extends State<HomePage> {
                                                           break;
                                                       }
                                                     } else if (homePageController.userData?.isVerify == "1") {
-                                                      if (("verification Under Process" ?? "").trim().isNotEmpty) {
+                                                      if ("verification Under Process".trim().isNotEmpty) {
                                                         showCommonToast("verification Under Process");
                                                       }
                                                     } else {
@@ -489,46 +488,6 @@ class _HomePageState extends State<HomePage> {
                                         },
                                       ),
                                     ),
-                          ],
-                        ),
-                      ),
-                      // Debug information for assigned truck visibility
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Debug Info - Assigned Truck Card:',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'User Role: ${homePageController.userData?.userRole ?? 'null'}',
-                              style: TextStyle(fontSize: 12, color: Colors.black),
-                            ),
-                            Text(
-                              'Has Assigned Truck: ${homePageController.hasAssignedTruck}',
-                              style: TextStyle(fontSize: 12, color: Colors.black),
-                            ),
-                            Text(
-                              'Assigned Trucks Count: ${homePageController.assignedTrucks.length}',
-                              style: TextStyle(fontSize: 12, color: Colors.black),
-                            ),
-                            Text(
-                              'User ID: ${homePageController.userData?.id ?? 'null'}',
-                              style: TextStyle(fontSize: 12, color: Colors.black),
-                            ),
                           ],
                         ),
                       ),

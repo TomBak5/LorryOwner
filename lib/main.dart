@@ -83,7 +83,6 @@ class MyApp extends StatelessWidget {
               primaryColor: const Color(0xff1347FF),
               colorScheme: ColorScheme.fromSwatch().copyWith(
                 primary: const Color(0xff194BFB),
-                background: Colors.white,
                 surface: Colors.white,
               ),
               // Fix for text input issues
@@ -114,7 +113,6 @@ class MyApp extends StatelessWidget {
               primaryColor: const Color(0xff1347FF),
               colorScheme: ColorScheme.fromSwatch().copyWith(
                 primary: const Color(0xff194BFB),
-                background: Colors.white,
                 surface: Colors.white,
               ),
             ),
