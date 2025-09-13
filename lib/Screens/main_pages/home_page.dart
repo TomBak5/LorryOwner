@@ -1181,9 +1181,9 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.contain,
           ),
         ),
-        // Ring bell icon positioned at coordinates 329:71
+        // Ring bell icon positioned 40px from right
         Positioned(
-          left: 329,
+          right: 40,
           top: 71,
           child: Image.asset(
             "assets/icons/bellring.png",
