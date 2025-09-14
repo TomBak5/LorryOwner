@@ -283,10 +283,10 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        // TruckBuddy logo positioned at coordinates 14:71
+        // TruckBuddy logo positioned 15px up from previous position
         Positioned(
           left: -40,
-          top: 71,
+          top: 86, // Subtracted 15px from 101
           child: Image.asset(
             "assets/logo/truckbuddy_logo.png",
             height: 24,
@@ -294,10 +294,10 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.contain,
           ),
         ),
-        // Ring bell icon positioned 40px from right
+        // Ring bell icon positioned 15px up from previous position
         Positioned(
           right: 40,
-          top: 71,
+          top: 86, // Subtracted 15px from 101
           child: Image.asset(
             "assets/icons/bellring.png",
             height: 24,
