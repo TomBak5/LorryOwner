@@ -1,29 +1,19 @@
 // ignore_for_file: deprecated_member_use
 
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/subdrivers.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shimmer/shimmer.dart';
 
-import '../../Api_Provider/imageupload_api.dart';
-import '../../AppConstData/app_colors.dart';
 import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
 import '../../AppConstData/api_config.dart';
-import '../../AppConstData/typographyy.dart';
-import '../../models/home_model.dart';
-import '../../widgets/widgets.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,8 +31,9 @@ class _HomePageState extends State<HomePage> {
   String _currentAddress = 'Getting location...';
   
   // Set your real location coordinates here
-  static const double _realLatitude = 54.6872;  // Change to your latitude
-  static const double _realLongitude = 25.2797; // Change to your longitude
+  // You can update these with your actual coordinates
+  static const double _realLatitude = 54.6872;  // Change to your actual latitude
+  static const double _realLongitude = 25.2797; // Change to your actual longitude
   
   @override
   void initState() {
@@ -319,10 +310,22 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMapView() {
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      child: _isLocationLoading
+    return Positioned(
+      top: 118, // Y position from Figma
+      left: 0, // Start from left edge
+      right: 0, // Extend to right edge (full width)
+      child: Container(
+        width: double.infinity, // Full screen width
+        height: Get.height * 0.75, // Responsive height
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.3),
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: _isLocationLoading
           ? const Center(
               child: CircularProgressIndicator(),
             )
@@ -381,13 +384,15 @@ class _HomePageState extends State<HomePage> {
                   ),
               ],
             ),
+        ),
+      ),
     );
   }
 
   Widget _buildFloatingControls() {
     return Positioned(
-      right: 16,
-      top: 120,
+      right: 16, // Fixed right margin
+      top: 138, // Fixed top position (map Y + offset)
       child: Column(
         children: [
           _buildFloatingButton(
@@ -442,8 +447,8 @@ class _HomePageState extends State<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 48,
-        height: 48,
+        width: 48, // Fixed width
+        height: 48, // Fixed height
         decoration: BoxDecoration(
           color: backgroundColor,
           shape: BoxShape.circle,
@@ -455,7 +460,7 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-        child: Icon(icon, color: iconColor, size: 24),
+        child: Icon(icon, color: iconColor, size: 24), // Fixed icon size
       ),
     );
   }
