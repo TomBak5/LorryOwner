@@ -311,25 +311,22 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildMapView() {
     return Positioned(
-      top: 118, // Y position from Figma
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
+      top: 118, // Y position from Figma (y: 118)
       child: Container(
         width: double.infinity, // Full screen width
-        height: Get.height * 0.75, // Responsive height
+        height: 609, // Height from Figma (height: 609)
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: Colors.grey.withOpacity(0.3),
           ),
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: _isLocationLoading
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : FlutterMap(
+        child: _isLocationLoading
+        ? const Center(
+            child: CircularProgressIndicator(),
+          )
+        : FlutterMap(
               mapController: _mapController ?? MapController(),
               options: MapOptions(
                 initialCenter: _currentPosition != null
@@ -384,7 +381,6 @@ class _HomePageState extends State<HomePage> {
                   ),
               ],
             ),
-        ),
       ),
     );
   }
