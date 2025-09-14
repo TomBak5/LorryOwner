@@ -270,8 +270,6 @@ class _HomePageState extends State<HomePage> {
                         // Full screen map
                         _buildMapView(),
                         
-                        // Floating controls on the right
-                        _buildFloatingControls(),
                         
                         // Bottom driver/truck info panel (draggable bottom sheet)
                         _buildBottomInfoPanel(homePageController),
@@ -385,67 +383,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFloatingControls() {
-    return Positioned(
-      right: 16, // Fixed right margin
-      top: 138, // Fixed top position (map Y + offset)
-      child: Column(
-        children: [
-          _buildFloatingButton(
-            icon: Icons.local_gas_station,
-            onTap: _searchNearbyFuelStations,
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
-            icon: Icons.local_shipping,
-            onTap: () {
-              // TODO: Implement truck stops functionality
-            },
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
-            icon: Icons.scale,
-            onTap: () {
-              // TODO: Implement weigh functionality
-            },
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFloatingButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required Color backgroundColor,
-    required Color iconColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48, // Fixed width
-        height: 48, // Fixed height
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: iconColor, size: 24), // Fixed icon size
-      ),
-    );
-  }
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
@@ -477,6 +414,12 @@ class _HomePageState extends State<HomePage> {
             // Truck details
             if (homePageController.getCurrentAssignedTruck() != null)
               _buildTruckDetailsCard(homePageController),
+            
+            const SizedBox(height: 20),
+            
+            // Action buttons (moved from floating controls)
+            _buildActionButtonsRow(),
+            
           ],
         ),
       ),
@@ -586,4 +529,76 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  Widget _buildActionButtonsRow() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildActionButton(
+          icon: Icons.local_gas_station,
+          label: 'Fuel',
+          onTap: _searchNearbyFuelStations,
+        ),
+        _buildActionButton(
+          icon: Icons.hotel,
+          label: 'Truck Stops',
+          onTap: () {
+            // TODO: Implement truck stops functionality
+          },
+        ),
+        _buildActionButton(
+          icon: Icons.scale,
+          label: 'Weigh',
+          onTap: () {
+            // TODO: Implement weigh functionality
+          },
+        ),
+        _buildActionButton(
+          icon: Icons.more_horiz,
+          label: 'More',
+          onTap: () {
+            // TODO: Implement more functionality
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.blue[600],
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
