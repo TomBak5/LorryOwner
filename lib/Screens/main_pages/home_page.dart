@@ -456,7 +456,7 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20), // All corners rounded
+          borderRadius: BorderRadius.circular(10), // All corners rounded
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
