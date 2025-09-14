@@ -316,7 +316,7 @@ class _HomePageState extends State<HomePage> {
       top: (Get.height * 0.12) - 60, // Lift map by 60px (header height - 60px)
       child: Container(
         width: double.infinity, // Full screen width
-        height: 609, // Height from Figma (height: 609)
+        height: 609.0.h, // Height from Figma using ScreenUtil
         decoration: BoxDecoration(
           border: Border.all(
             color: Colors.grey.withOpacity(0.3),

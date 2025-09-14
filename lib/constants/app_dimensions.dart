@@ -39,5 +39,5 @@ class AppDimensions {
   static double get iconContainerRadius => 8.0.r;
   
   // Bottom navigation bar
-  static double get bottomNavHeight => 45.0.h;
+  static double get bottomNavHeight => 60.0.h;
 }
