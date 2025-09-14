@@ -1284,8 +1284,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
           ),
           boxShadow: [
             BoxShadow(
@@ -1418,8 +1418,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(8),
+            topRight: Radius.circular(8),
           ),
           boxShadow: [
             BoxShadow(
@@ -1499,7 +1499,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
               child: ElevatedButton(
                 onPressed: _startNavigation,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[600],
+                  backgroundColor: const Color(0xFF4964D8),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -1508,7 +1508,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                   elevation: 0,
                 ),
                 child: Text(
-                  'Start Navigation',
+                  'Confirm & Go',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

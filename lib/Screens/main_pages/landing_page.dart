@@ -31,18 +31,26 @@ class _LandingPageState extends State<LandingPage> {
             builder: (context, constraints) {
               return Scaffold(
                 backgroundColor: Colors.white,
-                bottomNavigationBar: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      height: AppDimensions.bottomNavHeight,
-                      width: constraints.maxWidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: ListView.builder(
+                bottomNavigationBar: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8.0.r),
+                      topRight: Radius.circular(8.0.r),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: AppDimensions.bottomNavHeight,
+                        width: constraints.maxWidth,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(
+                              child: ListView.builder(
                               itemCount: landingPageController.bottomItemsIcons.length,
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
@@ -88,6 +96,7 @@ class _LandingPageState extends State<LandingPage> {
                       ),
                     ),
                   ],
+                ),
                 ),
                 body: landingPageController.pages[landingPageController.selectPageIndex],
               );
