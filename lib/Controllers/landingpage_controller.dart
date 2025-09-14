@@ -29,8 +29,8 @@ class LandingPageController extends GetxController implements GetxService {
 
   List bottomItems = [
     "Home",
-    "My Loads",
-    "Booked Lorries",
+    "Tasks",
+    "Messages",
     "Profile",
   ];
 
