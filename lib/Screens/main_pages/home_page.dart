@@ -235,9 +235,9 @@ class _HomePageState extends State<HomePage> {
                   child: Scaffold(
                     backgroundColor: Colors.white,
                     appBar: PreferredSize(
-                      preferredSize: const Size.fromHeight(100),
+                      preferredSize: const Size.fromHeight(118), // Figma height: 118px
                       child: AppBar(
-                        toolbarHeight: 100,
+                        toolbarHeight: 118, // Figma height: 118px
                         backgroundColor: Colors.white,
                         elevation: 0,
                         titleSpacing: 0,
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: 118, // Y position from Figma (y: 118)
+      top: 118, // Y position from Figma (y: 118) - matches header height
       child: Container(
         width: double.infinity, // Full screen width
         height: 609, // Height from Figma (height: 609)
