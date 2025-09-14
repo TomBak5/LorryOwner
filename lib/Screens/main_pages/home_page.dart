@@ -417,6 +417,14 @@ class _HomePageState extends State<HomePage> {
             
             const SizedBox(height: 20),
             
+            // Separator line
+            Container(
+              height: 1,
+              color: const Color(0xFFF0F0F0),
+            ),
+            
+            const SizedBox(height: 20),
+            
             // Action buttons (moved from floating controls)
             _buildActionButtonsRow(),
             
