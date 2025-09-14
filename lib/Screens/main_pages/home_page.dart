@@ -4,11 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:movers_lorry_owner/constants/app_dimensions.dart';
 import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
 
 import '../../AppConstData/managepage.dart';
@@ -386,14 +388,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      bottom: 20, // Move card up by 20px to create gap from bottom
-      left: 30, // Add 30px gap from left
-      right: 30, // Add 30px gap from right
+      bottom: AppDimensions.cardMarginBottom,
+      left: AppDimensions.cardMarginHorizontal,
+      right: AppDimensions.cardMarginHorizontal,
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(AppDimensions.cardPadding),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(10), // All corners rounded
+          borderRadius: BorderRadius.circular(AppDimensions.cardRadius),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -409,21 +411,21 @@ class _HomePageState extends State<HomePage> {
             // Driver info
             _buildDriverInfoCard(homePageController),
             
-            const SizedBox(height: 12),
+            SizedBox(height: AppDimensions.spacingMedium),
             
             // Truck details
             if (homePageController.getCurrentAssignedTruck() != null)
               _buildTruckDetailsCard(homePageController),
             
-            const SizedBox(height: 12),
+            SizedBox(height: AppDimensions.spacingMedium),
             
             // Separator line
             Container(
-              height: 1,
-              color: const Color(0xFFF0F0F0),
+              height: AppDimensions.separatorHeight,
+              color: Color(AppDimensions.separatorColor),
             ),
             
-            const SizedBox(height: 12),
+            SizedBox(height: AppDimensions.spacingMedium),
             
             // Action buttons (moved from floating controls)
             _buildActionButtonsRow(),
@@ -436,18 +438,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildDriverInfoCard(HomePageController homePageController) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(AppDimensions.driverInfoPadding),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(AppDimensions.driverIconPadding),
             decoration: BoxDecoration(
               color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimensions.iconContainerRadius),
             ),
-            child: Icon(Icons.person, color: Colors.blue[600], size: 20),
+            child: Icon(Icons.person, color: Colors.blue[600], size: AppDimensions.driverIconSize),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.0.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,17 +457,17 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 4),
                 Text(
                   homePageController.userData?.name ?? 'Driver',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: AppDimensions.textLarge,
                     fontWeight: FontWeight.w600,
                     color: Colors.black,
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2.0.h),
                 Text(
                   _currentAddress,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppDimensions.textSmall,
                     color: Colors.grey[500],
                   ),
                   maxLines: 2,
@@ -481,18 +483,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTruckDetailsCard(HomePageController homePageController) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: EdgeInsets.all(AppDimensions.driverInfoPadding),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(AppDimensions.driverIconPadding),
             decoration: BoxDecoration(
               color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppDimensions.iconContainerRadius),
             ),
-            child: Icon(Icons.local_shipping, color: Colors.green[600], size: 20),
+            child: Icon(Icons.local_shipping, color: Colors.green[600], size: AppDimensions.driverIconSize),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16.0.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,7 +528,7 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   'Truck No: ${homePageController.getCurrentAssignedTruck()?['truck_no'] ?? 'N/A'}',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppDimensions.textSmall,
                     color: Colors.grey[500],
                   ),
                 ),
@@ -582,26 +584,26 @@ class _HomePageState extends State<HomePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 50,
-            height: 50,
+            width: AppDimensions.buttonSize,
+            height: AppDimensions.buttonSize,
             child: imagePath.endsWith('.svg') 
               ? Image.asset(
                   imagePath,
-                  width: 50,
-                  height: 50,
+                  width: AppDimensions.iconSize,
+                  height: AppDimensions.iconSize,
                   color: Colors.blue[600],
                 )
               : Image.asset(
                   imagePath,
-                  width: 50,
-                  height: 50,
+                  width: AppDimensions.iconSize,
+                  height: AppDimensions.iconSize,
                 ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppDimensions.spacingSmall),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: AppDimensions.textSmall,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),
@@ -621,19 +623,19 @@ class _HomePageState extends State<HomePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 50,
-            height: 50,
-            child: const Icon(
+            width: AppDimensions.buttonSize,
+            height: AppDimensions.buttonSize,
+            child: Icon(
               Icons.more_horiz,
               color: Colors.blue,
-              size: 50,
+              size: AppDimensions.iconSize,
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppDimensions.spacingSmall),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
+            style: TextStyle(
+              fontSize: AppDimensions.textSmall,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),

@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:movers_lorry_owner/AppConstData/setlanguage.dart';
@@ -63,7 +64,12 @@ class MyApp extends StatelessWidget {
       create: (context) => LocaleModel(_localeLanuage),
       child: Consumer<LocaleModel>(
         builder: (context, localeModel, child) {
-          return GetMaterialApp(
+          return ScreenUtilInit(
+            designSize: const Size(375, 812), // iPhone X design size
+            minTextAdapt: true,
+            splitScreenMode: true,
+            builder: (context, child) {
+              return GetMaterialApp(
             debugShowCheckedModeBanner: false,
             title: 'LorryOwner',
             getPages: getpage,
@@ -117,6 +123,8 @@ class MyApp extends StatelessWidget {
               ),
             ),
             home: const SplashScreen(),
+              );
+            },
           );
         },
       ),

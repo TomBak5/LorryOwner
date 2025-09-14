@@ -2,10 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../AppConstData/app_colors.dart';
 import '../../Controllers/landingpage_controller.dart';
+import '../../constants/app_dimensions.dart';
 
 class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
@@ -34,7 +36,7 @@ class _LandingPageState extends State<LandingPage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(
-                      height: 60,
+                      height: AppDimensions.bottomNavHeight,
                       width: constraints.maxWidth,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -60,12 +62,12 @@ class _LandingPageState extends State<LandingPage> {
                                               ? secondaryColor
                                               : textGreyColor,
                                         ),
-                                        const SizedBox(height: 3),
+                                        SizedBox(height: 3.0.h),
                                         Flexible(
                                           child: Text(
                                             landingPageController.bottomItems[index].toString().tr,
                                             style: TextStyle(
-                                              fontSize: 12,
+                                              fontSize: AppDimensions.textSmall,
                                               color: landingPageController.selectPageIndex == index
                                                   ? secondaryColor
                                                   : textGreyColor,
