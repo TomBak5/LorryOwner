@@ -496,11 +496,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildDriverInfoCard(HomePageController homePageController) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
       child: Row(
         children: [
           Container(
@@ -554,11 +549,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildTruckDetailsCard(HomePageController homePageController) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
       child: Row(
         children: [
           Container(
