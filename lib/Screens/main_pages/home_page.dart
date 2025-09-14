@@ -216,918 +216,81 @@ class _HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-      backgroundColor: Colors.white,
-      body: GetBuilder<HomePageController>(
-        builder: (homePageController) {
-          if (homePageController.isLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else if (homePageController.userData == null || (homePageController.userData?.id?.isEmpty ?? true)) {
-            // Redirect to login screen if no user is found
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              Get.offAllNamed(Routes.loginScreen);
-            });
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else {
-            return RefreshIndicator(
-              onRefresh: () {
-                return Future.delayed(
-                  const Duration(seconds: 1),
-                  () {
-                    homePageController.updateUserProfile(context);
-                  },
+          backgroundColor: Colors.white,
+          body: GetBuilder<HomePageController>(
+            builder: (homePageController) {
+              if (homePageController.isLoading) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
                 );
-              },
-              child: Scaffold(
+              } else if (homePageController.userData == null || (homePageController.userData?.id?.isEmpty ?? true)) {
+                // Redirect to login screen if no user is found
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  Get.offAllNamed(Routes.loginScreen);
+                });
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              } else {
+                return RefreshIndicator(
+                  onRefresh: () {
+                    return Future.delayed(
+                      const Duration(seconds: 1),
+                      () {
+                        homePageController.updateUserProfile(context);
+                      },
+                    );
+                  },
+                  child: Scaffold(
                     backgroundColor: Colors.white,
                     appBar: PreferredSize(
                       preferredSize: const Size.fromHeight(100),
                       child: AppBar(
-                      toolbarHeight: 100,
-                      backgroundColor: Colors.white,
-                      elevation: 0,
-                      titleSpacing: 0,
-                      title: Column(
-                        children: [
-                          ListTile(
-                            dense: true,
-                            leading: const SizedBox(width: 0),
-                            trailing: InkWell(
-                              onTap: () {
-                                Get.toNamed(Routes.notification);
-                              },
-                              child: CircleAvatar(
-                                backgroundColor: Colors.white.withOpacity(0.1),
-                                radius: 20,
-                                child: SvgPicture.asset(
-                                  "assets/icons/notification.svg",
-                                  height: 20,
-                                  width: 20,
+                        toolbarHeight: 100,
+                        backgroundColor: Colors.white,
+                        elevation: 0,
+                        titleSpacing: 0,
+                        title: Column(
+                          children: [
+                            ListTile(
+                              dense: true,
+                              leading: const SizedBox(width: 0),
+                              trailing: InkWell(
+                                onTap: () {
+                                  Get.toNamed(Routes.notification);
+                                },
+                                child: CircleAvatar(
+                                  backgroundColor: Colors.white.withOpacity(0.1),
+                                  radius: 20,
+                                  child: SvgPicture.asset(
+                                    "assets/icons/notification.svg",
+                                    height: 20,
+                                    width: 20,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                body: OverflowBox(
-                  alignment: Alignment.topLeft,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                    SingleChildScrollView(
-                      clipBehavior: Clip.none,
-                      child: Column(
-                        children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              clipBehavior: Clip.none,
-                              padding: const EdgeInsets.all(24),
-                              color: Colors.white,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const SizedBox(height: 24),
-                                  SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: [
-                                        // Check if user is dispatcher or driver
-                                        if (homePageController.userData?.userRole == 'dispatcher')
-                                          // Dispatcher menu
-                                          for (int a = 0; a < 4; a++)
-                                            Row(
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    // Allow Create Order without verification (case 0)
-                                                    if (a == 0) {
-                                                      Get.toNamed(Routes.assignOrder);
-                                                    } else if (homePageController.userData?.isVerify == "2") {
-                                                      switch (a) {
-                                                        case 1:
-                                                          Get.to(Subdrivers()); // Manage Drivers
-                                                          break;
-                                                        case 2:
-                                                          Get.toNamed(Routes.assignedOrders); // Order History
-                                                          break;
-                                                        case 3:
-                                                          // Dashboard - stay on home page
-                                                          break;
-                                                      }
-                                                    } else if (homePageController.userData?.isVerify == "1") {
-                                                      if ("verification Under Process".trim().isNotEmpty) {
-                                                        showCommonToast("verification Under Process");
-                                                      }
-                                                    } else {
-                                                      Get.toNamed(Routes.verifyIdentity);
-                                                    }
-                                                  },
-                                                  child: Container(
-                                                    height: 40,
-                                                    width: 110,
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.all(
-                                                        Radius.circular(12),
-                                                      ),
-                                                      border: Border.all(
-                                                        color: Colors.white.withOpacity(0.8),
-                                                        width: 1.5,
-                                                      ),
-                                                    ),
-                                                    child: Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Flexible(
-                                                          child: Text(
-                                                            homePageController.dispatcherMenuList[a].toString().tr,
-                                                            style: TextStyle(
-                                                              color: Colors.white,
-                                                              fontWeight: FontWeight.w500,
-                                                              fontFamily: "urbani_extrabold",
-                                                              fontSize: 14,
-                                                            ),
-                                                            overflow: TextOverflow.ellipsis,
-                                                            maxLines: 1,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 10)
-                                              ],
-                                            )
-                                        else
-                                          // Driver menu (existing)
-                                          for (int a = 0; a < 4; a++)
-                                            Row(
-                                              children: [
-                                                InkWell(
-                                                  onTap: () {
-                                                    // Remove identity verification for Find Loads (case 0)
-                                                    if (a == 0) {
-                                                      // Allow Find Loads without verification
-                                                      Get.toNamed(Routes.findLorry);
-                                                    } else if (homePageController.userData?.isVerify == "2") {
-                                                      switch (a) {
-                                                        case 1:
-                                                          Get.toNamed(Routes.nearLoad);
-                                                          break;
-                                                        case 2:
-                                                          Get.toNamed(Routes.attachLorry);
-                                                          break;
-                                                        case 3:
-                                                          Get.toNamed(Routes.assignedOrders);
-                                                          break;
-                                                        case 4:
-                                                          Get.toNamed('/fuel-stations');
-                                                          break;
-                                                      }
-                                                    } else if (homePageController.userData?.isVerify == "1") {
-                                                      if ("verification Under Process".trim().isNotEmpty) {
-                                                        showCommonToast("verification Under Process");
-                                                      }
-                                                    } else {
-                                                      Get.toNamed(Routes.verifyIdentity);
-                                                    }
-                                                  },
-                                                child: Container(
-                                                  height: 40,
-                                                  width: 110,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.all(
-                                                      Radius.circular(12),
-                                                    ),
-                                                    border: Border.all(
-                                                      color: Colors.white.withOpacity(0.8),
-                                                      width: 1.5,
-                                                    ),
-                                                  ),
-                                                  child: Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Flexible(
-                                                        child: Text(
-                                                          homePageController.menuList[a].toString().tr,
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontWeight: FontWeight.w500,
-                                                            fontFamily: "urbani_extrabold",
-                                                            fontSize: 14,
-                                                          ),
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                              const SizedBox(width: 10)
-                                            ],
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: CarouselSlider(
-                          options: CarouselOptions(
-                            aspectRatio: 2.0,
-                            height: 200,
-                            enlargeCenterPage: true,
-                            scrollDirection: Axis.horizontal,
-                            viewportFraction: 1,
-                            autoPlay: true,
-                          ),
-                          items: [
-                            for (int a = 0; a < (homePageController.homePageData?.homeData?.banner?.length ?? 0); a++)
-                              homePageController.homePageData?.homeData?.banner?[a].img?.isEmpty ?? true
-                                  ? Shimmer.fromColors(
-                                      baseColor: Colors.grey.shade300,
-                                      highlightColor: Colors.grey.shade100,
-                                      enabled: true,
-                                      child: Container(
-                                        height: 200,
-                                        width: Get.width,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(12),
-                                          color: Colors.grey.shade200,
-                                        ),
-                                      ),
-                                    )
-                                  : ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        "$basUrl${homePageController.homePageData?.homeData?.banner?[a].img ?? ''}",
-                                        fit: BoxFit.cover,
-                                        width: Get.width,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return commonSimmer(height: 200, width: Get.width);
-                                        },
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          return (loadingProgress == null)
-                                              ? child
-                                              : commonSimmer(height: 200,width: Get.width);
-                                        },
-                                      ),
-                                    ),
                           ],
                         ),
                       ),
-                       // Show assigned truck section for drivers
-                       // Temporarily removed condition for debugging
-                       Container(
-                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                         decoration: BoxDecoration(
-                           color: Colors.white,
-                           borderRadius: BorderRadius.circular(20),
-                           boxShadow: [
-                             BoxShadow(
-                               color: Colors.grey.withOpacity(0.3),
-                               blurRadius: 15,
-                               offset: const Offset(0, 8),
-                             ),
-                           ],
-                         ),
-                         child: Stack(
-                           children: [
-                             // Background pattern
-                             Positioned(
-                               right: -20,
-                               top: -20,
-                               child: Container(
-                                 width: 100,
-                                 height: 100,
-                                 decoration: BoxDecoration(
-                                   color: Colors.white.withOpacity(0.1),
-                                   shape: BoxShape.circle,
-                                 ),
-                               ),
-                             ),
-                             Positioned(
-                               left: -30,
-                               bottom: -30,
-                               child: Container(
-                                 width: 80,
-                                 height: 80,
-                                 decoration: BoxDecoration(
-                                   color: Colors.white.withOpacity(0.1),
-                                   shape: BoxShape.circle,
-                                 ),
-                               ),
-                             ),
-                             // Main content
-                             Padding(
-                               padding: const EdgeInsets.all(24),
-                               child: Column(
-                                 crossAxisAlignment: CrossAxisAlignment.start,
-                                 children: [
-                                   // Header with icon and title
-                                   Row(
-                                     children: [
-                                       Container(
-                                         padding: const EdgeInsets.all(12),
-                                         decoration: BoxDecoration(
-                                           color: Colors.white.withOpacity(0.2),
-                                           borderRadius: BorderRadius.circular(12),
-                                         ),
-                                         child: Icon(
-                                           Icons.local_shipping,
-                                           color: Colors.white,
-                                           size: 28,
-                                         ),
-                                       ),
-                                       const SizedBox(width: 16),
-                                       Expanded(
-                                         child: Column(
-                                           crossAxisAlignment: CrossAxisAlignment.start,
-                                           children: [
-                                             Text(
-                                               homePageController.userData?.name ?? 'Driver',
-                                               style: TextStyle(
-                                                 fontSize: 20,
-                                                 fontWeight: FontWeight.bold,
-                                                 color: Colors.black,
-                                                 fontFamily: fontFamilyBold,
-                                               ),
-                                             ),
-                                             Text(
-                                               _currentAddress,
-                                               style: TextStyle(
-                                                 fontSize: 14,
-                                                 color: Colors.grey[600],
-                                                 fontWeight: FontWeight.w400,
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                       ),
-                                       // Status badge
-                                     ],
-                                   ),
-                                   const SizedBox(height: 24),
-                                   // Truck details card
-                                   Container(
-                                     padding: const EdgeInsets.all(20),
-                                     decoration: BoxDecoration(
-                                       color: Colors.white.withOpacity(0.15),
-                                       borderRadius: BorderRadius.circular(16),
-                                       border: Border.all(
-                                         color: Colors.white.withOpacity(0.2),
-                                         width: 1,
-                                       ),
-                                     ),
-                                     child: Row(
-                                       children: [
-                                         // Truck information
-                                         Expanded(
-                                           child: Column(
-                                             crossAxisAlignment: CrossAxisAlignment.start,
-                                             children: [
-                                               // Truck title
-                                               Text(
-                                                 homePageController.getCurrentAssignedTruck()?['truck_title'] ?? 'Truck Title',
-                                                 style: TextStyle(
-                                                   fontSize: 18,
-                                                   fontWeight: FontWeight.bold,
-                                                   color: Colors.white,
-                                                   fontFamily: fontFamilyBold,
-                                                 ),
-                                               ),
-                                               const SizedBox(height: 8),
-                                               // Truck brand and model
-                                               Row(
-                                                 children: [
-                                                   Container(
-                                                     padding: const EdgeInsets.all(4),
-                                                     decoration: BoxDecoration(
-                                                       color: Colors.white.withOpacity(0.2),
-                                                       borderRadius: BorderRadius.circular(6),
-                                                     ),
-                                                     child: Icon(
-                                                       Icons.directions_car,
-                                                       color: Colors.white,
-                                                       size: 14,
-                                                     ),
-                                                   ),
-                                                   const SizedBox(width: 8),
-                                                   Expanded(
-                                                     child: Text(
-                                                       '${homePageController.getCurrentAssignedTruck()?['truck_brand'] ?? 'Brand'} ${homePageController.getCurrentAssignedTruck()?['truck_model'] ?? 'Model'}',
-                                                       style: TextStyle(
-                                                         fontSize: 14,
-                                                         color: Colors.white.withOpacity(0.9),
-                                                         fontWeight: FontWeight.w500,
-                                                       ),
-                                                       overflow: TextOverflow.ellipsis,
-                                                     ),
-                                                   ),
-                                                 ],
-                                               ),
-                                               const SizedBox(height: 8),
-                                               // Truck year and engine
-                                               Row(
-                                                 children: [
-                                                   Container(
-                                                     padding: const EdgeInsets.all(4),
-                                                     decoration: BoxDecoration(
-                                                       color: Colors.white.withOpacity(0.2),
-                                                       borderRadius: BorderRadius.circular(6),
-                                                     ),
-                                                     child: Icon(
-                                                       Icons.engineering,
-                                                       color: Colors.white,
-                                                       size: 14,
-                                                     ),
-                                                   ),
-                                                   const SizedBox(width: 8),
-                                                   Expanded(
-                                                     child: Text(
-                                                       '${homePageController.getCurrentAssignedTruck()?['truck_year'] ?? 'Year'} • ${homePageController.getCurrentAssignedTruck()?['truck_engine'] ?? 'Engine'}',
-                                                       style: TextStyle(
-                                                         fontSize: 12,
-                                                         color: Colors.white.withOpacity(0.8),
-                                                         fontWeight: FontWeight.w400,
-                                                       ),
-                                                       overflow: TextOverflow.ellipsis,
-                                                     ),
-                                                   ),
-                                                 ],
-                                               ),
-                                               const SizedBox(height: 12),
-                                               // Truck number
-                                               Row(
-                                                 children: [
-                                                   Container(
-                                                     padding: const EdgeInsets.all(6),
-                                                     decoration: BoxDecoration(
-                                                       color: Colors.white.withOpacity(0.2),
-                                                       borderRadius: BorderRadius.circular(8),
-                                                     ),
-                                                     child: Icon(
-                                                       Icons.confirmation_number,
-                                                       color: Colors.white,
-                                                       size: 16,
-                                                     ),
-                                                   ),
-                                                   const SizedBox(width: 12),
-                                                   Column(
-                                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                                     children: [
-                                                       Text(
-                                                         'Truck Number',
-                                                         style: TextStyle(
-                                                           fontSize: 12,
-                                                           color: Colors.white.withOpacity(0.7),
-                                                           fontWeight: FontWeight.w500,
-                                                         ),
-                                                       ),
-                                                       Text(
-                                                         homePageController.getCurrentAssignedTruck()?['truck_no'] ?? 'N/A',
-                                                         style: TextStyle(
-                                                           fontSize: 16,
-                                                           color: Colors.white,
-                                                           fontWeight: FontWeight.bold,
-                                                         ),
-                                                       ),
-                                                     ],
-                                                   ),
-                                                 ],
-                                               ),
-                                               const SizedBox(height: 12),
-                                               // Weight capacity
-                                               Row(
-                                                 children: [
-                                                   Container(
-                                                     padding: const EdgeInsets.all(6),
-                                                     decoration: BoxDecoration(
-                                                       color: Colors.white.withOpacity(0.2),
-                                                       borderRadius: BorderRadius.circular(8),
-                                                     ),
-                                                     child: Icon(
-                                                       Icons.scale,
-                                                       color: Colors.white,
-                                                       size: 16,
-                                                     ),
-                                                   ),
-                                                   const SizedBox(width: 12),
-                                                   Column(
-                                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                                     children: [
-                                                       Text(
-                                                         'Weight Capacity',
-                                                         style: TextStyle(
-                                                           fontSize: 12,
-                                                           color: Colors.white.withOpacity(0.7),
-                                                           fontWeight: FontWeight.w500,
-                                                         ),
-                                                       ),
-                                                       Text(
-                                                         homePageController.getCurrentAssignedTruck()?['weight'] ?? 'N/A',
-                                                         style: TextStyle(
-                                                           fontSize: 16,
-                                                           color: Colors.white,
-                                                           fontWeight: FontWeight.bold,
-                                                         ),
-                                                       ),
-                                                     ],
-                                                   ),
-                                                 ],
-                                               ),
-                                             ],
-                                           ),
-                                         ),
-                                       ],
-                                     ),
-                                   ),
-                                   const SizedBox(height: 12),
-                                   // Transmission
-                                   Row(
-                                     children: [
-                                       Container(
-                                         padding: const EdgeInsets.all(6),
-                                         decoration: BoxDecoration(
-                                           color: Colors.white.withOpacity(0.2),
-                                           borderRadius: BorderRadius.circular(8),
-                                         ),
-                                         child: Icon(
-                                           Icons.settings,
-                                           color: Colors.white,
-                                           size: 16,
-                                         ),
-                                       ),
-                                       const SizedBox(width: 12),
-                                       Column(
-                                         crossAxisAlignment: CrossAxisAlignment.start,
-                                         children: [
-                                           Text(
-                                             'Transmission',
-                                             style: TextStyle(
-                                               fontSize: 12,
-                                               color: Colors.white.withOpacity(0.7),
-                                               fontWeight: FontWeight.w500,
-                                             ),
-                                           ),
-                                           Text(
-                                             homePageController.getCurrentAssignedTruck()?['truck_transmission'] ?? 'N/A',
-                                             style: TextStyle(
-                                               fontSize: 16,
-                                               color: Colors.white,
-                                               fontWeight: FontWeight.bold,
-                                             ),
-                                           ),
-                                         ],
-                                       ),
-                                     ],
-                                   ),
-                                   const SizedBox(height: 20),
-                                   // Action buttons
-                                   Row(
-                                     children: [
-                                       Expanded(
-                                         child: ElevatedButton.icon(
-                                           onPressed: () {
-                                             // TODO: Navigate to truck details or orders
-                                             Get.snackbar(
-                                               'Info',
-                                               'Truck details functionality coming soon',
-                                               backgroundColor: Colors.blue.shade600,
-                                               colorText: Colors.white,
-                                             );
-                                           },
-                                           icon: Icon(Icons.info_outline, size: 18),
-                                           label: Text('View Details'),
-                                           style: ElevatedButton.styleFrom(
-                                             backgroundColor: Colors.white.withOpacity(0.2),
-                                             foregroundColor: Colors.white,
-                                             padding: const EdgeInsets.symmetric(vertical: 12),
-                                             shape: RoundedRectangleBorder(
-                                               borderRadius: BorderRadius.circular(12),
-                                             ),
-                                             elevation: 0,
-                                           ),
-                                         ),
-                                       ),
-                                     ],
-                                   ),
-                                 ],
-                               ),
-                             ),
-                           ],
-                         ),
-                       ),
-                      
-                      // Existing truck list section
-                      homePageController.homePageData?.homeData?.mylorrylist != null &&
-                              homePageController.homePageData!.homeData!.mylorrylist!.isNotEmpty
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "My Lorry's".tr,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: "urbani_extrabold",
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 125,
-                                  width: Get.width,
-                                  child: ListView.separated(
-                                    clipBehavior: Clip.none,
-                                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                                    scrollDirection: Axis.horizontal,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      return Stack(
-                                        alignment: Alignment.topRight,
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 15),
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: Colors.grey.withOpacity(0.3),
-                                              ),
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: [
-                                                    Image.network(
-                                                      "$basUrl${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryImg ?? ''}",
-                                                      height: 70,
-                                                      width: 90,
-                                                      errorBuilder: (context, error, stackTrace) {
-                                                        return commonSimmer(height: 58, width: 58);
-                                                      },
-                                                      loadingBuilder: (context, child, loadingProgress) {
-                                                        return (loadingProgress == null)
-                                                            ? child
-                                                            : commonSimmer(height: 58, width: 58);
-                                                      },
-                                                    ),
-                                                    Text(
-                                                      "${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryNo ?? ''}",
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: textBlackColor,
-                                                        fontFamily: fontFamilyBold,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                                  children: [
-                                                    Text(
-                                                      "${homePageController.homePageData?.homeData?.mylorrylist?[index].lorryTitle ?? ''}",
-                                                      style: TextStyle(
-                                                        fontSize: 18,
-                                                        color: textBlackColor,
-                                                        fontFamily: fontFamilyBold,
-                                                        fontWeight: FontWeight.w500,
-                                                      ),
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          "assets/icons/route.svg",
-                                                          height: 22,
-                                                          width: 22,
-                                                        ),
-                                                        const SizedBox(width: 5),
-                                                        Text(
-                                                          "${homePageController.homePageData?.homeData?.mylorrylist?[index].routes?.toString() ?? ''} + Routs",
-                                                          style: TextStyle(
-                                                            color: textGreyColor,
-                                                            fontSize: 15,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(height: 10),
-                                                      ],
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        SvgPicture.asset(
-                                                          homePageController.homePageData?.homeData?.mylorrylist?[index].rcVerify == "2"
-                                                              ? "assets/icons/ic_unverified.svg"
-                                                              : "assets/icons/badge-check.svg",
-                                                        ),
-                                                        const SizedBox(width: 5),
-                                                        Text(
-                                                          homePageController.homePageData?.homeData?.mylorrylist?[index].rcVerify == '2'
-                                                              ? "Document Reupload"
-                                                              : "RC Verified",
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Positioned(
-                                            right: -5,
-                                            top: -5,
-                                            child: InkWell(
-                                              onTap: () async {
-                                                SharedPreferences preferences = await SharedPreferences.getInstance();
-                                                Mylorrylist? data = homePageController.homePageData?.homeData?.mylorrylist?[index];
-
-                                                Map editData = {
-                                                  "lorryNo": data?.lorryNo,
-                                                  "numberOfTones": data?.weight,
-                                                  "vehicle": data?.lorryTitle,
-                                                  "description": data?.description,
-                                                  "isedite": true,
-                                                  "statelist": data?.totalRoutes,
-                                                  "record_id": data?.id
-                                                };
-                                                debugPrint("========== data ========= $data");
-                                                debugPrint("======== editData ======= $editData");
-                                                preferences.setString("EditLorryData",jsonEncode(editData));
-                                                Get.toNamed(Routes.attachLorry);
-                                              },
-                                              child: CircleAvatar(
-                                                backgroundColor: priMaryColor,
-                                                radius: 13,
-                                                child: Center(
-                                                  child: SvgPicture.asset(
-                                                    "assets/icons/edit-2.svg",
-                                                    color: Colors.white,
-                                                    height: 14,
-                                                    width: 14,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                    separatorBuilder: (context, index) {
-                                      return const SizedBox(width: 10);
-                                    },
-                                    itemCount: homePageController.homePageData?.homeData?.mylorrylist?.length ?? 0,
-                                  ),
-                                ),
-                              ],
-                            )
-                          : const SizedBox(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: Container(
-                          height: 300,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.withOpacity(0.3),
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: _isLocationLoading
-                                ? const Center(
-                                    child: CircularProgressIndicator(),
-                                  )
-                                : Stack(
-                                    children: [
-                                      FlutterMap(
-                                        mapController: _mapController ?? MapController(),
-                                        options: MapOptions(
-                                          initialCenter: _currentPosition != null
-                                              ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                                              : const LatLng(54.6872, 25.2797), // Fallback to Vilnius
-                                          initialZoom: _currentPosition != null ? 15.0 : 10.0,
-                                          onMapReady: () {
-                                            // Move camera to current location if available
-                                            if (_currentPosition != null && _mapController != null) {
-                                              _mapController!.move(
-                                                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                                                15.0,
-                                              );
-                                            }
-                                          },
-                                        ),
-                                        children: [
-                                          TileLayer(
-                                            urlTemplate: 'https://maps.hereapi.com/v3/maptile/newest/normal.traffic.day/{z}/{x}/{y}/256/png8?apikey=${ApiConfig.hereMapsApiKey}',
-                                            userAgentPackageName: 'com.moverslorryowner.app',
-                                          ),
-                                          if (_currentPosition != null)
-                                            MarkerLayer(
-                                              markers: [
-                                                Marker(
-                                                  point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                                                  width: 80,
-                                                  height: 80,
-                                                  child: const Icon(
-                                                    Icons.location_on,
-                                                    color: Colors.blue,
-                                                    size: 40,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                        ],
-                                      ),
-                                                                               // Fuel button positioned at bottom left of map
-                                         Positioned(
-                                           left: 26,
-                                           bottom: 50,
-                                           child: Row(
-                                             children: [
-                                               ElevatedButton(
-                                                 onPressed: _searchNearbyFuelStations,
-                                                 style: ElevatedButton.styleFrom(
-                                                   backgroundColor: Colors.blue,
-                                                   foregroundColor: Colors.white,
-                                                   padding: EdgeInsets.all(16),
-                                                   elevation: 4,
-                                                   shape: CircleBorder(),
-                                                 ),
-                                                 child: Icon(Icons.local_gas_station),
-                                               ),
-                                               SizedBox(width: 8),
-                                               ElevatedButton(
-                                                 onPressed: () {
-                                                   // TODO: Implement truck stops functionality
-                                                 },
-                                                 style: ElevatedButton.styleFrom(
-                                                   backgroundColor: Colors.blue,
-                                                   foregroundColor: Colors.white,
-                                                   padding: EdgeInsets.all(16),
-                                                   elevation: 4,
-                                                   shape: CircleBorder(),
-                                                 ),
-                                                 child: Icon(Icons.local_shipping),
-                                               ),
-                                               SizedBox(width: 8),
-                                               ElevatedButton(
-                                                 onPressed: () {
-                                                   // TODO: Implement weigh functionality
-                                                 },
-                                                 style: ElevatedButton.styleFrom(
-                                                   backgroundColor: Colors.blue,
-                                                   foregroundColor: Colors.white,
-                                                   padding: EdgeInsets.all(16),
-                                                   elevation: 4,
-                                                   shape: CircleBorder(),
-                                                 ),
-                                                 child: Icon(Icons.scale),
-                                               ),
-                                             ],
-                                           ),
-                                         ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-                      ),
-                        ],
-                      ),
                     ),
-                  ],
-                ),
+                    body: Stack(
+                      children: [
+                        // Full screen map
+                        _buildMapView(),
+                        
+                        // Floating controls on the right
+                        _buildFloatingControls(),
+                        
+                        // Bottom driver/truck info panel (draggable bottom sheet)
+                        _buildBottomInfoPanel(homePageController),
+                      ],
+                    ),
                   ),
-                ),
-            );
-          }
-        },
-      ),
+                );
+              }
+            },
+          ),
         ),
         // TruckBuddy logo positioned at coordinates 14:71
         Positioned(
@@ -1152,6 +315,319 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildMapView() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      child: _isLocationLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : FlutterMap(
+              mapController: _mapController ?? MapController(),
+              options: MapOptions(
+                initialCenter: _currentPosition != null
+                    ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                    : const LatLng(54.6872, 25.2797), // Fallback to Vilnius
+                initialZoom: _currentPosition != null ? 15.0 : 10.0,
+                onMapReady: () {
+                  print('🗺️ Home page map is ready!');
+                  // Move camera to current location if available
+                  if (_currentPosition != null && _mapController != null) {
+                    _mapController!.move(
+                      LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                      15.0,
+                    );
+                  }
+                },
+                // PERFORMANCE OPTIMIZATION: Reduce tile requests by limiting zoom range
+                maxZoom: 20, // Reduced to avoid 404 errors
+                minZoom: 4,
+                // PERFORMANCE OPTIMIZATION: Disable smooth scrolling to reduce tile requests
+                interactionOptions: const InteractionOptions(
+                  enableScrollWheel: false,
+                  enableMultiFingerGestureRace: false,
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?apiKey=${ApiConfig.hereMapsApiKey}',
+                  userAgentPackageName: 'com.truckbuddy.app',
+                  tileSize: 256,
+                  maxZoom: 20,
+                  minZoom: 4,
+                  errorTileCallback: (tile, error, stackTrace) {
+                    print('❌ HERE Raster Tile error: $error for tile ${tile.coordinates}');
+                    print('🔗 Failed URL: https://maps.hereapi.com/v3/base/mc/${tile.coordinates.z}/${tile.coordinates.x}/${tile.coordinates.y}/png?apiKey=${ApiConfig.hereMapsApiKey.substring(0, 10)}...');
+                  },
+                ),
+                if (_currentPosition != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                        width: 80,
+                        height: 80,
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.blue,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildFloatingControls() {
+    return Positioned(
+      right: 16,
+      top: 120,
+      child: Column(
+        children: [
+          _buildFloatingButton(
+            icon: Icons.my_location,
+            onTap: () {
+              if (_currentPosition != null && _mapController != null) {
+                _mapController!.move(
+                  LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                  15.0,
+                );
+              }
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.blue[600]!,
+          ),
+          const SizedBox(height: 12),
+          _buildFloatingButton(
+            icon: Icons.local_gas_station,
+            onTap: _searchNearbyFuelStations,
+            backgroundColor: Colors.blue[600]!,
+            iconColor: Colors.white,
+          ),
+          const SizedBox(height: 12),
+          _buildFloatingButton(
+            icon: Icons.local_shipping,
+            onTap: () {
+              // TODO: Implement truck stops functionality
+            },
+            backgroundColor: Colors.blue[600]!,
+            iconColor: Colors.white,
+          ),
+          const SizedBox(height: 12),
+          _buildFloatingButton(
+            icon: Icons.scale,
+            onTap: () {
+              // TODO: Implement weigh functionality
+            },
+            backgroundColor: Colors.blue[600]!,
+            iconColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFloatingButton({
+    required IconData icon,
+    required VoidCallback onTap,
+    required Color backgroundColor,
+    required Color iconColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: iconColor, size: 24),
+      ),
+    );
+  }
+
+  Widget _buildBottomInfoPanel(HomePageController homePageController) {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Driver info
+            _buildDriverInfoCard(homePageController),
+            
+            const SizedBox(height: 20),
+            
+            // Truck details
+            if (homePageController.getCurrentAssignedTruck() != null)
+              _buildTruckDetailsCard(homePageController),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDriverInfoCard(HomePageController homePageController) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.person, color: Colors.blue[600], size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Driver Information',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  homePageController.userData?.name ?? 'Driver',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _currentAddress,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTruckDetailsCard(HomePageController homePageController) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(Icons.local_shipping, color: Colors.green[600], size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Assigned Truck',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  homePageController.getCurrentAssignedTruck()?['truck_title'] ?? 'Truck Title',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${homePageController.getCurrentAssignedTruck()?['truck_brand'] ?? 'Brand'} ${homePageController.getCurrentAssignedTruck()?['truck_model'] ?? 'Model'}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Truck No: ${homePageController.getCurrentAssignedTruck()?['truck_no'] ?? 'N/A'}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
