@@ -197,10 +197,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _searchNearbyFuelStations() async {
-    // Navigate to the dedicated fuel stations screen
-    Get.toNamed(Routes.fuelStations);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -270,8 +266,6 @@ class _HomePageState extends State<HomePage> {
                         // Full screen map
                         _buildMapView(),
                         
-                        // Floating controls on the right
-                        _buildFloatingControls(),
                         
                         // Bottom driver/truck info panel (draggable bottom sheet)
                         _buildBottomInfoPanel(homePageController),
@@ -283,10 +277,10 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        // TruckBuddy logo vertically centered
+        // TruckBuddy logo positioned 15px up from previous position
         Positioned(
           left: -40,
-          top: ((Get.height * 0.12) - 60) / 2 - 12, // Vertically center the logo (header height/2 - logo height/2)
+          top: 86, // Subtracted 15px from 101
           child: Image.asset(
             "assets/logo/truckbuddy_logo.png",
             height: 24,
@@ -294,10 +288,10 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.contain,
           ),
         ),
-        // Ring bell icon vertically centered
+        // Ring bell icon positioned 15px up from previous position
         Positioned(
           right: 40,
-          top: ((Get.height * 0.12) - 60) / 2 - 12, // Vertically center the bell icon (header height/2 - icon height/2)
+          top: 86, // Subtracted 15px from 101
           child: Image.asset(
             "assets/icons/bellring.png",
             height: 24,
@@ -385,81 +379,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildFloatingControls() {
-    return Positioned(
-      right: 16, // Fixed right margin
-      top: 138, // Fixed top position (map Y + offset)
-      child: Column(
-        children: [
-          _buildFloatingButton(
-            icon: Icons.my_location,
-            onTap: () {
-              if (_currentPosition != null && _mapController != null) {
-                _mapController!.move(
-                  LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                  15.0,
-                );
-              }
-            },
-            backgroundColor: Colors.white,
-            iconColor: Colors.blue[600]!,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
-            icon: Icons.local_gas_station,
-            onTap: _searchNearbyFuelStations,
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
-            icon: Icons.local_shipping,
-            onTap: () {
-              // TODO: Implement truck stops functionality
-            },
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
-            icon: Icons.scale,
-            onTap: () {
-              // TODO: Implement weigh functionality
-            },
-            backgroundColor: Colors.blue[600]!,
-            iconColor: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildFloatingButton({
-    required IconData icon,
-    required VoidCallback onTap,
-    required Color backgroundColor,
-    required Color iconColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48, // Fixed width
-        height: 48, // Fixed height
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: iconColor, size: 24), // Fixed icon size
-      ),
-    );
-  }
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(

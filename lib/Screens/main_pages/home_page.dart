@@ -392,20 +392,6 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           _buildFloatingButton(
-            icon: Icons.my_location,
-            onTap: () {
-              if (_currentPosition != null && _mapController != null) {
-                _mapController!.move(
-                  LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                  15.0,
-                );
-              }
-            },
-            backgroundColor: Colors.white,
-            iconColor: Colors.blue[600]!,
-          ),
-          const SizedBox(height: 12),
-          _buildFloatingButton(
             icon: Icons.local_gas_station,
             onTap: _searchNearbyFuelStations,
             backgroundColor: Colors.blue[600]!,
