@@ -390,7 +390,7 @@ class _HomePageState extends State<HomePage> {
       left: 30, // Add 30px gap from left
       right: 30, // Add 30px gap from right
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10), // All corners rounded
@@ -409,13 +409,13 @@ class _HomePageState extends State<HomePage> {
             // Driver info
             _buildDriverInfoCard(homePageController),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             
             // Truck details
             if (homePageController.getCurrentAssignedTruck() != null)
               _buildTruckDetailsCard(homePageController),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             
             // Separator line
             Container(
@@ -423,7 +423,7 @@ class _HomePageState extends State<HomePage> {
               color: const Color(0xFFF0F0F0),
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             
             // Action buttons (moved from floating controls)
             _buildActionButtonsRow(),
@@ -436,7 +436,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildDriverInfoCard(HomePageController homePageController) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           Container(
@@ -481,7 +481,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildTruckDetailsCard(HomePageController homePageController) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Row(
         children: [
           Container(
