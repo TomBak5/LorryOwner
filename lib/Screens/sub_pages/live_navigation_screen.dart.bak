@@ -1179,15 +1179,22 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           ),
           const SizedBox(height: 16),
           
-          const SizedBox(height: 12),
+          // Original controls
           _buildFloatingButton(
-            icon: Icons.zoom_in,
-            onTap: () {
-              _animatedMapController.animatedZoomIn();
-            },
+            icon: Icons.compass_calibration,
+            onTap: () {},
             backgroundColor: Colors.white,
             iconColor: Colors.grey[700]!,
           ),
+          
+          // PERFORMANCE MONITORING: Performance metrics button
+          _buildFloatingButton(
+            icon: Icons.analytics,
+            onTap: _logPerformanceMetrics,
+            backgroundColor: Colors.purple[600]!,
+            iconColor: Colors.white,
+          ),
+          const SizedBox(height: 12),
           _buildFloatingButton(
             icon: Icons.zoom_out,
             onTap: () {
