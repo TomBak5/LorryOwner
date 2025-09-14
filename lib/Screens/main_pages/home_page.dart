@@ -535,26 +535,25 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _buildActionButton(
-          icon: Icons.local_gas_station,
+          imagePath: 'assets/icons/fuel icon.png',
           label: 'Fuel',
           onTap: _searchNearbyFuelStations,
         ),
         _buildActionButton(
-          icon: Icons.hotel,
+          imagePath: 'assets/icons/truck stops.png',
           label: 'Truck Stops',
           onTap: () {
             // TODO: Implement truck stops functionality
           },
         ),
         _buildActionButton(
-          icon: Icons.scale,
+          imagePath: 'assets/icons/weighing.png',
           label: 'Weigh',
           onTap: () {
             // TODO: Implement weigh functionality
           },
         ),
-        _buildActionButton(
-          icon: Icons.more_horiz,
+        _buildMoreButton(
           label: 'More',
           onTap: () {
             // TODO: Implement more functionality
@@ -565,7 +564,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildActionButton({
-    required IconData icon,
+    required String imagePath,
     required String label,
     required VoidCallback onTap,
   }) {
@@ -577,14 +576,49 @@ class _HomePageState extends State<HomePage> {
           Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(
-              color: Colors.blue[600],
-              borderRadius: BorderRadius.circular(25),
+            child: imagePath.endsWith('.svg') 
+              ? Image.asset(
+                  imagePath,
+                  width: 50,
+                  height: 50,
+                  color: Colors.blue[600],
+                )
+              : Image.asset(
+                  imagePath,
+                  width: 50,
+                  height: 50,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.black87,
             ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoreButton({
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            child: const Icon(
+              Icons.more_horiz,
+              color: Colors.blue,
+              size: 50,
             ),
           ),
           const SizedBox(height: 8),
