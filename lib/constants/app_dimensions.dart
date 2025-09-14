@@ -6,7 +6,7 @@ class AppDimensions {
   static double get cardPadding => 12.0.w;
   static double get cardRadius => 10.0.r;
   static double get cardMarginHorizontal => 30.0.w;
-  static double get cardMarginBottom => 20.0.h;
+  static double get cardMarginBottom => 120.0.h;
   
   // Spacing
   static double get spacingSmall => 8.0.h;
@@ -39,5 +39,5 @@ class AppDimensions {
   static double get iconContainerRadius => 8.0.r;
   
   // Bottom navigation bar
-  static double get bottomNavHeight => 60.0.h;
+  static double get bottomNavHeight => 45.0.h;
 }
