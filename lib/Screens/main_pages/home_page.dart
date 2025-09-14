@@ -450,8 +450,8 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
       bottom: 20, // Move card up by 20px to create gap from bottom
-      left: 0,
-      right: 0,
+      left: 30, // Add 30px gap from left
+      right: 30, // Add 30px gap from right
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
