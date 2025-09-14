@@ -463,17 +463,14 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      bottom: 0,
+      bottom: 20, // Move card up by 20px to create gap from bottom
       left: 0,
       right: 0,
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.circular(20), // All corners rounded
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
