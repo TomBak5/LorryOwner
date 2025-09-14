@@ -388,7 +388,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      bottom: AppDimensions.cardMarginBottom,
+      top: 431.0.h,
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(
