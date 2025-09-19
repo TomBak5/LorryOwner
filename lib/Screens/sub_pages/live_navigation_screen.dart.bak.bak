@@ -68,6 +68,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   bool _isMuted = false;
   bool _isAutomaticMovement = false;
   
+  // Map rotation for heading-up navigation (temporarily removed)
+  // double _mapRotation = 0.0; // Current map rotation in degrees
+  
   // API provider for route calculation
   final ApiProvider _apiProvider = ApiProvider();
   
