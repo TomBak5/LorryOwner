@@ -875,6 +875,22 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     _isAutomaticMovement = false;
     _updateNavigationInfo();
     _fitMapToCurrentLocation(); // Fit map to current location when navigation starts
+    
+    // Auto-zoom in 11 times when navigation starts (7 + 4 more)
+    _autoZoomIn(11);
+  }
+
+  // Auto-zoom in multiple times when navigation starts
+  void _autoZoomIn(int times) async {
+    print('🔍 Auto-zooming in $times times...');
+    for (int i = 0; i < times; i++) {
+      await Future.delayed(const Duration(milliseconds: 200)); // Small delay between zooms
+      if (mounted) {
+        _animatedMapController.animatedZoomIn();
+        print('🔍 Zoom step ${i + 1}/$times completed');
+      }
+    }
+    print('✅ Auto-zoom completed');
   }
 
   // Simulate movement along the route for testing turn-by-turn navigation - OPTIMIZED
