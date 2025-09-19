@@ -137,15 +137,6 @@ commonBg() {
                 ],
               ),
             ),
-            Positioned(
-              top: 70,
-              child: Image.asset(
-                "assets/logo/truckbuddy_logo.png",
-                height: 60,
-                width: 120,
-                color: Colors.white,
-              ),
-            ),
           ],
         ),
       ],
