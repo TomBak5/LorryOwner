@@ -541,6 +541,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildActionButtonsRow() {
+    // Show only Create Order button for dispatchers
+    if (homePageController.userData?.userRole == 'dispatcher') {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildActionButton(
+            imagePath: 'assets/icons/fuel icon.png', // Using existing icon for now
+            label: 'Create Order',
+            onTap: () {
+              Get.toNamed(Routes.assignOrder);
+            },
+          ),
+        ],
+      );
+    }
+    
+    // Show driver buttons for regular drivers
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
