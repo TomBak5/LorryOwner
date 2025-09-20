@@ -919,9 +919,11 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           // We need to rotate the map in the opposite direction of the heading
           // If heading is 90° (east), rotate map -90° so east becomes up
           double mapRotation = -_currentHeading;
-          _animatedMapController.mapController!.rotate(mapRotation);
           
-          print('🧭 Heading-up rotation applied - heading: ${_currentHeading.toStringAsFixed(1)}°, map rotation: ${mapRotation.toStringAsFixed(1)}°');
+          // Use smooth animated rotation instead of instant rotation
+          _animatedMapController.animatedRotateTo(mapRotation);
+          
+          print('🧭 Smooth heading-up rotation applied - heading: ${_currentHeading.toStringAsFixed(1)}°, map rotation: ${mapRotation.toStringAsFixed(1)}°');
         } catch (e) {
           print('❌ Heading-up rotation error: $e');
         }
@@ -953,7 +955,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     }
   }
 
-  // Force immediate heading-up rotation
+  // Force immediate heading-up rotation with smooth animation
   void _forceHeadingUpRotation() {
     if (_animatedMapController.mapController != null) {
       try {
@@ -962,9 +964,11 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         
         // Rotate map so direction of travel is up
         double mapRotation = -_currentHeading;
-        _animatedMapController.mapController!.rotate(mapRotation);
         
-        print('🧭 Forcing heading-up rotation - heading: ${_currentHeading.toStringAsFixed(1)}°');
+        // Use smooth animated rotation instead of instant rotation
+        _animatedMapController.animatedRotateTo(mapRotation);
+        
+        print('🧭 Smooth forcing heading-up rotation - heading: ${_currentHeading.toStringAsFixed(1)}°');
       } catch (e) {
         print('❌ Immediate heading-up rotation error: $e');
       }
