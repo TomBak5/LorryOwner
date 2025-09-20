@@ -3,6 +3,7 @@ import 'package:movers_lorry_owner/models/myloads_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Api_Provider/api_provider.dart';
 import 'dart:convert';
+import 'dart:async';
 
 class MyLoadsController extends GetxController implements GetxService {
   MyLoadsModel currentData = MyLoadsModel(loadHistoryData: [], responseCode: "200", result: "true", responseMsg: "");
@@ -57,28 +58,38 @@ class MyLoadsController extends GetxController implements GetxService {
     isLoadingOrders = true;
     update();
 
-    // Fetch regular loads
-    ApiProvider()
-        .myLoadsApi(ownerId: uid, status: "Current")
-        .then((value) async {
-      setDataInCurrentList(value);
-      ApiProvider().myLoadsApi(ownerId: uid, status: "complet").then((value) {
-        setDataInCompletList(value);
+    // Set a timeout for the entire loading process
+    Timer(Duration(seconds: 30), () {
+      if (isLoading || isLoadingOrders) {
+        print('Loading timeout reached');
         setIsLoading(false);
-      }).catchError((error) {
-        print('Error fetching completed loads: $error');
-        setIsLoading(false);
-      });
-    }).catchError((error) {
-      print('Error fetching current loads: $error');
-      setDataInCurrentList(MyLoadsModel(loadHistoryData: [], responseCode: "200", result: "true", responseMsg: ""));
-      setIsLoading(false);
+        isLoadingOrders = false;
+        update();
+      }
     });
 
-    // Fetch all driver orders (assigned, accepted, rejected, etc.)
+    // Fetch regular loads with timeout
+    try {
+      final currentLoadsFuture = ApiProvider().myLoadsApi(ownerId: uid, status: "Current");
+      final currentLoads = await currentLoadsFuture.timeout(Duration(seconds: 15));
+      setDataInCurrentList(currentLoads);
+      
+      final completedLoadsFuture = ApiProvider().myLoadsApi(ownerId: uid, status: "complet");
+      final completedLoads = await completedLoadsFuture.timeout(Duration(seconds: 15));
+      setDataInCompletList(completedLoads);
+      setIsLoading(false);
+    } catch (error) {
+      print('Error fetching loads: $error');
+      setDataInCurrentList(MyLoadsModel(loadHistoryData: [], responseCode: "200", result: "true", responseMsg: ""));
+      setDataInCompletList(MyLoadsModel(loadHistoryData: [], responseCode: "200", result: "true", responseMsg: ""));
+      setIsLoading(false);
+    }
+
+    // Fetch all driver orders (assigned, accepted, rejected, etc.) with timeout
     try {
       final apiProvider = ApiProvider();
-      final orders = await apiProvider.getDriverOrders(uid);
+      final ordersFuture = apiProvider.getDriverOrders(uid);
+      final orders = await ordersFuture.timeout(Duration(seconds: 15));
       setAssignedOrders(orders);
     } catch (e) {
       print('Error fetching driver orders: $e');

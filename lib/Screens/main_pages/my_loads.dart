@@ -46,6 +46,11 @@ class _MyLoadsState extends State<MyLoads> {
     print("Is loading orders: ${myLoadsController.isLoadingOrders}");
     return GetBuilder<MyLoadsController>(
       builder: (myLoadsController) {
+        // Show full screen loading if both regular loads and orders are loading
+        if (myLoadsController.isLoading && myLoadsController.isLoadingOrders) {
+          return _buildFullScreenLoading();
+        }
+        
         return DefaultTabController(
           length: 2,
           initialIndex: 0,
@@ -122,9 +127,14 @@ class _MyLoadsState extends State<MyLoads> {
               ),
             ),
             body: RefreshIndicator(
-              onRefresh: () {
-                return Future.delayed(
-                  const Duration(seconds: 1),
+              onRefresh: () async {
+                // Show loading indicator during refresh
+                myLoadsController.isLoading = true;
+                myLoadsController.isLoadingOrders = true;
+                myLoadsController.update();
+                
+                await Future.delayed(
+                  const Duration(milliseconds: 500),
                   () {
                     myLoadsController.fetchDataFromApi();
                   },
@@ -1197,5 +1207,17 @@ class _MyLoadsState extends State<MyLoads> {
        // Loading dialog removed
        Get.snackbar('Error', 'Failed to fetch order details: $e');
      }
+  }
+
+  Widget _buildFullScreenLoading() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: CircularProgressIndicator(
+          strokeWidth: 3,
+          valueColor: AlwaysStoppedAnimation<Color>(priMaryColor),
+        ),
+      ),
+    );
   }
 } 
