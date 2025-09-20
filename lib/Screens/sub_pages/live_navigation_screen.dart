@@ -1755,10 +1755,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           rotationThreshold: 0, // Disable rotation threshold
           onMapReady: () {
             print('🗺️ Map is ready!');
-            // Force rotation immediately when map is ready
-            Future.delayed(Duration(milliseconds: 100), () {
-              _forceHeadingUpRotation();
-            });
+            // Don't rotate map when it loads - only rotate when navigation starts
             setState(() {});
           },
           // PERFORMANCE OPTIMIZATION: Reduce tile requests by limiting zoom range
