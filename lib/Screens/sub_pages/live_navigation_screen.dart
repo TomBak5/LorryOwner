@@ -1851,7 +1851,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 3),
                   ),
-                  child: const Icon(Icons.local_shipping, color: Colors.white, size: 30),
+                  child: Transform.rotate(
+                    angle: _currentHeading * math.pi / 180, // Counter-rotate truck icon
+                    child: const Icon(Icons.local_shipping, color: Colors.white, size: 30),
+                  ),
                 ),
               ),
           ],
