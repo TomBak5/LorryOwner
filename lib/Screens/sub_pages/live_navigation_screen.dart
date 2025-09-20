@@ -881,10 +881,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // Start with manual movement by default
     _isAutomaticMovement = false;
     _updateNavigationInfo();
-    _fitMapToCurrentLocation(); // Fit map to current location when navigation starts
-    
-    // Auto-zoom in 14 times when navigation starts (7 + 7 more)
-    _autoZoomIn(14);
+    // Auto-zoom in 17 times when navigation starts
+    _autoZoomIn(17);
     
     // Immediately force heading-up rotation
     _forceHeadingUpRotation();
