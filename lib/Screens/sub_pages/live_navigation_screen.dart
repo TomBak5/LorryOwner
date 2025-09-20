@@ -876,8 +876,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     _updateNavigationInfo();
     _fitMapToCurrentLocation(); // Fit map to current location when navigation starts
     
-    // Auto-zoom in 11 times when navigation starts (7 + 4 more)
-    _autoZoomIn(11);
+    // Auto-zoom in 14 times when navigation starts (7 + 7 more)
+    _autoZoomIn(14);
   }
 
   // Auto-zoom in multiple times when navigation starts
