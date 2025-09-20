@@ -68,6 +68,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   bool _isMuted = false;
   bool _isAutomaticMovement = false;
   
+  // Timer to keep map heading-up (direction of travel is always up)
+  Timer? _headingUpTimer;
+  
+  // Current heading/bearing for navigation
+  double _currentHeading = 0.0;
+  
   // API provider for route calculation
   final ApiProvider _apiProvider = ApiProvider();
   
@@ -444,6 +450,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   @override
   void dispose() {
     _fakeMovementTimer?.cancel();
+    _stopHeadingUpTimer(); // Stop heading-up timer
     
     // PERFORMANCE OPTIMIZATION: Clear caches to prevent memory leaks
     _cachedBearing.clear();
@@ -878,6 +885,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     
     // Auto-zoom in 14 times when navigation starts (7 + 7 more)
     _autoZoomIn(14);
+    
+    // Immediately force heading-up rotation
+    _forceHeadingUpRotation();
+    
+    // Start heading-up timer (direction of travel is always up)
+    _startHeadingUpTimer();
   }
 
   // Auto-zoom in multiple times when navigation starts
@@ -891,6 +904,71 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       }
     }
     print('✅ Auto-zoom completed');
+  }
+
+  // Force map to stay heading-up during navigation (direction of travel is always up)
+  void _startHeadingUpTimer() {
+    _headingUpTimer?.cancel();
+    _headingUpTimer = Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      if (_animatedMapController.mapController != null && _isNavigating) {
+        try {
+          // Calculate the heading based on current route position
+          _calculateCurrentHeading();
+          
+          // Rotate map so direction of travel is always up
+          // We need to rotate the map in the opposite direction of the heading
+          // If heading is 90° (east), rotate map -90° so east becomes up
+          double mapRotation = -_currentHeading;
+          _animatedMapController.mapController!.rotate(mapRotation);
+          
+          print('🧭 Heading-up rotation applied - heading: ${_currentHeading.toStringAsFixed(1)}°, map rotation: ${mapRotation.toStringAsFixed(1)}°');
+        } catch (e) {
+          print('❌ Heading-up rotation error: $e');
+        }
+      }
+    });
+  }
+
+  // Stop heading-up timer
+  void _stopHeadingUpTimer() {
+    _headingUpTimer?.cancel();
+    _headingUpTimer = null;
+  }
+
+  // Calculate current heading based on route position
+  void _calculateCurrentHeading() {
+    if (_routePoints.isNotEmpty && _fakeRouteIndex < _routePoints.length - 1) {
+      // Calculate bearing from current position to next point
+      LatLng currentPoint = _routePoints[_fakeRouteIndex];
+      LatLng nextPoint = _routePoints[_fakeRouteIndex + 1];
+      
+      _currentHeading = _calculateBearingOptimized(currentPoint, nextPoint);
+    } else if (_currentLocation != null && _routePoints.isNotEmpty) {
+      // If we're not following the fake route, use current location to next route point
+      LatLng nextPoint = _routePoints.first;
+      _currentHeading = _calculateBearingOptimized(_currentLocation!, nextPoint);
+    } else {
+      // Default to north (0 degrees) if no route data
+      _currentHeading = 0.0;
+    }
+  }
+
+  // Force immediate heading-up rotation
+  void _forceHeadingUpRotation() {
+    if (_animatedMapController.mapController != null) {
+      try {
+        // Calculate current heading first
+        _calculateCurrentHeading();
+        
+        // Rotate map so direction of travel is up
+        double mapRotation = -_currentHeading;
+        _animatedMapController.mapController!.rotate(mapRotation);
+        
+        print('🧭 Forcing heading-up rotation - heading: ${_currentHeading.toStringAsFixed(1)}°');
+      } catch (e) {
+        print('❌ Immediate heading-up rotation error: $e');
+      }
+    }
   }
 
   // Simulate movement along the route for testing turn-by-turn navigation - OPTIMIZED
@@ -1673,8 +1751,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         options: MapOptions(
           initialCenter: LatLng(widget.pickupLat, widget.pickupLng),
           initialZoom: 10, // Lower zoom to reduce tile requests
+          initialRotation: 0, // Always north-up orientation
+          rotationThreshold: 0, // Disable rotation threshold
           onMapReady: () {
             print('🗺️ Map is ready!');
+            // Force rotation immediately when map is ready
+            Future.delayed(Duration(milliseconds: 100), () {
+              _forceHeadingUpRotation();
+            });
             setState(() {});
           },
           // PERFORMANCE OPTIMIZATION: Reduce tile requests by limiting zoom range
@@ -1684,6 +1768,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           interactionOptions: const InteractionOptions(
             enableScrollWheel: false,
             enableMultiFingerGestureRace: false,
+            flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
           ),
         ),
       children: [
