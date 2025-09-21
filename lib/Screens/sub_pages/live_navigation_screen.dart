@@ -406,33 +406,43 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
 
   void _showFullRouteOverview() {
     try {
-      if (_mapController != null && 
-          _pickupLocation != null && 
-          _dropoffLocation != null &&
+      if (_animatedMapController.mapController != null && 
+          _routePoints.isNotEmpty &&
           mounted) {
         
-        double minLat = math.min(_pickupLocation!.latitude, _dropoffLocation!.latitude);
-        double maxLat = math.max(_pickupLocation!.latitude, _dropoffLocation!.latitude);
-        double minLng = math.min(_pickupLocation!.longitude, _dropoffLocation!.longitude);
-        double maxLng = math.max(_pickupLocation!.longitude, _dropoffLocation!.longitude);
+        // Calculate bounds from all route points to ensure entire route is visible
+        double minLat = _routePoints.first.latitude;
+        double maxLat = _routePoints.first.latitude;
+        double minLng = _routePoints.first.longitude;
+        double maxLng = _routePoints.first.longitude;
         
-        double latPadding = (maxLat - minLat) * 0.1;
-        double lngPadding = (maxLng - minLng) * 0.1;
+        // Find min/max coordinates from all route points
+        for (var point in _routePoints) {
+          minLat = math.min(minLat, point.latitude);
+          maxLat = math.max(maxLat, point.latitude);
+          minLng = math.min(minLng, point.longitude);
+          maxLng = math.max(maxLng, point.longitude);
+        }
         
-        _mapController!.fitCamera(
+        // Add padding to ensure route isn't at the very edge
+        double latPadding = (maxLat - minLat) * 0.15;
+        double lngPadding = (maxLng - minLng) * 0.15;
+        
+        _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
             bounds: LatLngBounds(
               LatLng(minLat - latPadding, minLng - lngPadding),
               LatLng(maxLat + latPadding, maxLng + lngPadding),
             ),
             padding: const EdgeInsets.all(50),
-            maxZoom: 10,
+            maxZoom: 15, // Increased max zoom to allow closer view
           ),
         );
         
-        print('✅ Route overview displayed successfully');
+        print('✅ Route overview displayed successfully - Route points: ${_routePoints.length}');
+        print('📍 Bounds: Lat(${minLat.toStringAsFixed(6)} - ${maxLat.toStringAsFixed(6)}), Lng(${minLng.toStringAsFixed(6)} - ${maxLng.toStringAsFixed(6)})');
       } else {
-        print('⚠️ Cannot show route overview: mapController=${_mapController != null}, pickup=${_pickupLocation != null}, dropoff=${_dropoffLocation != null}, mounted=$mounted');
+        print('⚠️ Cannot show route overview: mapController=${_animatedMapController.mapController != null}, routePoints=${_routePoints.length}, mounted=$mounted');
       }
     } catch (e) {
       print('❌ Error showing route overview: $e');
@@ -881,14 +891,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // Start with manual movement by default
     _isAutomaticMovement = false;
     _updateNavigationInfo();
-    // Auto-zoom in 17 times when navigation starts
-    _autoZoomIn(17);
     
-    // Immediately force heading-up rotation
-    _forceHeadingUpRotation();
+    // Auto-zoom to fit entire route in map boundaries
+    _showFullRouteOverview();
     
-    // Start heading-up timer (direction of travel is always up)
-    _startHeadingUpTimer();
+    // Then zoom in by 9 levels
+    _zoomInAfterOverview();
+    
+    // Note: Removed automatic rotation - map will stay in current orientation
   }
 
   // Auto-zoom in multiple times when navigation starts
@@ -902,6 +912,38 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       }
     }
     print('✅ Auto-zoom completed');
+  }
+
+  // Zoom in by 9 levels after route overview is shown, centered on truck location
+  void _zoomInAfterOverview() async {
+    print('🔍 Starting zoom in by 9 levels after route overview...');
+    
+    // Wait a bit for the route overview animation to complete
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    if (mounted && _animatedMapController.mapController != null && _currentLocation != null) {
+      // Get current zoom level and add 9
+      double currentZoom = _animatedMapController.mapController!.camera.zoom;
+      double targetZoom = currentZoom + 9;
+      
+      // Cap the zoom level to avoid going too far
+      if (targetZoom > 20) {
+        targetZoom = 20;
+      }
+      
+      print('🔍 Zooming from $currentZoom to $targetZoom');
+      print('🚛 Centering on truck location: ${_currentLocation!.latitude}, ${_currentLocation!.longitude}');
+      
+      // Zoom in by 9 levels centered on truck location
+      _animatedMapController.mapController!.move(_currentLocation!, targetZoom);
+      
+      print('✅ Zoom in by 9 levels completed - centered on truck');
+    } else {
+      print('⚠️ Cannot zoom: missing required data');
+      print('   • Mounted: $mounted');
+      print('   • MapController: ${_animatedMapController.mapController != null}');
+      print('   • CurrentLocation: ${_currentLocation != null}');
+    }
   }
 
   // Force map to stay heading-up during navigation (direction of travel is always up)
