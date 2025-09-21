@@ -898,7 +898,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // Then zoom in by 9 levels
     _zoomInAfterOverview();
     
-    // Note: Removed automatic rotation - map will stay in current orientation
+    // Note: No rotation on Confirm & Go - rotation only happens during live navigation on turns
   }
 
   // Auto-zoom in multiple times when navigation starts
@@ -938,6 +938,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       _animatedMapController.mapController!.move(_currentLocation!, targetZoom);
       
       print('✅ Zoom in by 9 levels completed - centered on truck');
+      print('🧭 No rotation applied - map stays in current orientation');
     } else {
       print('⚠️ Cannot zoom: missing required data');
       print('   • Mounted: $mounted');
@@ -960,10 +961,19 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           // If heading is 90° (east), rotate map -90° so east becomes up
           double mapRotation = -_currentHeading;
           
-          // Use smooth animated rotation instead of instant rotation
-          _animatedMapController.animatedRotateTo(mapRotation);
+          // Get current map rotation to check if we need to update
+          double currentMapRotation = _animatedMapController.mapController!.camera.rotation;
           
-          print('🧭 Smooth heading-up rotation applied - heading: ${_currentHeading.toStringAsFixed(1)}°, map rotation: ${mapRotation.toStringAsFixed(1)}°');
+          // Only rotate if there's a significant change to avoid constant micro-adjustments
+          double rotationDiff = _normalizeAngle(mapRotation - currentMapRotation);
+          
+          if (rotationDiff.abs() > 5) { // Only rotate if difference is more than 5 degrees
+            // Use smooth animated rotation instead of instant rotation
+            _animatedMapController.animatedRotateTo(mapRotation);
+            
+            print('🧭 Smooth heading-up rotation applied - heading: ${_currentHeading.toStringAsFixed(1)}°, map rotation: ${mapRotation.toStringAsFixed(1)}°');
+            print('🔄 Rotation change: ${currentMapRotation.toStringAsFixed(1)}° → ${mapRotation.toStringAsFixed(1)}° (diff: ${rotationDiff.toStringAsFixed(1)}°)');
+          }
         } catch (e) {
           print('❌ Heading-up rotation error: $e');
         }
@@ -977,14 +987,32 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     _headingUpTimer = null;
   }
 
-  // Calculate current heading based on route position
+  // Calculate current heading based on route position with turn detection
   void _calculateCurrentHeading() {
     if (_routePoints.isNotEmpty && _fakeRouteIndex < _routePoints.length - 1) {
       // Calculate bearing from current position to next point
       LatLng currentPoint = _routePoints[_fakeRouteIndex];
       LatLng nextPoint = _routePoints[_fakeRouteIndex + 1];
       
-      _currentHeading = _calculateBearingOptimized(currentPoint, nextPoint);
+      double newHeading = _calculateBearingOptimized(currentPoint, nextPoint);
+      
+      // Store previous heading to detect turns
+      double previousHeading = _currentHeading;
+      _currentHeading = newHeading;
+      
+      // Log heading change for debugging
+      if (previousHeading != 0.0) {
+        double headingDiff = _normalizeAngle(newHeading - previousHeading);
+        print('🧭 Heading change: ${previousHeading.toStringAsFixed(1)}° → ${newHeading.toStringAsFixed(1)}° (diff: ${headingDiff.toStringAsFixed(1)}°)');
+        
+        if (headingDiff.abs() > 10) { // Significant turn detected
+          if (headingDiff > 0) {
+            print('🔄 Turn direction: RIGHT');
+          } else {
+            print('🔄 Turn direction: LEFT');
+          }
+        }
+      }
     } else if (_currentLocation != null && _routePoints.isNotEmpty) {
       // If we're not following the fake route, use current location to next route point
       LatLng nextPoint = _routePoints.first;
@@ -993,6 +1021,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       // Default to north (0 degrees) if no route data
       _currentHeading = 0.0;
     }
+  }
+  
+  // Normalize angle to -180 to +180 range
+  double _normalizeAngle(double angle) {
+    while (angle > 180) angle -= 360;
+    while (angle < -180) angle += 360;
+    return angle;
   }
 
   // Force immediate heading-up rotation with smooth animation
@@ -1024,6 +1059,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       _fakeRouteIndex = 0;
       _currentLocation = _routePoints.first;
     });
+
+    // Start heading-up timer when automatic movement begins
+    _startHeadingUpTimer();
 
     _fakeMovementTimer = Timer.periodic(Duration(milliseconds: _movementUpdateInterval), (timer) {
       if (_fakeRouteIndex < _routePoints.length - 1) {
@@ -1060,6 +1098,11 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   // Move one step forward manually - OPTIMIZED
   void _moveOneStep() {
     if (_fakeRouteIndex < _routePoints.length - 1) {
+      // Start heading-up timer when movement begins (only once)
+      if (!_isNavigating || _headingUpTimer == null) {
+        _startHeadingUpTimer();
+      }
+      
       // PERFORMANCE OPTIMIZATION: Batch updates
       setState(() {
         _fakeRouteIndex++;
