@@ -428,6 +428,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         double latPadding = (maxLat - minLat) * 0.15;
         double lngPadding = (maxLng - minLng) * 0.15;
         
+        // Use smooth animated fit camera for route overview
         _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
             bounds: LatLngBounds(
@@ -916,13 +917,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
 
   // Zoom in by 9 levels after route overview is shown, centered on truck location
   void _zoomInAfterOverview() async {
-    print('🔍 Starting zoom in by 9 levels after route overview...');
+    print('🔍 Starting smooth zoom in by 9 levels after route overview...');
     
     // Wait a bit for the route overview animation to complete
     await Future.delayed(const Duration(milliseconds: 1000));
     
     if (mounted && _animatedMapController.mapController != null && _currentLocation != null) {
-      // Get current zoom level and add 9
+      // Get current zoom level and calculate target
       double currentZoom = _animatedMapController.mapController!.camera.zoom;
       double targetZoom = currentZoom + 9;
       
@@ -931,13 +932,29 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         targetZoom = 20;
       }
       
-      print('🔍 Zooming from $currentZoom to $targetZoom');
+      print('🔍 Smooth zooming from $currentZoom to $targetZoom');
       print('🚛 Centering on truck location: ${_currentLocation!.latitude}, ${_currentLocation!.longitude}');
       
-      // Zoom in by 9 levels centered on truck location
-      _animatedMapController.mapController!.move(_currentLocation!, targetZoom);
+      // First center on truck location smoothly
+      _animatedMapController.animateTo(dest: _currentLocation!);
       
-      print('✅ Zoom in by 9 levels completed - centered on truck');
+      // Wait a bit for the centering animation to start
+      await Future.delayed(const Duration(milliseconds: 300));
+      
+      // Then smoothly zoom in by 9 levels
+      print('🔍 Starting smooth zoom animation...');
+      for (int i = 0; i < 9; i++) {
+        if (mounted) {
+          _animatedMapController.animatedZoomIn();
+          // Small delay between each zoom step for smooth animation
+          await Future.delayed(const Duration(milliseconds: 100));
+          print('🔍 Zoom step ${i + 1}/9 completed');
+        } else {
+          break; // Stop if widget is disposed
+        }
+      }
+      
+      print('✅ Smooth zoom in by 9 levels completed - centered on truck');
       print('🧭 No rotation applied - map stays in current orientation');
     } else {
       print('⚠️ Cannot zoom: missing required data');
