@@ -31,18 +31,21 @@ void main() async {
     return true;
   };
   
-  // Fix for text input issues
+  // Fix for text input issues and system UI
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
   
-  // Force proper text input mode
+  // Enable immersive mode - hide system navigation bar
+  // Users can swipe up from bottom to reveal system controls
   SystemChrome.setEnabledSystemUIMode(
-    SystemUiMode.manual,
-    overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom],
+    SystemUiMode.immersiveSticky,
+    overlays: [SystemUiOverlay.top],
   );
   
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
