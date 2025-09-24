@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../../AppConstData/app_colors.dart';
+import '../../AppConstData/typographyy.dart';
 import '../../Controllers/landingpage_controller.dart';
 import '../../constants/app_dimensions.dart';
 

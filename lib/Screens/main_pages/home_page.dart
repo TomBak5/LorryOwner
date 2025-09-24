@@ -350,6 +350,7 @@ class _HomePageState extends State<HomePage> {
                 interactionOptions: const InteractionOptions(
                   enableScrollWheel: false,
                   enableMultiFingerGestureRace: false,
+                  flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
                 ),
               ),
               children: [

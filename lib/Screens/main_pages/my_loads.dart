@@ -24,6 +24,8 @@ class MyLoads extends StatefulWidget {
 
 class _MyLoadsState extends State<MyLoads> {
   MyLoadsController myLoadsController = Get.put(MyLoadsController());
+  bool isFirstLoad = true;
+  bool isTabLoading = false;
 
   @override
   void dispose() {
@@ -34,7 +36,28 @@ class _MyLoadsState extends State<MyLoads> {
   @override
   initState() {
     super.initState();
-    myLoadsController.fetchDataFromApi();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    if (isFirstLoad) {
+      // Show loading indicator when first accessing the tab
+      setState(() {
+        isTabLoading = true;
+      });
+    }
+    
+    try {
+      await myLoadsController.fetchDataFromApi();
+    } finally {
+      if (isFirstLoad) {
+        // Hide loading indicator after data is loaded (or on error)
+        setState(() {
+          isTabLoading = false;
+        });
+        isFirstLoad = false;
+      }
+    }
   }
 
   @override
@@ -44,6 +67,13 @@ class _MyLoadsState extends State<MyLoads> {
     print("Assigned orders length: ${myLoadsController.assignedOrders.length}");
     print("Is loading: ${myLoadsController.isLoading}");
     print("Is loading orders: ${myLoadsController.isLoadingOrders}");
+    print("Is tab loading: $isTabLoading");
+    
+    // Show tab loading indicator when first accessing the tab
+    if (isTabLoading) {
+      return _buildTabLoading();
+    }
+    
     return GetBuilder<MyLoadsController>(
       builder: (myLoadsController) {
         // Show full screen loading if both regular loads and orders are loading
@@ -1207,6 +1237,46 @@ class _MyLoadsState extends State<MyLoads> {
        // Loading dialog removed
        Get.snackbar('Error', 'Failed to fetch order details: $e');
      }
+  }
+
+  Widget _buildTabLoading() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(priMaryColor),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Loading tasks...".tr,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: "urbani_regular",
+                  color: textGreyColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildFullScreenLoading() {
