@@ -73,10 +73,12 @@ class _HomePageState extends State<HomePage> {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       debugPrint('Location services enabled: $serviceEnabled');
       if (!serviceEnabled) {
-        setState(() {
-          _isLocationLoading = false;
-          _currentAddress = 'Location services disabled';
-        });
+        if (mounted) {
+          setState(() {
+            _isLocationLoading = false;
+            _currentAddress = 'Location services disabled';
+          });
+        }
         return;
       }
 
@@ -87,19 +89,23 @@ class _HomePageState extends State<HomePage> {
         permission = await Geolocator.requestPermission();
         debugPrint('Permission after request: $permission');
         if (permission == LocationPermission.denied) {
-          setState(() {
-            _isLocationLoading = false;
-            _currentAddress = 'Location permission denied';
-          });
+          if (mounted) {
+            setState(() {
+              _isLocationLoading = false;
+              _currentAddress = 'Location permission denied';
+            });
+          }
           return;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        setState(() {
-          _isLocationLoading = false;
-          _currentAddress = 'Location permission permanently denied';
-        });
+        if (mounted) {
+          setState(() {
+            _isLocationLoading = false;
+            _currentAddress = 'Location permission permanently denied';
+          });
+        }
         return;
       }
 
@@ -111,10 +117,12 @@ class _HomePageState extends State<HomePage> {
       
       debugPrint('Position received: Lat: ${position.latitude}, Lng: ${position.longitude}');
 
-      setState(() {
-        _currentPosition = position;
-        _isLocationLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _currentPosition = position;
+          _isLocationLoading = false;
+        });
+      }
 
       // Get address from coordinates
       debugPrint('Getting address from coordinates...');
@@ -144,10 +152,12 @@ class _HomePageState extends State<HomePage> {
         speedAccuracy: 0.0,
       );
       
-      setState(() {
-        _currentPosition = fallbackPosition;
-        _isLocationLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _currentPosition = fallbackPosition;
+          _isLocationLoading = false;
+        });
+      }
       
       await _getAddressFromCoordinates(fallbackPosition.latitude, fallbackPosition.longitude);
     }
@@ -182,20 +192,26 @@ class _HomePageState extends State<HomePage> {
         }
         
         debugPrint('Final address: $address');
-        setState(() {
-          _currentAddress = address.isNotEmpty ? address : 'Address not available';
-        });
+        if (mounted) {
+          setState(() {
+            _currentAddress = address.isNotEmpty ? address : 'Address not available';
+          });
+        }
       } else {
         debugPrint('No placemarks found');
+        if (mounted) {
+          setState(() {
+            _currentAddress = 'Address not available';
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error getting address: $e');
+      if (mounted) {
         setState(() {
           _currentAddress = 'Address not available';
         });
       }
-    } catch (e) {
-      debugPrint('Error getting address: $e');
-      setState(() {
-        _currentAddress = 'Address not available';
-      });
     }
   }
 
@@ -212,11 +228,14 @@ class _HomePageState extends State<HomePage> {
           backgroundColor: Colors.white,
           body: GetBuilder<HomePageController>(
             builder: (homePageController) {
+              // Wait for user data to be loaded before making redirect decision
               if (homePageController.isLoading) {
                 return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
+                  body: SizedBox.shrink(),
                 );
-              } else if (homePageController.userData == null || (homePageController.userData?.id?.isEmpty ?? true)) {
+              }
+              
+              if (homePageController.userData == null || (homePageController.userData?.id?.isEmpty ?? true)) {
                 // Redirect to login screen if no user is found
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   Get.offAllNamed(Routes.loginScreen);

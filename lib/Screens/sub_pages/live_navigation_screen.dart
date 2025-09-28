@@ -436,7 +436,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
               LatLng(maxLat + latPadding, maxLng + lngPadding),
             ),
             padding: const EdgeInsets.all(50),
-            maxZoom: 15, // Increased max zoom to allow closer view
+            maxZoom: 20, // Increased max zoom to allow +8 zoom after overview
           ),
         );
         
@@ -896,7 +896,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // Auto-zoom to fit entire route in map boundaries
     _showFullRouteOverview();
     
-    // Then zoom in by 9 levels
+    // Then zoom in by 8 levels
     _zoomInAfterOverview();
     
     // Note: No rotation on Confirm & Go - rotation only happens during live navigation on turns
@@ -915,52 +915,52 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     print('✅ Auto-zoom completed');
   }
 
-  // Zoom in by 9 levels after route overview is shown, centered on truck location
+  // Zoom in by 8 levels after route overview is shown, centered on truck location
   void _zoomInAfterOverview() async {
-    print('🔍 Starting smooth zoom in by 9 levels after route overview...');
+    print('🔍 Starting smooth zoom in by 8 levels after route overview...');
     
     // Wait a bit for the route overview animation to complete
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future.delayed(const Duration(milliseconds: 1500)); // Increased delay
     
-    if (mounted && _animatedMapController.mapController != null && _currentLocation != null) {
+    if (mounted && _animatedMapController.mapController != null) {
+      // Use pickup location as center if current location is not set
+      LatLng centerLocation = _currentLocation ?? _pickupLocation ?? LatLng(widget.pickupLat, widget.pickupLng);
+      
       // Get current zoom level and calculate target
       double currentZoom = _animatedMapController.mapController!.camera.zoom;
-      double targetZoom = currentZoom + 9;
+      double targetZoom = currentZoom + 8;
       
       // Cap the zoom level to avoid going too far
       if (targetZoom > 20) {
         targetZoom = 20;
       }
       
-      print('🔍 Smooth zooming from $currentZoom to $targetZoom');
-      print('🚛 Centering on truck location: ${_currentLocation!.latitude}, ${_currentLocation!.longitude}');
+      print('🔍 Current zoom level: $currentZoom');
+      print('🔍 Target zoom level: $targetZoom');
+      print('🚛 Centering on location: ${centerLocation.latitude}, ${centerLocation.longitude}');
       
-      // First center on truck location smoothly
-      _animatedMapController.animateTo(dest: _currentLocation!);
+      // First center on location smoothly
+      _animatedMapController.animateTo(dest: centerLocation);
       
       // Wait a bit for the centering animation to start
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future.delayed(const Duration(milliseconds: 500)); // Increased delay
       
-      // Then smoothly zoom in by 9 levels
-      print('🔍 Starting smooth zoom animation...');
-      for (int i = 0; i < 9; i++) {
-        if (mounted) {
-          _animatedMapController.animatedZoomIn();
-          // Small delay between each zoom step for smooth animation
-          await Future.delayed(const Duration(milliseconds: 100));
-          print('🔍 Zoom step ${i + 1}/9 completed');
-        } else {
-          break; // Stop if widget is disposed
-        }
+      // Then zoom in by 8 levels directly
+      print('🔍 Starting zoom animation...');
+      if (mounted) {
+        // Set zoom level directly to current + 8
+        _animatedMapController.mapController!.move(centerLocation, targetZoom);
+        print('🔍 Zoom set to $targetZoom - Current zoom: ${_animatedMapController.mapController!.camera.zoom}');
       }
       
-      print('✅ Smooth zoom in by 9 levels completed - centered on truck');
+      print('✅ Smooth zoom in by 8 levels completed - Final zoom: ${_animatedMapController.mapController!.camera.zoom}');
       print('🧭 No rotation applied - map stays in current orientation');
     } else {
       print('⚠️ Cannot zoom: missing required data');
       print('   • Mounted: $mounted');
       print('   • MapController: ${_animatedMapController.mapController != null}');
       print('   • CurrentLocation: ${_currentLocation != null}');
+      print('   • PickupLocation: ${_pickupLocation != null}');
     }
   }
 

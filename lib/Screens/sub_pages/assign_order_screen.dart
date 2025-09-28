@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../AppConstData/app_colors.dart';
@@ -37,9 +38,8 @@ class _AssignOrderScreenState extends State<AssignOrderScreen> {
   // Add disposal tracking
   bool _disposed = false;
   
-  // Add WebView controller
-  WebViewController? webViewController;
-  // String gkey = ""; // Removed - now using HERE Maps exclusively
+  // Add flutter_map controller
+  MapController? _mapController;
 
   @override
   void initState() {
@@ -61,11 +61,8 @@ class _AssignOrderScreenState extends State<AssignOrderScreen> {
   @override
   void dispose() {
     _disposed = true;
-    // Dispose WebView controller properly
-    if (webViewController != null) {
-      webViewController!.clearCache();
-      webViewController!.clearLocalStorage();
-    }
+    // Dispose map controller properly
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -522,14 +519,12 @@ class MapPickerScreen extends StatefulWidget {
 }
 
 class _MapPickerScreenState extends State<MapPickerScreen> {
-  WebViewController? webViewController;
+  MapController? _mapController;
   double _selectedLat = 0.0;
   double _selectedLng = 0.0;
   String _selectedAddress = '';
-  bool _isSearching = false;
   List<String> _searchResults = [];
   bool _showSearchResults = false;
-  bool _mapLoadError = false;
   final TextEditingController _searchController = TextEditingController();
   
   // Add disposal tracking
@@ -547,11 +542,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
   @override
   void dispose() {
     _disposed = true;
+    _mapController?.dispose();
     super.dispose();
-    if (webViewController != null) {
-      webViewController!.clearCache();
-      webViewController!.clearLocalStorage();
-    }
   }
 
   // Add safe setState method
@@ -579,7 +571,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
     if (query.isEmpty) return;
 
       _safeSetState(() {
-      _isSearching = true;
+      // _isSearching = true; // Removed unused field
       _showSearchResults = false;
       });
 
@@ -601,7 +593,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
             _safeSetState(() {
         _searchResults = addresses;
         _showSearchResults = true;
-        _isSearching = false;
+        // _isSearching = false; // Removed unused field
       });
 
       // Update map with first result
@@ -611,32 +603,19 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       } catch (e) {
       print('Error searching location: $e');
         _safeSetState(() {
-        _isSearching = false;
+        // _isSearching = false; // Removed unused field
       });
     }
   }
 
   void _updateMapLocation(double lat, double lng) {
-    if (webViewController != null) {
-      webViewController!.runJavaScript('''
-        // Clear existing markers
-        if (window.map && window.markers) {
-          window.markers.forEach(marker => map.removeObject(marker));
-          window.markers = [];
-        }
-        
-        // Move map to new location
-        if (window.map) {
-          window.map.setCenter({lat: $lat, lng: $lng});
-          window.map.setZoom(15);
-          
-          // Add new marker
-          var marker = new H.map.Marker({lat: $lat, lng: $lng});
-          window.map.addObject(marker);
-          if (!window.markers) window.markers = [];
-          window.markers.push(marker);
-        }
-      ''');
+    if (_mapController != null) {
+      _mapController!.move(LatLng(lat, lng), 15.0);
+      _safeSetState(() {
+        _selectedLat = lat;
+        _selectedLng = lng;
+      });
+      _getAddressFromLatLng(lat, lng);
     }
   }
 
@@ -675,26 +654,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       _getAddressFromLatLng(_selectedLat, _selectedLng);
       
       // Update map
-      if (webViewController != null) {
-        webViewController!.runJavaScript('''
-          // Clear existing markers
-          if (window.map && window.markers) {
-            window.markers.forEach(marker => map.removeObject(marker));
-            window.markers = [];
-          }
-          
-          // Move map to current location
-          if (window.map) {
-            window.map.setCenter({lat: ${position.latitude}, lng: ${position.longitude}});
-            window.map.setZoom(15);
-            
-            // Add new marker
-            var marker = new H.map.Marker({lat: ${position.latitude}, lng: ${position.longitude}});
-            window.map.addObject(marker);
-            if (!window.markers) window.markers = [];
-            window.markers.push(marker);
-          }
-        ''');
+      if (_mapController != null) {
+        _mapController!.move(LatLng(position.latitude, position.longitude), 15.0);
       }
     } catch (e) {
       print('Error getting current location: $e');
@@ -813,175 +774,56 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: _mapLoadError
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, size: 48, color: Colors.grey),
-                            const SizedBox(height: 16),
-                  Text(
-                              'Map Loading Error',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                        _safeSetState(() {
-                                  _mapLoadError = false;
-                        });
-                      },
-                              child: Text('Retry'),
-                      ),
-                    ],
-                  ),
-                      )
-                    : WebViewWidget(
-                        controller: (webViewController = WebViewController()
-                          ..setJavaScriptMode(JavaScriptMode.unrestricted)
-                          ..addJavaScriptChannel(
-                            'flutter',
-                            onMessageReceived: (JavaScriptMessage message) {
-                              if (_disposed) return; // Prevent processing if disposed
-                              print('=== JavaScript message received: ${message.message} ===');
-                              try {
-                                final data = jsonDecode(message.message);
-                                if (data['type'] == 'locationSelected') {
-                                  print('=== Location selected via map: ${data['lat']}, ${data['lng']} ===');
-                                  _safeSetState(() {
-                                    _selectedLat = data['lat'].toDouble();
-                                    _selectedLng = data['lng'].toDouble();
-                                  });
-                                  _getAddressFromLatLng(_selectedLat, _selectedLng);
-                                }
-                              } catch (e) {
-                                print('Error parsing JavaScript message: $e');
-                              }
-                            },
-                          )
-                          ..setNavigationDelegate(
-                            NavigationDelegate(
-                              onPageFinished: (String url) {
-                                if (_disposed) return;
-                                print('=== WebView page finished loading ===');
-                              },
-                              onWebResourceError: (WebResourceError error) {
-                                if (_disposed) return;
-                                print('=== WebView error: ${error.description} ===');
-                                _safeSetState(() {
-                                  _mapLoadError = true;
-                                });
-                              },
-                            ),
-                          )
-                                                    ..loadHtmlString('''
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <style>
-                                    body { margin: 0; padding: 0; }
-                                    #map { width: 100%; height: 100vh; }
-                                    .loading { 
-                                        position: absolute; 
-                                        top: 50%; 
-                                        left: 50%; 
-                                        transform: translate(-50%, -50%);
-                                        color: #666;
-                                    }
-                                </style>
-                                <script>
-                                    function loadScript(src) {
-                                        return new Promise((resolve, reject) => {
-                                            const script = document.createElement('script');
-                                            script.src = src;
-                                            script.onload = resolve;
-                                            script.onerror = reject;
-                                            document.head.appendChild(script);
-                                        });
-                                    }
-                                    
-                                    async function initMap() {
-                                        try {
-                                            await loadScript('${ApiConfig.hereMapsCoreUrl}');
-                                            await loadScript('${ApiConfig.hereMapsServiceUrl}');
-                                            await loadScript('${ApiConfig.hereMapsUiUrl}');
-                                            await loadScript('${ApiConfig.hereMapsEventsUrl}');
-                                            
-                                                                                         // Initialize the platform
-                                             const platform = new H.service.Platform({
-                                                 apikey: '${ApiConfig.hereMapsApiKey}'
-                                             });
-                                            
-                                            const defaultLayers = platform.createDefaultLayers();
-                                            const map = new H.Map(
-                                                document.getElementById('map'),
-                                                defaultLayers.vector.normal.map,
-                                                {
-                                                    center: {lat: ${widget.initialLat}, lng: ${widget.initialLng}},
-                                                    zoom: 15
-                                                }
-                                            );
-                                            
-                                            window.map = map;
-                                            window.markers = [];
-                                            
-                                            // Add map events
-                                            const mapEvents = new H.mapevents.MapEvents(map);
-                                            const behavior = new H.mapevents.Behavior(mapEvents);
-                                            
-                                            // Add click event
-                                            map.addEventListener('tap', function(evt) {
-                                                const coord = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
-                                                
-                                                // Clear existing markers
-                                                window.markers.forEach(marker => map.removeObject(marker));
-                                                window.markers = [];
-                                                
-                                                // Add new marker
-                                                const marker = new H.map.Marker(coord);
-                                                map.addObject(marker);
-                                                window.markers.push(marker);
-                                                
-                                                // Send to Flutter
-                                                flutter.postMessage(JSON.stringify({
-                                                    type: 'locationSelected',
-                                                    lat: coord.lat,
-                                                    lng: coord.lng
-                                                }));
-                                            });
-                                            
-                                            // Add initial marker
-                                            const initialMarker = new H.map.Marker({lat: ${widget.initialLat}, lng: ${widget.initialLng}});
-                                            map.addObject(initialMarker);
-                                            window.markers.push(initialMarker);
-                                            
-                                        } catch (error) {
-                                            console.error('Error loading map:', error);
-                                            document.getElementById('map').innerHTML = '<div class="loading">Error loading map</div>';
-                                        }
-                                    }
-                                    
-                                    // Initialize map when page loads
-                                    window.addEventListener('load', initMap);
-                                </script>
-                            </head>
-                            <body>
-                                <div id="map">
-                                    <div class="loading">Loading map...</div>
-                                </div>
-                            </body>
-                            </html>
-                          ''')
+                child: FlutterMap(
+                        mapController: (_mapController ??= MapController()),
+                        options: MapOptions(
+                          initialCenter: LatLng(widget.initialLat, widget.initialLng),
+                          initialZoom: 15.0,
+                          onTap: (tapPosition, point) {
+                            print('=== Map tapped at: ${point.latitude}, ${point.longitude} ===');
+                            _safeSetState(() {
+                              _selectedLat = point.latitude;
+                              _selectedLng = point.longitude;
+                            });
+                            _getAddressFromLatLng(_selectedLat, _selectedLng);
+                          },
+                          interactionOptions: const InteractionOptions(
+                            enableScrollWheel: false,
+                            enableMultiFingerGestureRace: false,
+                            flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                          ),
                         ),
-                      ),
+                        children: [
+                          TileLayer(
+                            urlTemplate: 'https://maps.hereapi.com/v3/base/mc/{z}/{x}/{y}/png?apiKey=${ApiConfig.hereMapsApiKey}',
+                            userAgentPackageName: 'com.truckbuddy.app',
+                            tileSize: 256,
+                            maxZoom: 20,
+                            minZoom: 4,
+                            errorTileCallback: (tile, error, stackTrace) {
+                              print('❌ HERE Raster Tile error: $error for tile ${tile.coordinates}');
+                            },
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: LatLng(_selectedLat, _selectedLng),
+                                width: 80,
+                                height: 80,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                 ),
               ),
-            ],
+            ),
+          ],
       ),
     );
   }

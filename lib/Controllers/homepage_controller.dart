@@ -171,7 +171,9 @@ class HomePageController extends GetxController implements GetxService {
 
       update();
     }
-
+    
+    // Always set loading to false after checking local data
+    setIsLoading(false);
   }
 
   Future<void> getHomePageData({required String uid}) async {
