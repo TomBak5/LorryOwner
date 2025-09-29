@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:movers_lorry_owner/Screens/login_screen.dart';
 import 'package:movers_lorry_owner/Screens/onboarding_screens.dart';
 import 'package:movers_lorry_owner/Screens/splash_screen.dart';
+import 'package:movers_lorry_owner/Screens/welcome_screen.dart';
 
 import '../Screens/main_pages/notification.dart';
 import '../Screens/profile_Sub_page/contactus.dart';
@@ -29,6 +30,7 @@ import '../Screens/sub_pages/navigation_test_screen.dart';
 
 class Routes {
   static String splashScreen = '/';
+  static String welcomeScreen = '/WelcomeScreen';
   static String onBoardingScreens = '/OnBoardingScreens';
   static String loginScreen = "/LoginScreen";
   static String singUp = "/SingUp";
@@ -59,6 +61,10 @@ final getpage = [
   GetPage(
     name: Routes.splashScreen,
     page: () => const SplashScreen(),
+  ),
+  GetPage(
+    name: Routes.welcomeScreen,
+    page: () => const WelcomeScreen(),
   ),
   GetPage(
     name: Routes.onBoardingScreens,

@@ -34,7 +34,7 @@ class _SplashScreenState extends State<SplashScreen> {
         }
       } catch (e) {}
     }
-    Get.offAllNamed(Routes.loginScreen);
+    Get.offAllNamed(Routes.welcomeScreen); // Changed to new welcome screen
   }
 
   @override
