@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:movers_lorry_owner/AppConstData/app_colors.dart';
 import 'package:movers_lorry_owner/models/contry_code_model.dart';
@@ -59,277 +60,416 @@ class _LoginScreenState extends State<LoginScreen> {
 
         return Scaffold(
           backgroundColor: Colors.white,
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 48.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Logo
-                Center(
-                  child: Image.asset(
-                    'assets/logo/truckbuddy_logo.png',
-                    height: 80,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Email Field
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Email",
-                      style: TextStyle(
-                        color: textBlackColor,
-                        fontFamily: "urbani_extrabold",
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TextField(
-                        controller: loginScreenController.emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          hintText: "Email",
-                          contentPadding: EdgeInsets.all(15),
-                          border: InputBorder.none,
-                        ),
-                        onChanged: (value) {
-                          print("Email changed: $value"); // Debug print
-                          if (value.isEmpty) {
-                            loginScreenController.setIsEmail(false);
-                          } else {
-                            loginScreenController.setIsEmail(
-                              loginScreenController.emailController.text.isEmpty,
-                            );
-                          }
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Password Field
-                if (loginScreenController.isPassword) ...[
-                  const SizedBox(height: 15),
-                  Row(
+          body: Stack(
+            children: [
+              // Main content
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
                     children: [
-                      Expanded(
-                        child: TextField(
-                          onChanged: (value) {
-                            if (value.isEmpty) {
-                              loginScreenController.setIsPassValid(false);
-                            } else {
-                              loginScreenController.setIsPassValid(
-                                loginScreenController.passwordController.text.isEmpty,
-                              );
-                            }
-                          },
-                          obscureText: loginScreenController.isShowPassword,
-                          controller: loginScreenController.passwordController,
-                          decoration: InputDecoration(
-                            suffixIcon: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: Center(
-                                child: InkWell(
-                                  onTap: () {
-                                    loginScreenController.setShowPassword();
-                                  },
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                      // Logo at top - Group 17 (1)
+                      SizedBox(height: 88.h), // 88px from top as per Figma
+                      Center(
+                        child: Image.asset(
+                          'assets/logo/Group 17 (1).png',
+                          width: 246.46.w,
+                          height: 34.h,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      
+                      SizedBox(height: 83.h), // Space to reach 205px from top
+                      
+                      // Main form container - Frame 427320694
+                      Container(
+                        width: 335.w,
+                        height: 462.h,
+                        child: Column(
+                          children: [
+                            // Form fields - Frame 427320663
+                            Container(
+                              width: 335.w,
+                              height: 288.h,
+                              child: Column(
+                                children: [
+                                  // Input fields - Frame 427320665
+                                  Container(
+                                    width: 335.w,
+                                    height: 203.h,
+                                    child: Column(
+                                      children: [
+                                        // Email field - Frame 427320660
+                                        Container(
+                                          width: 335.w,
+                                          height: 75.h,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // Email label
+                                              Text(
+                                                "Email",
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 14.sp,
+                                                  height: 1.5, // 21px line height
+                                                  color: const Color(0xFF5E7389),
+                                                ),
+                                              ),
+                                              SizedBox(height: 4.h),
+                                              // Email input field
+                                              Container(
+                                                width: 335.w,
+                                                height: 50.h,
+                                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF1F6FB),
+                                                  borderRadius: BorderRadius.circular(8.r),
+                                                ),
+                                                child: TextField(
+                                                  controller: loginScreenController.emailController,
+                                                  keyboardType: TextInputType.emailAddress,
+                                                  decoration: InputDecoration(
+                                                    hintText: "Enter your email",
+                                                    hintStyle: TextStyle(
+                                                      fontFamily: 'Poppins',
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 16.sp,
+                                                      height: 1.5, // 24px line height
+                                                      letterSpacing: 0.3,
+                                                      color: const Color(0xFF5E7389),
+                                                    ),
+                                                    border: InputBorder.none,
+                                                  ),
+                                                  onChanged: (value) {
+                                                    if (value.isEmpty) {
+                                                      loginScreenController.setIsEmail(false);
+                                                    } else {
+                                                      loginScreenController.setIsEmail(
+                                                        loginScreenController.emailController.text.isEmpty,
+                                                      );
+                                                    }
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        
+                                        SizedBox(height: 16.h),
+                                        
+                                        // Password field - Frame 427320661
+                                        Container(
+                                          width: 335.w,
+                                          height: 75.h,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              // Password label
+                                              Text(
+                                                "Password",
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 14.sp,
+                                                  height: 1.5, // 21px line height
+                                                  color: const Color(0xFF5E7389),
+                                                ),
+                                              ),
+                                              SizedBox(height: 4.h),
+                                              // Password input field
+                                              Container(
+                                                width: 335.w,
+                                                height: 50.h,
+                                                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
+                                                decoration: BoxDecoration(
+                                                  color: const Color(0xFFF1F6FB),
+                                                  borderRadius: BorderRadius.circular(8.r),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: TextField(
+                                                        controller: loginScreenController.passwordController,
+                                                        obscureText: loginScreenController.isShowPassword,
+                                                        decoration: InputDecoration(
+                                                          hintText: "Password",
+                                                          hintStyle: TextStyle(
+                                                            fontFamily: 'Poppins',
+                                                            fontWeight: FontWeight.w400,
+                                                            fontSize: 16.sp,
+                                                            height: 1.5, // 24px line height
+                                                            letterSpacing: 0.3,
+                                                            color: const Color(0xFF5E7389),
+                                                          ),
+                                                          border: InputBorder.none,
+                                                        ),
+                                                        onChanged: (value) {
+                                                          if (value.isEmpty) {
+                                                            loginScreenController.setIsPassValid(false);
+                                                          } else {
+                                                            loginScreenController.setIsPassValid(
+                                                              loginScreenController.passwordController.text.isEmpty,
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                                    ),
+                                                    // Eye icon
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        loginScreenController.setShowPassword();
+                                                      },
+                                                      child: Container(
+                                                        width: 24.w,
+                                                        height: 24.h,
+                                                        child: Icon(
+                                                          loginScreenController.isShowPassword
+                                                              ? Icons.visibility_off
+                                                              : Icons.visibility,
+                                                          size: 20.sp,
+                                                          color: const Color(0xFF5E7389),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        
+                                        SizedBox(height: 16.h),
+                                        
+                                        // Forgot password
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              Get.toNamed(Routes.forgotPassword);
+                                            },
+                                            child: Text(
+                                              "Forget password?",
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 14.sp,
+                                                height: 1.5, // 21px line height
+                                                color: const Color(0xFF1C3957),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  
+                                  SizedBox(height: 32.h),
+                                  
+                                  // Login button - Frame 15
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (loginScreenController.emailController.text.isEmpty) {
+                                        loginScreenController.setIsEmail(true);
+                                      } else {
+                                        initPlatformState();
+                                        loginScreenController.checkController(
+                                          email: loginScreenController.emailController.text,
+                                          password: loginScreenController.passwordController.text,
+                                          context: context,
+                                        );
+                                      }
+                                    },
+                                    child: Container(
+                                      width: 335.w,
+                                      height: 53.h,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF4964D8),
+                                        borderRadius: BorderRadius.circular(8.r),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          "Login",
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 14.sp,
+                                            height: 1.5, // 21px line height
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            
+                            SizedBox(height: 24.h),
+                            
+                            // Social login section - Frame 6530
+                            Container(
+                              width: 335.w,
+                              height: 150.h,
+                              child: Column(
+                                children: [
+                                  // Divider with "or" text
+                                  Row(
                                     children: [
-                                      loginScreenController.isPassValid
-                                          ? SvgPicture.asset(
-                                              "assets/icons/alert-circle.svg",
-                                              height: 20,
-                                              width: 20,
-                                              color: Colors.red,
-                                            )
-                                          : const SizedBox(),
-                                      SvgPicture.asset(
-                                        loginScreenController.isShowPassword
-                                            ? "assets/icons/eye-off.svg"
-                                            : "assets/icons/eye-2.svg",
-                                        height: 20,
-                                        width: 20,
-                                        color: textGreyColor,
+                                      Expanded(
+                                        child: Container(
+                                          height: 1.h,
+                                          color: const Color(0xFFD9D9D9),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(horizontal: 16.w),
+                                        child: Text(
+                                          "or",
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 12.sp,
+                                            height: 1.33, // 16px line height
+                                            color: const Color(0xFF929292),
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Container(
+                                          height: 1.h,
+                                          color: const Color(0xFFD9D9D9),
+                                        ),
                                       ),
                                     ],
                                   ),
-                                ),
+                                  
+                                  SizedBox(height: 16.h),
+                                  
+                                  // Social buttons
+                                  Column(
+                                    children: [
+                                      // Google button
+                                      Container(
+                                        width: 335.w,
+                                        height: 53.h,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: const Color(0xFFF0F0F0)),
+                                          borderRadius: BorderRadius.circular(8.r),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Image.asset(
+                                              'assets/icons/google.png',
+                                              width: 22.w,
+                                              height: 22.h,
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Text(
+                                              "Sign in with Google",
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 14.sp,
+                                                height: 1.5, // 21px line height
+                                                color: const Color(0xFF151515),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      
+                                      SizedBox(height: 12.h),
+                                      
+                                      // Facebook button
+                                      Container(
+                                        width: 335.w,
+                                        height: 53.h,
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: const Color(0xFFF0F0F0)),
+                                          borderRadius: BorderRadius.circular(8.r),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Container(
+                                              width: 22.w,
+                                              height: 22.h,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF1877F2),
+                                                borderRadius: BorderRadius.circular(4.r),
+                                              ),
+                                              child: Icon(
+                                                Icons.facebook,
+                                                color: Colors.white,
+                                                size: 16.sp,
+                                              ),
+                                            ),
+                                            SizedBox(width: 10.w),
+                                            Text(
+                                              "Sign in with Facebook",
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.w400,
+                                                fontSize: 14.sp,
+                                                height: 1.5, // 21px line height
+                                                color: const Color(0xFF151515),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            hintStyle: TextStyle(fontSize: 14),
-                            hintText: "Password".tr,
-                            contentPadding: EdgeInsets.symmetric(
-                              vertical: 15,
-                              horizontal: 15,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: textGreyColor),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: textGreyColor),
-                            ),
-                            disabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(color: textGreyColor),
-                            ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ],
-
-                const SizedBox(height: 12),
-                
-                // Forgot Password
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        Get.toNamed(Routes.forgotPassword);
-                      },
-                      child: Text(
-                        "Forgot Password?".tr,
+                ),
+              ),
+              
+              // Bottom text - "Don't have an account"
+              Positioned(
+                left: 72.w,
+                bottom: 32.h,
+                child: RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: "Don't have an account? ",
                         style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: "urbani_extrabold",
-                          color: secondaryColor,
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14.sp,
+                          height: 1.57, // 22px line height
+                          color: const Color(0xFF5E7389),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 14),
-                
-                // Login Button
-                Row(
-                  children: [
-                    Expanded(
-                      child: commonButton(
-                        title: "Login",
-                        onTapp: () {
-                          if (loginScreenController.emailController.text.isEmpty) {
-                            loginScreenController.setIsEmail(true);
-                          } else {
-                            initPlatformState();
-                            loginScreenController.checkController(
-                              email: loginScreenController.emailController.text,
-                              password: loginScreenController.passwordController.text,
-                              context: context,
-                            );
-                          }
-                        },
+                      TextSpan(
+                        text: "Sign up",
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14.sp,
+                          height: 1.57, // 22px line height
+                          color: const Color(0xFF1C3957),
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Get.toNamed(Routes.singUp);
+                          },
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-
-                const SizedBox(height: 16),
-                
-                // Sign Up Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: "Don't have an account?  ".tr,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              fontFamily: "urbani_regular",
-                              color: textGreyColor,
-                            ),
-                          ),
-                          TextSpan(
-                            text: "Sign up".tr,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: "urbani_regular",
-                              color: secondaryColor,
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = () {
-                                Get.toNamed(Routes.singUp);
-                              },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-
-
-                
-                // Social Login Buttons
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(child: Divider(thickness: 1.2, color: Colors.grey)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 12.0),
-                      child: Text('Or', style: TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w500)),
-                    ),
-                    Expanded(child: Divider(thickness: 1.2, color: Colors.grey)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        side: BorderSide(color: Colors.grey.shade300),
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      icon: Image.asset(
-                        'assets/icons/google.png',
-                        height: 24,
-                        width: 24,
-                      ),
-                      label: Text('Google'),
-                      onPressed: () {
-                        // TODO: Implement Google sign-in
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        side: BorderSide(color: Colors.grey.shade300),
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      icon: Icon(Icons.facebook, size: 24, color: Color(0xFF1877F3)),
-                      label: Text('Facebook'),
-                      onPressed: () {
-                        // TODO: Implement Facebook sign-in
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
