@@ -382,7 +382,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
                                             Image.asset(
-                                              'assets/icons/google.png',
+                                              'assets/logo/image 24.png',
                                               width: 22.w,
                                               height: 22.h,
                                             ),
@@ -414,18 +414,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Container(
+                                            Image.asset(
+                                              'assets/logo/Facebook - Original.png',
                                               width: 22.w,
                                               height: 22.h,
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF1877F2),
-                                                borderRadius: BorderRadius.circular(4.r),
-                                              ),
-                                              child: Icon(
-                                                Icons.facebook,
-                                                color: Colors.white,
-                                                size: 16.sp,
-                                              ),
                                             ),
                                             SizedBox(width: 10.w),
                                             Text(
