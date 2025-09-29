@@ -137,22 +137,27 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                       SizedBox(height: 24.h), // 24px gap as per Figma
                       // Frame 15 button
-                      Container(
-                        width: 335.w, // 335px width as per Figma
-                        height: 53.h, // 53px height as per Figma
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4964D8), // #4964D8 background
-                          borderRadius: BorderRadius.circular(8.r), // 8px border radius
-                        ),
-                        child: Center(
-                          child: Text(
-                            "Get Started",
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontWeight: FontWeight.w400,
-                              fontSize: 14.sp, // 14px font size
-                              height: 1.5, // 21px line height (21/14 = 1.5)
-                              color: Colors.white, // #FFFFFF color
+                      GestureDetector(
+                        onTap: () {
+                          Get.toNamed(Routes.loginScreen);
+                        },
+                        child: Container(
+                          width: 335.w, // 335px width as per Figma
+                          height: 53.h, // 53px height as per Figma
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF4964D8), // #4964D8 background
+                            borderRadius: BorderRadius.circular(8.r), // 8px border radius
+                          ),
+                          child: Center(
+                            child: Text(
+                              "Get Started",
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14.sp, // 14px font size
+                                height: 1.5, // 21px line height (21/14 = 1.5)
+                                color: Colors.white, // #FFFFFF color
+                              ),
                             ),
                           ),
                         ),
