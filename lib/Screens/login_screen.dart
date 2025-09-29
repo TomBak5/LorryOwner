@@ -127,36 +127,40 @@ class _LoginScreenState extends State<LoginScreen> {
                                                   color: const Color(0xFFF1F6FB),
                                                   borderRadius: BorderRadius.circular(8.r),
                                                 ),
-                                                child: TextField(
-                                                  controller: loginScreenController.emailController,
-                                                  keyboardType: TextInputType.emailAddress,
-                                                  decoration: InputDecoration(
-                                                    hintText: "Enter your email",
-                                                    hintStyle: TextStyle(
-                                                      fontFamily: 'Poppins',
-                                                      fontWeight: FontWeight.w400,
-                                                      fontSize: 16.sp,
-                                                      height: 1.5, // 24px line height
-                                                      letterSpacing: 0.3,
-                                                      color: const Color(0xFF5E7389),
+                                                child: Center(
+                                                  child: TextField(
+                                                    controller: loginScreenController.emailController,
+                                                    keyboardType: TextInputType.emailAddress,
+                                                    textAlignVertical: TextAlignVertical.center,
+                                                    decoration: InputDecoration(
+                                                      hintText: "Enter your email",
+                                                      hintStyle: TextStyle(
+                                                        fontFamily: 'Poppins',
+                                                        fontWeight: FontWeight.w400,
+                                                        fontSize: 16.sp,
+                                                        height: 1.5, // 24px line height
+                                                        letterSpacing: 0.3,
+                                                        color: const Color(0xFF5E7389),
+                                                      ),
+                                                      border: InputBorder.none,
+                                                      enabledBorder: InputBorder.none,
+                                                      focusedBorder: InputBorder.none,
+                                                      errorBorder: InputBorder.none,
+                                                      focusedErrorBorder: InputBorder.none,
+                                                      disabledBorder: InputBorder.none,
+                                                      contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                                                      isDense: true,
                                                     ),
-                                                    border: InputBorder.none,
-                                                    enabledBorder: InputBorder.none,
-                                                    focusedBorder: InputBorder.none,
-                                                    errorBorder: InputBorder.none,
-                                                    focusedErrorBorder: InputBorder.none,
-                                                    disabledBorder: InputBorder.none,
-                                                    contentPadding: EdgeInsets.zero,
+                                                    onChanged: (value) {
+                                                      if (value.isEmpty) {
+                                                        loginScreenController.setIsEmail(false);
+                                                      } else {
+                                                        loginScreenController.setIsEmail(
+                                                          loginScreenController.emailController.text.isEmpty,
+                                                        );
+                                                      }
+                                                    },
                                                   ),
-                                                  onChanged: (value) {
-                                                    if (value.isEmpty) {
-                                                      loginScreenController.setIsEmail(false);
-                                                    } else {
-                                                      loginScreenController.setIsEmail(
-                                                        loginScreenController.emailController.text.isEmpty,
-                                                      );
-                                                    }
-                                                  },
                                                 ),
                                               ),
                                             ],
@@ -196,27 +200,30 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 child: Row(
                                                   children: [
                                                     Expanded(
-                                                      child: TextField(
-                                                        controller: loginScreenController.passwordController,
-                                                        obscureText: loginScreenController.isShowPassword,
-                                                        decoration: InputDecoration(
-                                                          hintText: "Enter your password",
-                                                          hintStyle: TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            fontWeight: FontWeight.w400,
-                                                            fontSize: 16.sp,
-                                                            height: 1.5, // 24px line height
-                                                            letterSpacing: 0.3,
-                                                            color: const Color(0xFF5E7389),
+                                                      child: Center(
+                                                        child: TextField(
+                                                          controller: loginScreenController.passwordController,
+                                                          obscureText: loginScreenController.isShowPassword,
+                                                          textAlignVertical: TextAlignVertical.center,
+                                                          decoration: InputDecoration(
+                                                            hintText: "Enter your password",
+                                                            hintStyle: TextStyle(
+                                                              fontFamily: 'Poppins',
+                                                              fontWeight: FontWeight.w400,
+                                                              fontSize: 16.sp,
+                                                              height: 1.5, // 24px line height
+                                                              letterSpacing: 0.3,
+                                                              color: const Color(0xFF5E7389),
+                                                            ),
+                                                            border: InputBorder.none,
+                                                            enabledBorder: InputBorder.none,
+                                                            focusedBorder: InputBorder.none,
+                                                            errorBorder: InputBorder.none,
+                                                            focusedErrorBorder: InputBorder.none,
+                                                            disabledBorder: InputBorder.none,
+                                                            contentPadding: EdgeInsets.symmetric(vertical: 0, horizontal: 0),
+                                                            isDense: true,
                                                           ),
-                                                          border: InputBorder.none,
-                                                          enabledBorder: InputBorder.none,
-                                                          focusedBorder: InputBorder.none,
-                                                          errorBorder: InputBorder.none,
-                                                          focusedErrorBorder: InputBorder.none,
-                                                          disabledBorder: InputBorder.none,
-                                                          contentPadding: EdgeInsets.zero,
-                                                        ),
                                                         onChanged: (value) {
                                                           if (value.isEmpty) {
                                                             loginScreenController.setIsPassValid(false);
@@ -228,6 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         },
                                                       ),
                                                     ),
+                                                  ),
                                                     // Eye icon
                                                     GestureDetector(
                                                       onTap: () {
