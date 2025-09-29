@@ -83,6 +83,80 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                         ),
                       ),
+                      SizedBox(height: 8.h), // 8px gap as per Figma
+                      Container(
+                        width: 335.w, // 335px width as specified
+                        height: 44.h, // 44px height as specified
+                        child: Text(
+                          "Everything you need to keep rolling — routes, updates, and tools that work for you.",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14.sp, // 14px font size
+                            height: 1.57, // 22px line height (22/14 = 1.57)
+                            color: const Color(0xFF929292), // #929292 color
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24.h), // 24px gap as per Figma
+                      // Progress indicators - Rectangle 15, 16, 17
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Rectangle 15
+                          Container(
+                            width: 40.w, // 40px width
+                            height: 4.h, // 4px height
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD9D9D9), // #D9D9D9 background
+                              borderRadius: BorderRadius.circular(99.r), // 99px border radius
+                            ),
+                          ),
+                          SizedBox(width: 4.w), // 4px gap between rectangles
+                          // Rectangle 16
+                          Container(
+                            width: 40.w, // 40px width
+                            height: 4.h, // 4px height
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD9D9D9), // #D9D9D9 background
+                              borderRadius: BorderRadius.circular(99.r), // 99px border radius
+                            ),
+                          ),
+                          SizedBox(width: 4.w), // 4px gap between rectangles
+                          // Rectangle 17 (active indicator)
+                          Container(
+                            width: 60.w, // 60px width
+                            height: 4.h, // 4px height
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF4964D8), // #4964D8 background
+                              borderRadius: BorderRadius.circular(99.r), // 99px border radius
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 24.h), // 24px gap as per Figma
+                      // Frame 15 button
+                      Container(
+                        width: 335.w, // 335px width as per Figma
+                        height: 53.h, // 53px height as per Figma
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4964D8), // #4964D8 background
+                          borderRadius: BorderRadius.circular(8.r), // 8px border radius
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Get Started",
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14.sp, // 14px font size
+                              height: 1.5, // 21px line height (21/14 = 1.5)
+                              color: Colors.white, // #FFFFFF color
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
