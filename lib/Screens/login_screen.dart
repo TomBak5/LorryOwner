@@ -141,6 +141,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                                       color: const Color(0xFF5E7389),
                                                     ),
                                                     border: InputBorder.none,
+                                                    enabledBorder: InputBorder.none,
+                                                    focusedBorder: InputBorder.none,
+                                                    errorBorder: InputBorder.none,
+                                                    focusedErrorBorder: InputBorder.none,
+                                                    disabledBorder: InputBorder.none,
+                                                    contentPadding: EdgeInsets.zero,
                                                   ),
                                                   onChanged: (value) {
                                                     if (value.isEmpty) {
@@ -194,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                         controller: loginScreenController.passwordController,
                                                         obscureText: loginScreenController.isShowPassword,
                                                         decoration: InputDecoration(
-                                                          hintText: "Password",
+                                                          hintText: "Enter your password",
                                                           hintStyle: TextStyle(
                                                             fontFamily: 'Poppins',
                                                             fontWeight: FontWeight.w400,
@@ -204,6 +210,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                                             color: const Color(0xFF5E7389),
                                                           ),
                                                           border: InputBorder.none,
+                                                          enabledBorder: InputBorder.none,
+                                                          focusedBorder: InputBorder.none,
+                                                          errorBorder: InputBorder.none,
+                                                          focusedErrorBorder: InputBorder.none,
+                                                          disabledBorder: InputBorder.none,
+                                                          contentPadding: EdgeInsets.zero,
                                                         ),
                                                         onChanged: (value) {
                                                           if (value.isEmpty) {
