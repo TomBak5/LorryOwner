@@ -15,6 +15,10 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp();
+
+  
   
   // Add global error handling
   FlutterError.onError = (FlutterErrorDetails details) {

@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:movers_lorry_owner/widgets/widgets.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -70,6 +72,77 @@ class LoginScreenController extends GetxController implements GetxService {
               }
               setIsLoading(false);
       });
+  }
+
+  // Google Sign-In functionality
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> signInWithGoogle(context) async {
+    try {
+      setIsLoading(true);
+      
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        // The user canceled the sign-in
+        setIsLoading(false);
+        return;
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        // User successfully signed in with Google
+        // Save user data to SharedPreferences
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        
+        // Create user data object
+        Map<String, dynamic> userData = {
+          "id": user.uid,
+          "name": user.displayName ?? "",
+          "email": user.email ?? "",
+          "phone": user.phoneNumber ?? "",
+          "photo": user.photoURL ?? "",
+        };
+        
+        String decodeData = jsonEncode(userData);
+        await prefs.setString("userData", decodeData);
+        
+        // Set OneSignal user tag
+        OneSignal.User.addTagWithKey("user_id", user.uid);
+        
+        // Show success message
+        showCommonToast("Successfully signed in with Google");
+        
+        // Navigate to landing page
+        Get.offAllNamed(Routes.landingPage);
+      }
+      
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      showCommonToast("Google Sign-In failed: ${error.toString()}");
+      print("Google Sign-In Error: $error");
+    }
+  }
+
+  // Sign out from Google
+  Future<void> signOutGoogle() async {
+    await _googleSignIn.signOut();
+    await _auth.signOut();
   }
 }
 

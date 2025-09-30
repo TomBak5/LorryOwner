@@ -371,33 +371,38 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Column(
                                     children: [
                                       // Google button
-                                      Container(
-                                        width: 335.w,
-                                        height: 53.h,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: const Color(0xFFF0F0F0)),
-                                          borderRadius: BorderRadius.circular(8.r),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Image.asset(
-                                              'assets/logo/image 24.png',
-                                              width: 22.w,
-                                              height: 22.h,
-                                            ),
-                                            SizedBox(width: 10.w),
-                                            Text(
-                                              "Sign in with Google",
-                                              style: TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 14.sp,
-                                                height: 1.5, // 21px line height
-                                                color: const Color(0xFF151515),
+                                      GestureDetector(
+                                        onTap: () {
+                                          loginScreenController.signInWithGoogle(context);
+                                        },
+                                        child: Container(
+                                          width: 335.w,
+                                          height: 53.h,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(color: const Color(0xFFF0F0F0)),
+                                            borderRadius: BorderRadius.circular(8.r),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Image.asset(
+                                                'assets/logo/image 24.png',
+                                                width: 22.w,
+                                                height: 22.h,
                                               ),
-                                            ),
-                                          ],
+                                              SizedBox(width: 10.w),
+                                              Text(
+                                                "Sign in with Google",
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontWeight: FontWeight.w400,
+                                                  fontSize: 14.sp,
+                                                  height: 1.5, // 21px line height
+                                                  color: const Color(0xFF151515),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                       
