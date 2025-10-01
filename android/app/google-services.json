@@ -1,26 +1,51 @@
 {
   "project_info": {
-    "project_number": "788847413433",
-    "project_id": "truckbuddy-cf12b",
-    "storage_bucket": "truckbuddy-cf12b.firebasestorage.app"
+    "project_number": "686099439710",
+    "project_id": "lorryowner-5e38e",
+    "storage_bucket": "lorryowner-5e38e.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:788847413433:android:722f94c00de15de43fb368",
+        "mobilesdk_app_id": "1:686099439710:android:3b3d79111e45d181cb94cf",
         "android_client_info": {
           "package_name": "com.moverslorryowner"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "686099439710-vshmabqfdsfetah4l8e2pf8rrc4fa2rf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.moverslorryowner",
+            "certificate_hash": "4e434b3cbbcbd853b8ff1dd06558deff310893c9"
+          }
+        },
+        {
+          "client_id": "686099439710-3d1kb9sjbcii56p9ooepfq71t1m3frht.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDbKiN02_hVb72qetRpG-th4wUrrxiRXBw"
+          "current_key": "AIzaSyCqPDPX31op7P9BrUVVD4PE168XKcS6ICg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "686099439710-3d1kb9sjbcii56p9ooepfq71t1m3frht.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "686099439710-inka9v3720k6p67hrugofnf8rbf8acrr.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.moverslorryowner"
+              }
+            }
+          ]
         }
       }
     }

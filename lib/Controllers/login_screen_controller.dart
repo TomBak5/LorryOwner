@@ -75,18 +75,20 @@ class LoginScreenController extends GetxController implements GetxService {
   }
 
   // Google Sign-In functionality
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> signInWithGoogle(context) async {
     try {
       setIsLoading(true);
       
+      // Try with minimal configuration first
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
       
       if (googleUser == null) {
-        // The user canceled the sign-in
+        // User cancelled the sign-in
         setIsLoading(false);
         return;
       }
@@ -105,30 +107,13 @@ class LoginScreenController extends GetxController implements GetxService {
       final User? user = userCredential.user;
 
       if (user != null) {
-        // User successfully signed in with Google
-        // Save user data to SharedPreferences
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        // Successfully signed in with Google and Firebase
+        print("Google Sign-In successful: ${user.email}");
         
-        // Create user data object
-        Map<String, dynamic> userData = {
-          "id": user.uid,
-          "name": user.displayName ?? "",
-          "email": user.email ?? "",
-          "phone": user.phoneNumber ?? "",
-          "photo": user.photoURL ?? "",
-        };
-        
-        String decodeData = jsonEncode(userData);
-        await prefs.setString("userData", decodeData);
-        
-        // Set OneSignal user tag
-        OneSignal.User.addTagWithKey("user_id", user.uid);
-        
-        // Show success message
-        showCommonToast("Successfully signed in with Google");
-        
-        // Navigate to landing page
+        // Navigate to the landing page
         Get.offAllNamed(Routes.landingPage);
+        
+        showCommonToast("Successfully signed in with Google!");
       }
       
       setIsLoading(false);
@@ -141,7 +126,8 @@ class LoginScreenController extends GetxController implements GetxService {
 
   // Sign out from Google
   Future<void> signOutGoogle() async {
-    await _googleSignIn.signOut();
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    await googleSignIn.disconnect();
     await _auth.signOut();
   }
 }

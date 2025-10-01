@@ -52,7 +52,12 @@ void main() async {
     overlays: [SystemUiOverlay.top],
   );
   
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  } catch (e) {
+    // Firebase already initialized, continue
+    print("Firebase already initialized: $e");
+  }
   await permission();
   final localeLanuage = await SharedPreferences.getInstance();
   runApp(MyApp(prefs: localeLanuage));
