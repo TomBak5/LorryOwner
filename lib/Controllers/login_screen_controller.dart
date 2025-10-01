@@ -110,10 +110,8 @@ class LoginScreenController extends GetxController implements GetxService {
         // Successfully signed in with Google and Firebase
         print("Google Sign-In successful: ${user.email}");
         
-        // Navigate to the landing page
-        Get.offAllNamed(Routes.landingPage);
-        
-        showCommonToast("Successfully signed in with Google!");
+        // Now register/login with the backend API
+        await _registerOrLoginGoogleUser(user);
       }
       
       setIsLoading(false);
@@ -121,6 +119,76 @@ class LoginScreenController extends GetxController implements GetxService {
       setIsLoading(false);
       showCommonToast("Google Sign-In failed: ${error.toString()}");
       print("Google Sign-In Error: $error");
+    }
+  }
+
+  // Register or login Google user with backend
+  Future<void> _registerOrLoginGoogleUser(User firebaseUser) async {
+    try {
+      // Try to login first with email
+      final loginResponse = await ApiProvider().loginUserWithEmail(
+        email: firebaseUser.email ?? '',
+        password: firebaseUser.uid, // Use Firebase UID as password
+      );
+
+      if (loginResponse["Result"] == "true") {
+        // User exists, save data and navigate
+        await _saveUserDataAndNavigate(loginResponse["UserLogin"]);
+      } else {
+        // User doesn't exist, register them
+        final registerResponse = await ApiProvider().registerUser(
+          name: firebaseUser.displayName ?? 'User',
+          mobile: firebaseUser.email ?? '',
+          cCode: '+1',
+          email: firebaseUser.email ?? '',
+          password: firebaseUser.uid, // Use Firebase UID as password
+          referCode: '',
+          userRole: 'driver', // Default role
+        );
+
+        if (registerResponse["Result"] == "true") {
+          // Registration successful, try login again
+          final newLoginResponse = await ApiProvider().loginUserWithEmail(
+            email: firebaseUser.email ?? '',
+            password: firebaseUser.uid,
+          );
+
+          if (newLoginResponse["Result"] == "true") {
+            await _saveUserDataAndNavigate(newLoginResponse["UserLogin"]);
+          } else {
+            showCommonToast("Login failed after registration. Please try again.");
+          }
+        } else {
+          showCommonToast(registerResponse["ResponseMsg"] ?? "Registration failed");
+        }
+      }
+    } catch (e) {
+      print("Error registering/logging in Google user: $e");
+      showCommonToast("Failed to complete sign-in: $e");
+    }
+  }
+
+  // Save user data and navigate to main screen
+  Future<void> _saveUserDataAndNavigate(dynamic userData) async {
+    try {
+      // Save user data to SharedPreferences
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      String encodedData = jsonEncode(userData);
+      await prefs.setString("userData", encodedData);
+
+      // Set OneSignal user tag
+      if (userData["id"] != null) {
+        OneSignal.User.addTagWithKey("user_id", userData["id"]);
+      }
+
+      // Show success message
+      showCommonToast("Successfully signed in with Google!");
+
+      // Navigate to the landing page (main screen)
+      Get.offAllNamed(Routes.landingPage);
+    } catch (e) {
+      print("Error saving user data: $e");
+      showCommonToast("Failed to save user data: $e");
     }
   }
 
