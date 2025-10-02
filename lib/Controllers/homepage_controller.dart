@@ -4,6 +4,9 @@ import 'package:get/get.dart';
 import 'package:movers_lorry_owner/models/home_model.dart';
 import 'package:movers_lorry_owner/widgets/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import '../Api_Provider/api_provider.dart';
 import '../models/login_model.dart';
 import 'package:flutter/foundation.dart';
@@ -205,8 +208,77 @@ class HomePageController extends GetxController implements GetxService {
 
   removeData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+    // Check if user logged in via Google by checking if password is a Firebase UID
+    bool isGoogleUser = await _isGoogleUser();
+    
+    // Clear local data
     prefs.setString("userData", "");
     prefs.setString("currencyIcon", "");
     prefs.setString("uid", "");
+    prefs.setString("wallet", "");
+    prefs.setString("gkey", "");
+    
+    // If user logged in via Google, also sign out from Google/Firebase
+    if (isGoogleUser) {
+      await _signOutFromGoogle();
+    }
+    
+    // Clear OneSignal tags
+    try {
+      await OneSignal.User.removeTag("user_id");
+    } catch (e) {
+      print("Error removing OneSignal tag: $e");
+    }
+    
+    print("User data cleared successfully. Google user: $isGoogleUser");
+  }
+  
+  // Enhanced logout method with confirmation
+  Future<void> performLogout() async {
+    try {
+      await removeData();
+      print("Logout completed successfully");
+    } catch (e) {
+      print("Error during logout: $e");
+    }
+  }
+  
+  // Check if current user logged in via Google
+  Future<bool> _isGoogleUser() async {
+    try {
+      // Check if user is currently signed in to Firebase
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        // Check if the user has Google provider
+        for (var provider in currentUser.providerData) {
+          if (provider.providerId == 'google.com') {
+            return true;
+          }
+        }
+      }
+      
+      // Alternative check: if password looks like a Firebase UID (28 characters, alphanumeric)
+      if (userData?.password != null && userData!.password!.length == 28) {
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print("Error checking Google user status: $e");
+      return false;
+    }
+  }
+  
+  // Sign out from Google and Firebase
+  Future<void> _signOutFromGoogle() async {
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut(); // Sign out from Google
+      await FirebaseAuth.instance.signOut(); // Sign out from Firebase
+      print("Successfully signed out from Google and Firebase");
+    } catch (e) {
+      print("Error signing out from Google/Firebase: $e");
+    }
   }
 }

@@ -194,9 +194,33 @@ class LoginScreenController extends GetxController implements GetxService {
 
   // Sign out from Google
   Future<void> signOutGoogle() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn();
-    await googleSignIn.disconnect();
-    await _auth.signOut();
+    try {
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+      await googleSignIn.signOut(); // Sign out from Google
+      await _auth.signOut(); // Sign out from Firebase
+      print("Successfully signed out from Google and Firebase");
+    } catch (e) {
+      print("Error signing out from Google/Firebase: $e");
+    }
+  }
+  
+  // Check if user is currently signed in to Google/Firebase
+  Future<bool> isGoogleUserSignedIn() async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser != null) {
+        // Check if the user has Google provider
+        for (var provider in currentUser.providerData) {
+          if (provider.providerId == 'google.com') {
+            return true;
+          }
+        }
+      }
+      return false;
+    } catch (e) {
+      print("Error checking Google sign-in status: $e");
+      return false;
+    }
   }
 }
 
