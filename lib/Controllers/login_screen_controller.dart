@@ -81,8 +81,15 @@ class LoginScreenController extends GetxController implements GetxService {
     try {
       setIsLoading(true);
       
-      // Try with minimal configuration first
+      // Check if user has completed full registration
+      final prefs = await SharedPreferences.getInstance();
+      final hasCompletedRegistration = prefs.getBool('hasCompletedGoogleRegistration') ?? false;
+      
+      // Force account selection by signing out first (only if not completed registration)
       final GoogleSignIn googleSignIn = GoogleSignIn();
+      if (!hasCompletedRegistration) {
+        await googleSignIn.signOut(); // Force account selection
+      }
       
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();

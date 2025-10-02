@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../AppConstData/app_colors.dart';
 import '../AppConstData/typographyy.dart';
@@ -17,187 +19,212 @@ class RoleSelectionScreen extends StatefulWidget {
 
 class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   RoleSelectionController roleController = Get.put(RoleSelectionController());
+  String userEmail = 'hi@uigodesign.com'; // Default placeholder
+  
+  @override
+  void initState() {
+    super.initState();
+    _getUserEmail();
+  }
+  
+  Future<void> _getUserEmail() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tempGoogleUser = prefs.getString('tempGoogleUser');
+      
+      if (tempGoogleUser != null) {
+        final googleUserData = jsonDecode(tempGoogleUser);
+        setState(() {
+          userEmail = googleUserData['email'] ?? 'hi@uigodesign.com';
+        });
+      }
+    } catch (e) {
+      print("Error getting user email: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              SizedBox(height: 40.h),
-              
-              // Header
-              Text(
-                "Select Your Role",
-                style: TextStyle(
-                  fontSize: 28.sp,
-                  fontWeight: FontWeight.bold,
-                  color: textBlackColor,
+        child: Stack(
+          children: [
+            // Main content
+            Column(
+              children: [
+            // Status Bar Area
+            SizedBox(height: 20.h),
+            
+            // Logo at top - Group 17 (1) - Same as login screen
+            SizedBox(height: 88.h), // 88px from top as per Figma
+            Center(
+              child: Image.asset(
+                'assets/logo/Group 17 (1).png',
+                width: 246.46.w,
+                height: 34.h,
+                fit: BoxFit.contain,
+              ),
+            ),
+            
+            SizedBox(height: 83.h), // Space to reach top: 205px from Figma
+            
+            // Select account type text
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Select account type',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Color(0xFF5E7389),
+                    fontFamily: 'Poppins',
+                  ),
                 ),
               ),
-              
-              SizedBox(height: 10.h),
-              
-              Text(
-                "Choose how you want to use the app",
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  color: textGreyColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              
-              SizedBox(height: 60.h),
-              
-              // Role Selection Cards
+            ),
+            
+            SizedBox(height: 12.h),
+            
+            // Role Selection Cards
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: Column(
+                children: [
               GetBuilder<RoleSelectionController>(
                 builder: (controller) {
                   return Column(
                     children: [
                       // Dispatcher Card
                       GestureDetector(
-                        onTap: () => controller.setSelectedRole('dispatcher'),
+                        onTap: () {
+                          try {
+                            controller.setSelectedRole('dispatcher');
+                          } catch (e) {
+                            print('Error selecting dispatcher: $e');
+                          }
+                        },
                         child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
+                          width: 335.w,
+                          height: 50.h,
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
                           decoration: BoxDecoration(
-                            color: controller.selectedRole == 'dispatcher' ? Colors.white : Colors.transparent,
-                            border: Border.all(
-                              color: controller.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16.r),
-                            boxShadow: controller.selectedRole == 'dispatcher' ? [
-                              BoxShadow(
-                                color: secondaryColor.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ] : null,
+                            color: Color(0xFFF1F6FB),
+                            border: controller.selectedRole == 'dispatcher' 
+                                ? Border.all(color: Color(0xFF4964D8), width: 1)
+                                : null,
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Row(
                             children: [
+                              // Phone calling icon
                               Container(
-                                padding: EdgeInsets.all(12.w),
-                                decoration: BoxDecoration(
+                                width: 24.w,
+                                height: 24.h,
+                                child: Image.asset(
+                                  'assets/icons/phone-calling-svgrepo-com (1) 1.png',
+                                  width: 24.w,
+                                  height: 24.h,
+                                  fit: BoxFit.contain,
                                   color: controller.selectedRole == 'dispatcher' 
-                                      ? secondaryColor.withOpacity(0.1) 
-                                      : textGreyColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Icon(
-                                  Icons.account_circle_outlined,
-                                  color: controller.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                                  size: 32.sp,
+                                      ? Color(0xFF4964D8) 
+                                      : Color(0xFF5E7389),
                                 ),
                               ),
-                              SizedBox(width: 16.w),
+                              SizedBox(width: 12.w),
+                              // Text
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Dispatcher',
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: controller.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                                      ),
-                                    ),
-                                    SizedBox(height: 4.h),
-                                    Text(
-                                      'Manage loads and assign drivers',
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: controller.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  'Dispatcher',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: controller.selectedRole == 'dispatcher' 
+                                        ? Color(0xFF202020) 
+                                        : Color(0xFF5E7389),
+                                    fontFamily: 'Poppins',
+                                  ),
                                 ),
                               ),
-                              if (controller.selectedRole == 'dispatcher')
-                                Icon(
-                                  Icons.check_circle,
-                                  color: secondaryColor,
-                                  size: 24.sp,
-                                ),
+                              // Check icon
+                              Icon(
+                                Icons.check_circle,
+                                color: controller.selectedRole == 'dispatcher' 
+                                    ? Color(0xFF4964D8) 
+                                    : Color(0xFF5E7389),
+                                size: 24.sp,
+                              ),
                             ],
                           ),
                         ),
                       ),
                       
-                      SizedBox(height: 20.h),
+                      SizedBox(height: 12.h),
                       
                       // Driver Card
                       GestureDetector(
-                        onTap: () => controller.setSelectedRole('driver'),
+                        onTap: () {
+                          try {
+                            controller.setSelectedRole('driver');
+                          } catch (e) {
+                            print('Error selecting driver: $e');
+                          }
+                        },
                         child: Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
+                          width: 335.w,
+                          height: 50.h,
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 13.h),
                           decoration: BoxDecoration(
-                            color: controller.selectedRole == 'driver' ? Colors.white : Colors.transparent,
-                            border: Border.all(
-                              color: controller.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(16.r),
-                            boxShadow: controller.selectedRole == 'driver' ? [
-                              BoxShadow(
-                                color: secondaryColor.withOpacity(0.1),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ] : null,
+                            color: Color(0xFFF1F6FB),
+                            border: controller.selectedRole == 'driver' 
+                                ? Border.all(color: Color(0xFF4964D8), width: 1)
+                                : null,
+                            borderRadius: BorderRadius.circular(8.r),
                           ),
                           child: Row(
                             children: [
+                              // Truck icon
                               Container(
-                                padding: EdgeInsets.all(12.w),
-                                decoration: BoxDecoration(
-                                  color: controller.selectedRole == 'driver' 
-                                      ? secondaryColor.withOpacity(0.1) 
-                                      : textGreyColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(12.r),
-                                ),
-                                child: Icon(
-                                  Icons.local_shipping_outlined,
-                                  color: controller.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                                  size: 32.sp,
+                                width: 24.w,
+                                height: 24.h,
+                                child: SvgPicture.asset(
+                                  'assets/icons/truck_icon.svg',
+                                  width: 24.w,
+                                  height: 24.h,
+                                  fit: BoxFit.contain,
+                                  colorFilter: ColorFilter.mode(
+                                    controller.selectedRole == 'driver' 
+                                        ? Color(0xFF4964D8) 
+                                        : Color(0xFF5E7389),
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
                               ),
-                              SizedBox(width: 16.w),
+                              SizedBox(width: 12.w),
+                              // Text
                               Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Driver',
-                                      style: TextStyle(
-                                        fontSize: 18.sp,
-                                        fontWeight: FontWeight.w600,
-                                        color: controller.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                                      ),
-                                    ),
-                                    SizedBox(height: 4.h),
-                                    Text(
-                                      'Find loads and transport goods',
-                                      style: TextStyle(
-                                        fontSize: 14.sp,
-                                        color: controller.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                                      ),
-                                    ),
-                                  ],
+                                child: Text(
+                                  'Driver',
+                                  style: TextStyle(
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.w400,
+                                    color: controller.selectedRole == 'driver' 
+                                        ? Color(0xFF202020) 
+                                        : Color(0xFF5E7389),
+                                    fontFamily: 'Poppins',
+                                  ),
                                 ),
                               ),
-                              if (controller.selectedRole == 'driver')
-                                Icon(
-                                  Icons.check_circle,
-                                  color: secondaryColor,
-                                  size: 24.sp,
-                                ),
+                              // Check icon
+                              Icon(
+                                Icons.check_circle,
+                                color: controller.selectedRole == 'driver' 
+                                    ? Color(0xFF4964D8) 
+                                    : Color(0xFF5E7389),
+                                size: 24.sp,
+                              ),
                             ],
                           ),
                         ),
@@ -206,60 +233,80 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   );
                 },
               ),
-              
-              SizedBox(height: 60.h),
-              
-              // Continue Button
-              GetBuilder<RoleSelectionController>(
+                ],
+              ),
+            ),
+            
+            Spacer(),
+            
+            // Continue Button (Frame 15)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              child: GetBuilder<RoleSelectionController>(
                 builder: (controller) {
-                  return SizedBox(
-                    width: double.infinity,
+                  return Container(
+                    width: 335.w,
+                    height: 53.h,
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        fixedSize: const Size.fromHeight(48),
-                        backgroundColor: priMaryColor,
+                        backgroundColor: Color(0xFF4964D8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
                       ),
-                      onPressed: controller.isLoading ? null : () => controller.continueWithRole(),
+                      onPressed: controller.isLoading ? null : () {
+                        try {
+                          controller.continueWithRole();
+                        } catch (e) {
+                          print('Error continuing with role: $e');
+                        }
+                      },
                       child: controller.isLoading
                           ? SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(whiteColor),
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : Text(
-                              "Continue",
+                              "Confirm",
                               style: TextStyle(
-                                color: whiteColor,
-                                fontSize: 16,
-                                fontFamily: "urbani_extrabold",
-                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
+                                fontFamily: 'Poppins',
                               ),
                             ),
                     ),
                   );
                 },
               ),
-              
-              SizedBox(height: 20.h),
-              
-              // Back Button
-              TextButton(
-                onPressed: () => Get.back(),
-                child: Text(
-                  "Back to Login",
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    color: textGreyColor,
-                    decoration: TextDecoration.underline,
+            ),
+            
+            SizedBox(height: 32.h),
+              ],
+            ),
+            
+            // Alarm icon - positioned exactly as per Figma
+            Positioned(
+              left: 20.w,
+              top: 98.h, // 98px from top (moved 5px lower)
+              child: GestureDetector(
+                onTap: () => Get.back(),
+                child: Container(
+                  width: 24.w,
+                  height: 24.h,
+                  child: Image.asset(
+                    'assets/icons/alarm.png',
+                    width: 24.w,
+                    height: 24.h,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -23,7 +23,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController companyController = TextEditingController();
   final TextEditingController emergencyContactController = TextEditingController();
-  final SingUpController singUpController = Get.find<SingUpController>();
+  SingUpController? singUpController;
   bool isLoading = false;
   bool isGoogleUser = false;
   Map<String, dynamic>? googleUserData;
@@ -32,6 +32,16 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   void initState() {
     super.initState();
     _checkForGoogleUser();
+    _initializeController();
+  }
+  
+  void _initializeController() {
+    try {
+      singUpController = Get.find<SingUpController>();
+    } catch (e) {
+      print("SingUpController not found, using fallback values");
+      singUpController = null;
+    }
   }
 
   Future<void> _checkForGoogleUser() async {
@@ -48,8 +58,8 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
         // Pre-populate form with Google user data
         if (googleUserData != null) {
           fullNameController.text = googleUserData!['displayName'] ?? '';
-          // For Google users, we'll use email as mobile number
-          phoneController.text = googleUserData!['email'] ?? '';
+          // Don't pre-populate phone field for Google users - let them enter their phone number
+          // phoneController.text = googleUserData!['email'] ?? '';
         }
       }
     } catch (e) {
@@ -80,15 +90,15 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   // Update existing Google user
   Future<bool> _updateExistingGoogleUser() async {
     try {
-      // For existing users, we need to update their role in the database
-      // We'll do this by calling the registration API with the existing user's data
-      // but with the new role - this will update the existing record
+      // For existing users, we need to complete the full registration process
+      // This means calling the registration API to create/update the user record
+      // The backend should handle existing users properly
       
       final existingUserData = googleUserData!['existingUserData'];
       
       final registerResponse = await ApiProvider().registerUser(
         name: fullNameController.text.isNotEmpty ? fullNameController.text : existingUserData['name'] ?? googleUserData!['displayName'] ?? 'User',
-        mobile: phoneController.text.isNotEmpty ? phoneController.text : existingUserData['mobile'] ?? googleUserData!['email'] ?? '',
+        mobile: phoneController.text.isNotEmpty ? phoneController.text : existingUserData['mobile'] ?? '',
         cCode: existingUserData['ccode'] ?? '+1',
         email: googleUserData!['email'] ?? '',
         password: googleUserData!['uid'], // Use Firebase UID as password
@@ -96,8 +106,8 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
         userRole: widget.userRole, // This is the new role we want to set
         company: widget.userRole == 'dispatcher' ? companyController.text : existingUserData['company'],
         emergencyContact: widget.userRole == 'dispatcher' ? emergencyContactController.text : existingUserData['emergencyContact'],
-        selectedBrand: googleUserData?['selectedBrand'] ?? existingUserData['selectedBrand'] ?? singUpController.selectedBrand,
-        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? existingUserData['selectedTrailerType'] ?? singUpController.selectedTrailerType,
+        selectedBrand: googleUserData?['selectedBrand'] ?? existingUserData['selectedBrand'] ?? singUpController?.selectedBrand ?? '1',
+        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? existingUserData['selectedTrailerType'] ?? singUpController?.selectedTrailerType ?? 'Flatbed Trailers',
       );
 
       if (registerResponse["Result"] == "true") {
@@ -116,19 +126,25 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
           String encodedData = jsonEncode(loginResponse["UserLogin"]);
           await prefs.setString("userData", encodedData);
           
-          showCommonToast("Role updated successfully!");
+          showCommonToast("Registration completed successfully!");
           return true;
         } else {
-          showCommonToast("Login failed after role update. Please try again.");
+          showCommonToast("Login failed after registration. Please try again.");
           return false;
         }
       } else {
-        showCommonToast(registerResponse["ResponseMsg"] ?? "Failed to update role");
+        // Check if it's an "email exists" error and handle it differently
+        String errorMsg = registerResponse["ResponseMsg"] ?? "Registration failed";
+        if (errorMsg.toLowerCase().contains("email") && errorMsg.toLowerCase().contains("exist")) {
+          showCommonToast("This email is already registered. Please contact support or try a different account.");
+        } else {
+          showCommonToast(errorMsg);
+        }
         return false;
       }
     } catch (e) {
       print("Error updating existing Google user: $e");
-      showCommonToast("Failed to update role: $e");
+      showCommonToast("Failed to complete registration: $e");
       return false;
     }
   }
@@ -138,7 +154,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
     try {
       final registerResponse = await ApiProvider().registerUser(
         name: fullNameController.text.isNotEmpty ? fullNameController.text : googleUserData!['displayName'] ?? 'User',
-        mobile: phoneController.text.isNotEmpty ? phoneController.text : googleUserData!['email'] ?? '',
+        mobile: phoneController.text.isNotEmpty ? phoneController.text : '',
         cCode: '+1',
         email: googleUserData!['email'] ?? '',
         password: googleUserData!['uid'], // Use Firebase UID as password
@@ -146,8 +162,8 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
         userRole: widget.userRole,
         company: widget.userRole == 'dispatcher' ? companyController.text : null,
         emergencyContact: widget.userRole == 'dispatcher' ? emergencyContactController.text : null,
-        selectedBrand: googleUserData?['selectedBrand'] ?? singUpController.selectedBrand,
-        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? singUpController.selectedTrailerType,
+        selectedBrand: googleUserData?['selectedBrand'] ?? singUpController?.selectedBrand ?? '1',
+        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? singUpController?.selectedTrailerType ?? 'Flatbed Trailers',
       );
 
       if (registerResponse["Result"] == "true") {
@@ -273,38 +289,63 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     
                     // Debug: Print truck selection values
                     print('Truck selection debug:');
-                    print('  selectedBrand: ${singUpController.selectedBrand}');
-                    print('  selectedTrailerType: ${singUpController.selectedTrailerType}');
+                    print('  selectedBrand: ${singUpController?.selectedBrand ?? '1'}');
+                    print('  selectedTrailerType: ${singUpController?.selectedTrailerType ?? 'Flatbed Trailers'}');
                     print('  userRole: ${widget.userRole}');
                     
                     try {
                       bool registrationResult = false;
+                      
+                      // Validate required fields
+                      if (fullNameController.text.isEmpty) {
+                        showCommonToast("Please enter your full name");
+                        setState(() { isLoading = false; });
+                        return;
+                      }
+                      
+                      if (phoneController.text.isEmpty) {
+                        showCommonToast("Please enter your phone number");
+                        setState(() { isLoading = false; });
+                        return;
+                      }
                       
                       if (isGoogleUser && googleUserData != null) {
                         // Handle Google user registration
                         registrationResult = await _registerGoogleUser();
                       } else {
                         // Handle regular user registration
-                        registrationResult = await singUpController.setUserDataWithResult(
-                          context,
-                          name: fullNameController.text,
-                          mobile: phoneController.text,
-                          ccode: singUpController.countryCode,
-                          email: singUpController.emailController.text,
-                          pass: singUpController.passwordController.text,
-                          reff: singUpController.referralCodeController.text,
-                          userRole: widget.userRole,
-                          company: isDispatcher ? companyController.text : null,
-                          emergencyContact: isDispatcher ? emergencyContactController.text : null,
-                          selectedBrand: singUpController.selectedBrand,
-                          selectedTrailerType: singUpController.selectedTrailerType,
-                        );
+                        if (singUpController != null) {
+                          registrationResult = await singUpController!.setUserDataWithResult(
+                            context,
+                            name: fullNameController.text,
+                            mobile: phoneController.text,
+                            ccode: singUpController!.countryCode,
+                            email: singUpController!.emailController.text,
+                            pass: singUpController!.passwordController.text,
+                            reff: singUpController!.referralCodeController.text,
+                            userRole: widget.userRole,
+                            company: isDispatcher ? companyController.text : null,
+                            emergencyContact: isDispatcher ? emergencyContactController.text : null,
+                            selectedBrand: singUpController!.selectedBrand,
+                            selectedTrailerType: singUpController!.selectedTrailerType,
+                          );
+                        } else {
+                          showCommonToast("SignUp controller not available. Please try again.");
+                          setState(() { isLoading = false; });
+                          return;
+                        }
                       }
                       
                       setState(() { isLoading = false; });
                       
                       // Only navigate if registration was successful
                       if (registrationResult == true) {
+                        // Mark Google registration as completed
+                        if (isGoogleUser) {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('hasCompletedGoogleRegistration', true);
+                        }
+                        
                         if (isDispatcher) {
                           Get.to(() => LinkDriverScreen(
                             initialDrivers: [],

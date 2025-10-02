@@ -218,6 +218,7 @@ class HomePageController extends GetxController implements GetxService {
     prefs.setString("uid", "");
     prefs.setString("wallet", "");
     prefs.setString("gkey", "");
+    prefs.setBool("hasCompletedGoogleRegistration", false); // Reset Google registration flag
     
     // If user logged in via Google, also sign out from Google/Firebase
     if (isGoogleUser) {
