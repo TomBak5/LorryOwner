@@ -256,9 +256,9 @@ class _HomePageState extends State<HomePage> {
                   child: Scaffold(
                     backgroundColor: Colors.white,
                     appBar: PreferredSize(
-                      preferredSize: Size.fromHeight((Get.height * 0.12) - 60), // Reduce header by 60px
+                      preferredSize: Size.fromHeight(80), // Reduced from 118px to 80px
                       child: AppBar(
-                        toolbarHeight: (Get.height * 0.12) - 60, // Reduce header by 60px
+                        toolbarHeight: 80, // Reduced from 118px to 80px
                         backgroundColor: Colors.white,
                         elevation: 0,
                         titleSpacing: 0,
@@ -302,25 +302,31 @@ class _HomePageState extends State<HomePage> {
             },
           ),
         ),
-        // TruckBuddy logo positioned 15px up from previous position
+        // Ring bell icon positioned to match Frame 4 from CSS
         Positioned(
-          left: -40,
-          top: 86, // Subtracted 15px from 101
-          child: Image.asset(
-            "assets/logo/truckbuddy_logo.png",
-            height: 24,
-            width: 295,
-            fit: BoxFit.contain,
+          right: 14, // Frame 4 is at the right side of Frame 3 (347px wide in 375px container)
+          top: 61, // Exact Y position as specified
+          child: Container(
+            width: 40, // Frame 4 width
+            height: 40, // Frame 4 height
+            child: Center(
+              child: Image.asset(
+                "assets/icons/bellring.png",
+                height: 24, // Frame width
+                width: 24, // Frame height
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
         ),
-        // Ring bell icon positioned 15px up from previous position
+        // Group 17 logo at specified position
         Positioned(
-          right: 40,
-          top: 86, // Subtracted 15px from 101
+          left: 14,
+          top: 71, // Exact Y position as specified
           child: Image.asset(
-            "assets/icons/bellring.png",
+            "assets/logo/Group 17 (1).png",
+            width: 173,
             height: 24,
-            width: 24,
             fit: BoxFit.contain,
           ),
         ),
@@ -332,7 +338,7 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: (Get.height * 0.12) - 60, // Lift map by 60px (header height - 60px)
+      top: 40, // Moved up by another 20px from 60px
       child: Container(
         width: double.infinity, // Full screen width
         height: 609.0.h, // Height from Figma using ScreenUtil
