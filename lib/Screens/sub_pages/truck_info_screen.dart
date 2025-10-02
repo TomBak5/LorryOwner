@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Api_Provider/api_provider.dart';
 import '../main_pages/home_page.dart';
 import 'account_info_screen.dart';
@@ -20,12 +22,75 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
   List<Map<String, dynamic>> trailerTypes = [];
   bool isLoadingBrands = true;
   bool isLoadingTrailerTypes = true;
+  bool isGoogleUser = false;
+  Map<String, dynamic>? googleUserData;
 
   @override
   void initState() {
     super.initState();
+    _checkForGoogleUser();
     fetchBrands();
     fetchTrailerTypes();
+  }
+
+  Future<void> _checkForGoogleUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tempGoogleUser = prefs.getString('tempGoogleUser');
+      
+      if (tempGoogleUser != null) {
+        setState(() {
+          isGoogleUser = true;
+          googleUserData = jsonDecode(tempGoogleUser);
+        });
+      }
+    } catch (e) {
+      print("Error checking for Google user: $e");
+    }
+  }
+
+  // Save truck info for Google users
+  Future<void> _saveTruckInfoForGoogleUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tempGoogleUser = prefs.getString('tempGoogleUser');
+      
+      if (tempGoogleUser != null) {
+        final googleUserData = jsonDecode(tempGoogleUser);
+        
+        // Add truck information to Google user data
+        googleUserData['selectedBrand'] = selectedBrand ?? '1'; // Default brand ID
+        googleUserData['selectedTrailerType'] = selectedTrailerTypeObj?['name'] ?? 'Flatbed Trailers';
+        
+        // Save updated data
+        await prefs.setString('tempGoogleUser', jsonEncode(googleUserData));
+        print('Saved truck info for Google user: brand=${googleUserData['selectedBrand']}, trailer=${googleUserData['selectedTrailerType']}');
+      }
+    } catch (e) {
+      print("Error saving truck info for Google user: $e");
+    }
+  }
+
+  // Save default truck info for Google users when skipping
+  Future<void> _saveDefaultTruckInfoForGoogleUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tempGoogleUser = prefs.getString('tempGoogleUser');
+      
+      if (tempGoogleUser != null) {
+        final googleUserData = jsonDecode(tempGoogleUser);
+        
+        // Set default truck information
+        googleUserData['selectedBrand'] = '1'; // Default brand ID
+        googleUserData['selectedTrailerType'] = 'Flatbed Trailers'; // Default trailer type NAME
+        
+        // Save updated data
+        await prefs.setString('tempGoogleUser', jsonEncode(googleUserData));
+        print('Skipping truck selection for Google user - setting defaults: brand=1, trailer=Flatbed Trailers');
+      }
+    } catch (e) {
+      print("Error saving default truck info for Google user: $e");
+    }
   }
 
   void fetchBrands() async {
@@ -200,17 +265,28 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    final singUpController = Get.find<SingUpController>();
-                    final userRole = singUpController.selectedRole;
+                    String userRole;
                     
-                    // Save truck information to the controller
-                    if (selectedBrand != null) {
-                      singUpController.selectedBrand = selectedBrand;
+                    if (isGoogleUser && googleUserData != null) {
+                      userRole = googleUserData!['userRole'] ?? 'driver';
+                    } else {
+                      final singUpController = Get.find<SingUpController>();
+                      userRole = singUpController.selectedRole;
+                      
+                      // Save truck information to the controller for regular users
+                      if (selectedBrand != null) {
+                        singUpController.selectedBrand = selectedBrand;
+                      }
+                      if (selectedTrailerTypeObj != null) {
+                        // Send the truck type NAME, not the ID
+                        singUpController.selectedTrailerType = selectedTrailerTypeObj!['name'];
+                        print('Saving truck type NAME: ${selectedTrailerTypeObj!['name']}');
+                      }
                     }
-                    if (selectedTrailerTypeObj != null) {
-                      // Send the truck type NAME, not the ID
-                      singUpController.selectedTrailerType = selectedTrailerTypeObj!['name'];
-                      print('Saving truck type NAME: ${selectedTrailerTypeObj!['name']}');
+                    
+                    // Save truck information for Google users
+                    if (isGoogleUser) {
+                      _saveTruckInfoForGoogleUser();
                     }
                     
                     Get.to(() => AccountInfoScreen(userRole: userRole));
@@ -227,15 +303,23 @@ class _TruckInfoScreenState extends State<TruckInfoScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    final singUpController = Get.find<SingUpController>();
-                    final userRole = singUpController.selectedRole;
+                    String userRole;
                     
-                    // Set default values when skipping (for drivers)
-                    if (userRole == 'driver') {
-                      // Set default truck brand and trailer type when skipping
-                      singUpController.selectedBrand = '1'; // Default brand ID
-                      singUpController.selectedTrailerType = 'Flatbed Trailers'; // Default trailer type NAME
-                      print('Skipping truck selection - setting defaults: brand=1, trailer=Flatbed Trailers');
+                    if (isGoogleUser && googleUserData != null) {
+                      userRole = googleUserData!['userRole'] ?? 'driver';
+                      // Set default values for Google users when skipping
+                      _saveDefaultTruckInfoForGoogleUser();
+                    } else {
+                      final singUpController = Get.find<SingUpController>();
+                      userRole = singUpController.selectedRole;
+                      
+                      // Set default values when skipping (for regular users)
+                      if (userRole == 'driver') {
+                        // Set default truck brand and trailer type when skipping
+                        singUpController.selectedBrand = '1'; // Default brand ID
+                        singUpController.selectedTrailerType = 'Flatbed Trailers'; // Default trailer type NAME
+                        print('Skipping truck selection - setting defaults: brand=1, trailer=Flatbed Trailers');
+                      }
                     }
                     
                     Get.to(() => AccountInfoScreen(userRole: userRole));

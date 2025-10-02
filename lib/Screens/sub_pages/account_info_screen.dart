@@ -1,9 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../main_pages/home_page.dart';
 import '../../Controllers/singiup_controller.dart';
 import '../congratulations_screen.dart';
 import 'link_driver_screen.dart';
+import '../../Api_Provider/api_provider.dart';
+import '../../widgets/widgets.dart';
+import '../../AppConstData/routes.dart';
 
 class AccountInfoScreen extends StatefulWidget {
   final String userRole;
@@ -20,6 +25,162 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   final TextEditingController emergencyContactController = TextEditingController();
   final SingUpController singUpController = Get.find<SingUpController>();
   bool isLoading = false;
+  bool isGoogleUser = false;
+  Map<String, dynamic>? googleUserData;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForGoogleUser();
+  }
+
+  Future<void> _checkForGoogleUser() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tempGoogleUser = prefs.getString('tempGoogleUser');
+      
+      if (tempGoogleUser != null) {
+        setState(() {
+          isGoogleUser = true;
+          googleUserData = jsonDecode(tempGoogleUser);
+        });
+        
+        // Pre-populate form with Google user data
+        if (googleUserData != null) {
+          fullNameController.text = googleUserData!['displayName'] ?? '';
+          // For Google users, we'll use email as mobile number
+          phoneController.text = googleUserData!['email'] ?? '';
+        }
+      }
+    } catch (e) {
+      print("Error checking for Google user: $e");
+    }
+  }
+
+  // Register Google user with account info
+  Future<bool> _registerGoogleUser() async {
+    try {
+      if (googleUserData == null) return false;
+      
+      // Check if this is an existing user
+      if (googleUserData!['existingUser'] == true) {
+        // Update existing user's role and info
+        return await _updateExistingGoogleUser();
+      } else {
+        // Register new Google user
+        return await _registerNewGoogleUser();
+      }
+    } catch (e) {
+      print("Error registering Google user: $e");
+      showCommonToast("Registration failed: $e");
+      return false;
+    }
+  }
+  
+  // Update existing Google user
+  Future<bool> _updateExistingGoogleUser() async {
+    try {
+      // For existing users, we need to update their role in the database
+      // We'll do this by calling the registration API with the existing user's data
+      // but with the new role - this will update the existing record
+      
+      final existingUserData = googleUserData!['existingUserData'];
+      
+      final registerResponse = await ApiProvider().registerUser(
+        name: fullNameController.text.isNotEmpty ? fullNameController.text : existingUserData['name'] ?? googleUserData!['displayName'] ?? 'User',
+        mobile: phoneController.text.isNotEmpty ? phoneController.text : existingUserData['mobile'] ?? googleUserData!['email'] ?? '',
+        cCode: existingUserData['ccode'] ?? '+1',
+        email: googleUserData!['email'] ?? '',
+        password: googleUserData!['uid'], // Use Firebase UID as password
+        referCode: existingUserData['referCode'] ?? '',
+        userRole: widget.userRole, // This is the new role we want to set
+        company: widget.userRole == 'dispatcher' ? companyController.text : existingUserData['company'],
+        emergencyContact: widget.userRole == 'dispatcher' ? emergencyContactController.text : existingUserData['emergencyContact'],
+        selectedBrand: googleUserData?['selectedBrand'] ?? existingUserData['selectedBrand'] ?? singUpController.selectedBrand,
+        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? existingUserData['selectedTrailerType'] ?? singUpController.selectedTrailerType,
+      );
+
+      if (registerResponse["Result"] == "true") {
+        // Registration/update successful, login again to get updated data
+        final loginResponse = await ApiProvider().loginUserWithEmail(
+          email: googleUserData!['email'] ?? '',
+          password: googleUserData!['uid'],
+        );
+
+        if (loginResponse["Result"] == "true") {
+          // Clear temp data
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('tempGoogleUser');
+          
+          // Save updated user data
+          String encodedData = jsonEncode(loginResponse["UserLogin"]);
+          await prefs.setString("userData", encodedData);
+          
+          showCommonToast("Role updated successfully!");
+          return true;
+        } else {
+          showCommonToast("Login failed after role update. Please try again.");
+          return false;
+        }
+      } else {
+        showCommonToast(registerResponse["ResponseMsg"] ?? "Failed to update role");
+        return false;
+      }
+    } catch (e) {
+      print("Error updating existing Google user: $e");
+      showCommonToast("Failed to update role: $e");
+      return false;
+    }
+  }
+  
+  // Register new Google user
+  Future<bool> _registerNewGoogleUser() async {
+    try {
+      final registerResponse = await ApiProvider().registerUser(
+        name: fullNameController.text.isNotEmpty ? fullNameController.text : googleUserData!['displayName'] ?? 'User',
+        mobile: phoneController.text.isNotEmpty ? phoneController.text : googleUserData!['email'] ?? '',
+        cCode: '+1',
+        email: googleUserData!['email'] ?? '',
+        password: googleUserData!['uid'], // Use Firebase UID as password
+        referCode: '',
+        userRole: widget.userRole,
+        company: widget.userRole == 'dispatcher' ? companyController.text : null,
+        emergencyContact: widget.userRole == 'dispatcher' ? emergencyContactController.text : null,
+        selectedBrand: googleUserData?['selectedBrand'] ?? singUpController.selectedBrand,
+        selectedTrailerType: googleUserData?['selectedTrailerType'] ?? singUpController.selectedTrailerType,
+      );
+
+      if (registerResponse["Result"] == "true") {
+        // Registration successful, try login again
+        final loginResponse = await ApiProvider().loginUserWithEmail(
+          email: googleUserData!['email'] ?? '',
+          password: googleUserData!['uid'],
+        );
+
+        if (loginResponse["Result"] == "true") {
+          // Clear temp data
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('tempGoogleUser');
+          
+          // Save user data
+          String encodedData = jsonEncode(loginResponse["UserLogin"]);
+          await prefs.setString("userData", encodedData);
+          
+          return true;
+        } else {
+          showCommonToast("Login failed after registration. Please try again.");
+          return false;
+        }
+      } else {
+        showCommonToast(registerResponse["ResponseMsg"] ?? "Registration failed");
+        return false;
+      }
+    } catch (e) {
+      print("Error registering new Google user: $e");
+      showCommonToast("Registration failed: $e");
+      return false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,21 +278,28 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                     print('  userRole: ${widget.userRole}');
                     
                     try {
-                      // Wait for registration to complete successfully
-                      final registrationResult = await singUpController.setUserDataWithResult(
-                        context,
-                        name: fullNameController.text,
-                        mobile: phoneController.text,
-                        ccode: singUpController.countryCode,
-                        email: singUpController.emailController.text,
-                        pass: singUpController.passwordController.text,
-                        reff: singUpController.referralCodeController.text,
-                        userRole: widget.userRole,
-                        company: isDispatcher ? companyController.text : null,
-                        emergencyContact: isDispatcher ? emergencyContactController.text : null,
-                        selectedBrand: singUpController.selectedBrand,
-                        selectedTrailerType: singUpController.selectedTrailerType,
-                      );
+                      bool registrationResult = false;
+                      
+                      if (isGoogleUser && googleUserData != null) {
+                        // Handle Google user registration
+                        registrationResult = await _registerGoogleUser();
+                      } else {
+                        // Handle regular user registration
+                        registrationResult = await singUpController.setUserDataWithResult(
+                          context,
+                          name: fullNameController.text,
+                          mobile: phoneController.text,
+                          ccode: singUpController.countryCode,
+                          email: singUpController.emailController.text,
+                          pass: singUpController.passwordController.text,
+                          reff: singUpController.referralCodeController.text,
+                          userRole: widget.userRole,
+                          company: isDispatcher ? companyController.text : null,
+                          emergencyContact: isDispatcher ? emergencyContactController.text : null,
+                          selectedBrand: singUpController.selectedBrand,
+                          selectedTrailerType: singUpController.selectedTrailerType,
+                        );
+                      }
                       
                       setState(() { isLoading = false; });
                       

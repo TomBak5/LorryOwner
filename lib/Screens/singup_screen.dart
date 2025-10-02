@@ -270,92 +270,6 @@ class _SingUpState extends State<SingUp> {
                                       ),
                                     ),
                                     const SizedBox(height: 12),
-                                    // Role selector (Driver/Dispatcher)
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        'Select account type',
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w500,
-                                          color: textGreyColor,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: GestureDetector(
-                                            onTap: () => singUpController.setSelectedRole('dispatcher'),
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                                              decoration: BoxDecoration(
-                                                color: singUpController.selectedRole == 'dispatcher' ? Colors.white : Colors.transparent,
-                                                border: Border.all(
-                                                  color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                                                  width: 2,
-                                                ),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.account_circle_outlined, color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor),
-                                                  SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Dispatcher',
-                                                      style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: singUpController.selectedRole == 'dispatcher' ? secondaryColor : textGreyColor,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  if (singUpController.selectedRole == 'dispatcher')
-                                                    Icon(Icons.check_circle, color: secondaryColor)
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        SizedBox(width: 12),
-                                        Expanded(
-                                          child: GestureDetector(
-                                            onTap: () => singUpController.setSelectedRole('driver'),
-                                            child: Container(
-                                              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                                              decoration: BoxDecoration(
-                                                color: singUpController.selectedRole == 'driver' ? Colors.white : Colors.transparent,
-                                                border: Border.all(
-                                                  color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                                                  width: 2,
-                                                ),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Icon(Icons.local_shipping_outlined, color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor),
-                                                  SizedBox(width: 8),
-                                                  Expanded(
-                                                    child: Text(
-                                                      'Driver',
-                                                  style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                        color: singUpController.selectedRole == 'driver' ? secondaryColor : textGreyColor,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  if (singUpController.selectedRole == 'driver')
-                                                    Icon(Icons.check_circle, color: secondaryColor)
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
                                     SizedBox(height: Get.height * 0.05),
                                     Row(
                                       children: [
@@ -371,17 +285,12 @@ class _SingUpState extends State<SingUp> {
                                                 showCommonToast("Please enter email and password");
                                                 return;
                                               }
+                                              
+                                              // Store email and password for later use
                                               singUpController.setIsLoading(true);
-                                              // In the onTapp for the Sign up button, branch based on selectedRole
-                                              if (singUpController.selectedRole == 'dispatcher') {
-                                                // Go to Account Info screen for dispatcher
-                                                Get.to(() => AccountInfoScreen(userRole: 'dispatcher'));
-                                              } else {
-                                                // For drivers, just navigate to truck info screen without registration
-                                                // Registration will happen in account_info_screen.dart after collecting all data
-                                                singUpController.setIsLoading(false);
-                                                Get.toNamed('/truckInfo');
-                                              }
+                                              
+                                              // Navigate to role selection screen
+                                              Get.toNamed('/roleSelection');
                                             },
                                           ),
                                         ),

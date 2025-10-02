@@ -26,6 +26,8 @@ import '../Screens/sub_pages/assigned_orders_screen.dart';
 import '../Screens/sub_pages/assign_order_screen.dart';
 import '../Screens/sub_pages/fuel_stations_screen.dart';
 import '../Screens/sub_pages/navigation_test_screen.dart';
+import '../Screens/sub_pages/account_info_screen.dart';
+import '../Screens/role_selection_screen.dart';
 
 
 class Routes {
@@ -53,6 +55,8 @@ class Routes {
   static const String assignedOrders = '/assignedOrders';
   static const String fuelStations = '/fuel-stations';
   static const String navigationTest = '/navigation-test';
+  static const String roleSelection = '/roleSelection';
+  static const String accountInfo = '/accountInfo';
 
 
 }
@@ -155,7 +159,14 @@ final getpage = [
     name: Routes.navigationTest,
     page: () => const NavigationTestScreen(),
   ),
-
+  GetPage(
+    name: Routes.roleSelection,
+    page: () => const RoleSelectionScreen(),
+  ),
+  GetPage(
+    name: Routes.accountInfo,
+    page: () => AccountInfoScreen(userRole: 'driver'),
+  ),
 
   GetPage(
     name: '/CongratulationsScreen',

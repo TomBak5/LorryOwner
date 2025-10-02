@@ -132,39 +132,67 @@ class LoginScreenController extends GetxController implements GetxService {
       );
 
       if (loginResponse["Result"] == "true") {
-        // User exists, save data and navigate
-        await _saveUserDataAndNavigate(loginResponse["UserLogin"]);
-      } else {
-        // User doesn't exist, register them
-        final registerResponse = await ApiProvider().registerUser(
-          name: firebaseUser.displayName ?? 'User',
-          mobile: firebaseUser.email ?? '',
-          cCode: '+1',
-          email: firebaseUser.email ?? '',
-          password: firebaseUser.uid, // Use Firebase UID as password
-          referCode: '',
-          userRole: 'driver', // Default role
-        );
-
-        if (registerResponse["Result"] == "true") {
-          // Registration successful, try login again
-          final newLoginResponse = await ApiProvider().loginUserWithEmail(
-            email: firebaseUser.email ?? '',
-            password: firebaseUser.uid,
-          );
-
-          if (newLoginResponse["Result"] == "true") {
-            await _saveUserDataAndNavigate(newLoginResponse["UserLogin"]);
-          } else {
-            showCommonToast("Login failed after registration. Please try again.");
-          }
+        // User exists, check if they have a valid role
+        final userData = loginResponse["UserLogin"];
+        final userRole = userData["userRole"];
+        
+        // Check if user has a valid role (not empty or null)
+        if (userRole != null && userRole.toString().isNotEmpty && 
+            (userRole.toString() == 'driver' || userRole.toString() == 'dispatcher')) {
+          // User has valid role, proceed with login
+          await _saveUserDataAndNavigate(userData);
         } else {
-          showCommonToast(registerResponse["ResponseMsg"] ?? "Registration failed");
+          // User exists but doesn't have a valid role, need to complete onboarding
+          print("User exists but has invalid role: $userRole, redirecting to role selection");
+          await _navigateToRoleSelectionForExistingUser(firebaseUser, userData);
         }
+      } else {
+        // User doesn't exist, need to register - navigate to role selection first
+        await _navigateToRoleSelection(firebaseUser);
       }
     } catch (e) {
       print("Error registering/logging in Google user: $e");
       showCommonToast("Failed to complete sign-in: $e");
+    }
+  }
+  
+  // Navigate to role selection for new Google users
+  Future<void> _navigateToRoleSelection(User firebaseUser) async {
+    try {
+      // Store Firebase user data temporarily for registration
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("tempGoogleUser", jsonEncode({
+        'email': firebaseUser.email,
+        'displayName': firebaseUser.displayName,
+        'uid': firebaseUser.uid,
+      }));
+      
+      // Navigate to role selection
+      Get.toNamed(Routes.roleSelection);
+    } catch (e) {
+      print("Error navigating to role selection: $e");
+      showCommonToast("Failed to proceed with registration: $e");
+    }
+  }
+  
+  // Navigate to role selection for existing Google users who need to complete onboarding
+  Future<void> _navigateToRoleSelectionForExistingUser(User firebaseUser, dynamic existingUserData) async {
+    try {
+      // Store Firebase user data temporarily for role selection
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("tempGoogleUser", jsonEncode({
+        'email': firebaseUser.email,
+        'displayName': firebaseUser.displayName,
+        'uid': firebaseUser.uid,
+        'existingUser': true, // Flag to indicate this is an existing user
+        'existingUserData': existingUserData, // Store existing user data
+      }));
+      
+      // Navigate to role selection
+      Get.toNamed(Routes.roleSelection);
+    } catch (e) {
+      print("Error navigating to role selection for existing user: $e");
+      showCommonToast("Failed to proceed with role selection: $e");
     }
   }
 
