@@ -165,11 +165,19 @@ final getpage = [
   ),
   GetPage(
     name: Routes.accountInfo,
-    page: () => AccountInfoScreen(userRole: 'driver'),
+    page: () {
+      final arguments = Get.arguments as Map<String, dynamic>?;
+      final userRole = arguments?['userRole'] ?? 'driver';
+      return AccountInfoScreen(userRole: userRole);
+    },
   ),
 
   GetPage(
     name: '/CongratulationsScreen',
-    page: () => CongratulationsScreen(userRole: 'driver'),
+    page: () {
+      final arguments = Get.arguments as Map<String, dynamic>?;
+      final userRole = arguments?['userRole'] ?? 'driver';
+      return CongratulationsScreen(userRole: userRole);
+    },
   ),
 ];

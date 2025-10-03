@@ -24,14 +24,41 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
   void initState() {
     super.initState();
     linkedDrivers = List.from(widget.initialDrivers);
+    print('🔗 LinkDriverScreen initialized with ${linkedDrivers.length} initial drivers');
+    
+    // Load all drivers when screen opens
+    _loadAllDrivers();
   }
-
-  void searchDrivers(String query) async {
-    if (query.isEmpty) {
+  
+  // Load all available drivers when screen opens
+  Future<void> _loadAllDrivers() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      print('📋 Loading all available drivers...');
+      final apiProvider = ApiProvider();
+      final allDrivers = await apiProvider.getAllAvailableDrivers();
+      print('📋 Found ${allDrivers.length} total drivers from API');
+      
+      setState(() {
+        suggestions = allDrivers;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('❌ Error loading drivers: $e');
       setState(() {
         suggestions = [];
         isLoading = false;
       });
+    }
+  }
+
+  void searchDrivers(String query) async {
+    if (query.isEmpty) {
+      // If query is empty, reload all drivers
+      _loadAllDrivers();
       return;
     }
 
@@ -40,8 +67,23 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
     });
 
     try {
-      // Use the new API method to get all available drivers
+      print('🔍 Searching drivers with query: "$query"');
+      
+      // First try to search using the API
       final apiProvider = ApiProvider();
+      final searchResults = await apiProvider.searchDriversByEmail(query);
+      print('🔍 API search returned ${searchResults.length} drivers');
+      
+      if (searchResults.isNotEmpty) {
+        setState(() {
+          suggestions = searchResults;
+          isLoading = false;
+        });
+        return;
+      }
+      
+      // If API search returns no results, try local filtering
+      print('🔍 API search returned no results, trying local filtering...');
       final allDrivers = await apiProvider.getAllAvailableDrivers();
       
       // Filter drivers based on search query
@@ -56,12 +98,13 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                mobile.contains(queryLower);
       }).toList();
 
+      print('🎯 Local filtering found ${filteredDrivers.length} drivers matching "$query"');
       setState(() {
         suggestions = filteredDrivers;
         isLoading = false;
       });
     } catch (e) {
-      print('Error searching drivers: $e');
+      print('❌ Error searching drivers: $e');
       setState(() {
         suggestions = [];
         isLoading = false;
@@ -99,25 +142,61 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text('Link a driver'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              widget.onDriversSelected(linkedDrivers);
-              Navigator.of(context).pop();
-            },
-            child: Text('Done'),
-          )
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Select or Assign a Driver', style: TextStyle(fontWeight: FontWeight.w500)),
-            SizedBox(height: 8),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Progress indicator
+              Row(
+                children: [
+                  Text('Select or Assign a Driver', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black)),
+                  const Spacer(),
+                  Text(
+                    '2/3',
+                    style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              LinearProgressIndicator(
+                value: 2/3, // 2/3 = 66.7% complete
+                backgroundColor: Colors.grey[200],
+                color: Colors.blue,
+                minHeight: 3,
+              ),
+              const SizedBox(height: 32),
+              
+              // Custom header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Select or Assign a Driver',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      widget.onDriversSelected(linkedDrivers);
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      'Done',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.blue,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -151,19 +230,81 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                   if (isLoading) ...[
                     SizedBox(height: 12),
                     Center(child: CircularProgressIndicator()),
+                    SizedBox(height: 8),
+                    Center(child: Text('Loading drivers...')),
                   ],
-                  if (suggestions.isNotEmpty)
-                    ...suggestions.map((driver) => ListTile(
-                      leading: Icon(Icons.person_outline),
-                      title: Text(driver['email'] ?? ''),
-                      subtitle: Text(driver['name'] ?? driver['mobile'] ?? ''),
-                      onTap: () => addDriver(driver),
-                    )),
-                  if (notFoundMsg.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(notFoundMsg, style: TextStyle(color: Colors.red)),
+                  if (!isLoading && suggestions.isEmpty && searchController.text.isEmpty) ...[
+                    SizedBox(height: 20),
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.person_search, size: 64, color: Colors.grey[400]),
+                          SizedBox(height: 16),
+                          Text(
+                            'No drivers found',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Try searching by email, name, or phone number',
+                            style: TextStyle(color: Colors.grey[500]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
+                  ],
+                  if (!isLoading && suggestions.isEmpty && searchController.text.isNotEmpty) ...[
+                    SizedBox(height: 20),
+                    Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
+                          SizedBox(height: 16),
+                          Text(
+                            'No drivers found for "${searchController.text}"',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey[600]),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Try a different search term',
+                            style: TextStyle(color: Colors.grey[500]),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (suggestions.isNotEmpty) ...[
+                    SizedBox(height: 8),
+                    Text('Available Drivers:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                    SizedBox(height: 8),
+                    ...suggestions.map((driver) => Card(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.blue[100],
+                          child: Icon(Icons.person, color: Colors.blue[700]),
+                        ),
+                        title: Text(driver['name'] ?? 'Unknown Driver', style: TextStyle(fontWeight: FontWeight.w500)),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(driver['email'] ?? 'No email'),
+                            if (driver['mobile'] != null) Text(driver['mobile']),
+                          ],
+                        ),
+                        trailing: ElevatedButton(
+                          onPressed: () => addDriver(driver),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          ),
+                          child: Text('Add'),
+                        ),
+                      ),
+                    )),
+                  ],
                   SizedBox(height: 16),
                   if (linkedDrivers.isNotEmpty)
                     Column(
@@ -237,19 +378,33 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                 child: Text('Assign'),
               ),
             ),
+            SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
-              child: TextButton(
+              child: OutlinedButton(
                 onPressed: () {
+                  print('⏭️ Skipping driver selection');
                   widget.onDriversSelected(linkedDrivers);
                   Navigator.of(context).pop();
                 },
-                child: Text('Skip now', textAlign: TextAlign.center),
+                style: OutlinedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: Colors.grey[400]!),
+                ),
+                child: Text(
+                  'Skip - Continue without linking drivers',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[700],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ],
         ),
       ),
+    ),
     );
   }
 } 

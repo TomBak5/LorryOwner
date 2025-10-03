@@ -31,8 +31,27 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   @override
   void initState() {
     super.initState();
+    _checkForArguments();
     _checkForGoogleUser();
     _initializeController();
+  }
+  
+  void _checkForArguments() {
+    try {
+      final arguments = Get.arguments as Map<String, dynamic>?;
+      if (arguments != null) {
+        print('📋 AccountInfoScreen received arguments: $arguments');
+        // Arguments are already handled by the route, but we can use them for additional logic
+        if (arguments['isGoogleUser'] == true) {
+          print('🔐 This is a Google user registration');
+        }
+        if (arguments['isExistingUser'] == true) {
+          print('👤 This is an existing user');
+        }
+      }
+    } catch (e) {
+      print('❌ Error checking arguments: $e');
+    }
   }
   
   void _initializeController() {
@@ -70,18 +89,26 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
   // Register Google user with account info
   Future<bool> _registerGoogleUser() async {
     try {
-      if (googleUserData == null) return false;
+      if (googleUserData == null) {
+        print('❌ Google user data is null');
+        return false;
+      }
+      
+      print('🔍 Google user data: ${googleUserData}');
+      print('🔍 Is existing user: ${googleUserData!['existingUser']}');
       
       // Check if this is an existing user
       if (googleUserData!['existingUser'] == true) {
         // Update existing user's role and info
+        print('🔄 Updating existing Google user');
         return await _updateExistingGoogleUser();
       } else {
         // Register new Google user
+        print('🆕 Registering new Google user');
         return await _registerNewGoogleUser();
       }
     } catch (e) {
-      print("Error registering Google user: $e");
+      print("❌ Error registering Google user: $e");
       showCommonToast("Registration failed: $e");
       return false;
     }
@@ -110,14 +137,20 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
         selectedTrailerType: googleUserData?['selectedTrailerType'] ?? existingUserData['selectedTrailerType'] ?? singUpController?.selectedTrailerType ?? 'Flatbed Trailers',
       );
 
+      print('📡 Register response: $registerResponse');
+      
       if (registerResponse["Result"] == "true") {
+        print('✅ Registration successful, attempting login...');
         // Registration/update successful, login again to get updated data
         final loginResponse = await ApiProvider().loginUserWithEmail(
           email: googleUserData!['email'] ?? '',
           password: googleUserData!['uid'],
         );
 
+        print('📡 Login response: $loginResponse');
+
         if (loginResponse["Result"] == "true") {
+          print('✅ Login successful after registration');
           // Clear temp data
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('tempGoogleUser');
@@ -129,6 +162,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
           showCommonToast("Registration completed successfully!");
           return true;
         } else {
+          print('❌ Login failed after registration');
           showCommonToast("Login failed after registration. Please try again.");
           return false;
         }
@@ -166,14 +200,20 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
         selectedTrailerType: googleUserData?['selectedTrailerType'] ?? singUpController?.selectedTrailerType ?? 'Flatbed Trailers',
       );
 
+      print('📡 New user register response: $registerResponse');
+      
       if (registerResponse["Result"] == "true") {
+        print('✅ New user registration successful, attempting login...');
         // Registration successful, try login again
         final loginResponse = await ApiProvider().loginUserWithEmail(
           email: googleUserData!['email'] ?? '',
           password: googleUserData!['uid'],
         );
 
+        print('📡 New user login response: $loginResponse');
+
         if (loginResponse["Result"] == "true") {
+          print('✅ New user login successful');
           // Clear temp data
           final prefs = await SharedPreferences.getInstance();
           await prefs.remove('tempGoogleUser');
@@ -184,6 +224,7 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
           
           return true;
         } else {
+          print('❌ New user login failed after registration');
           showCommonToast("Login failed after registration. Please try again.");
           return false;
         }
@@ -311,7 +352,9 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       
                       if (isGoogleUser && googleUserData != null) {
                         // Handle Google user registration
+                        print('🔐 Starting Google user registration for role: ${widget.userRole}');
                         registrationResult = await _registerGoogleUser();
+                        print('🔐 Google user registration result: $registrationResult');
                       } else {
                         // Handle regular user registration
                         if (singUpController != null) {
@@ -338,6 +381,10 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                       
                       setState(() { isLoading = false; });
                       
+                      print('📊 Final registration result: $registrationResult');
+                      print('📊 User role: ${widget.userRole}');
+                      print('📊 Is dispatcher: $isDispatcher');
+                      
                       // Only navigate if registration was successful
                       if (registrationResult == true) {
                         // Mark Google registration as completed
@@ -347,14 +394,17 @@ class _AccountInfoScreenState extends State<AccountInfoScreen> {
                         }
                         
                         if (isDispatcher) {
+                          print('🚛 Navigating to LinkDriverScreen for Dispatcher');
                           Get.to(() => LinkDriverScreen(
                             initialDrivers: [],
                             onDriversSelected: (drivers) {
-                              Get.to(() => CongratulationsScreen(userRole: widget.userRole));
+                              print('✅ Drivers selected: ${drivers.length} drivers');
+                              Get.toNamed('/CongratulationsScreen', arguments: {'userRole': widget.userRole});
                             },
                           ));
                         } else {
-                          Get.to(() => CongratulationsScreen(userRole: widget.userRole));
+                          print('👤 Navigating directly to CongratulationsScreen for Driver');
+                          Get.toNamed('/CongratulationsScreen', arguments: {'userRole': widget.userRole});
                         }
                       } else {
                         // Registration failed, show error message

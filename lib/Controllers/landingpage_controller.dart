@@ -37,7 +37,7 @@ class LandingPageController extends GetxController implements GetxService {
   List bottomItemsIcons = [
     "assets/icons/Frame (1).png",
     "assets/icons/tasks.png",
-    "assets/icons/ic_bookedlorries_bottom.svg",
+    "assets/icons/Frame (2).png",
     "assets/icons/ic_user_bottom.svg",
   ];
 
