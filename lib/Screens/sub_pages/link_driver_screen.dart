@@ -151,7 +151,12 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
               // Progress indicator
               Row(
                 children: [
-                  Text('Select or Assign a Driver', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Colors.black)),
+                  Text('Select or assign driver', style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: Color(0xFF202020),
+                  )),
                   const Spacer(),
                   Text(
                     '2/3',
@@ -169,48 +174,39 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
               const SizedBox(height: 32),
               
               // Custom header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Select or Assign a Driver',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      widget.onDriversSelected(linkedDrivers);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(
-                      'Done',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.blue,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
+              Text(
+                'Link a driver',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                  color: Color(0xFF202020),
+                ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 36), // Increased from 16 to 36 (20px more)
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Search Driver email',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/gb/Frame 427320662 (1).png'),
+                        fit: BoxFit.fill,
+                      ),
                     ),
-                    onChanged: (value) {
-                      if (value.length > 2) searchDrivers(value);
-                      else setState(() { suggestions = []; notFoundMsg = ''; });
-                    },
+                    child: TextField(
+                      controller: searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Search Driver email',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                      onChanged: (value) {
+                        if (value.length > 2) searchDrivers(value);
+                        else setState(() { suggestions = []; notFoundMsg = ''; });
+                      },
+                    ),
                   ),
                 ),
                 SizedBox(width: 8),
@@ -238,13 +234,6 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     Center(
                       child: Column(
                         children: [
-                          Icon(Icons.person_search, size: 64, color: Colors.grey[400]),
-                          SizedBox(height: 16),
-                          Text(
-                            'No drivers found',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                          ),
-                          SizedBox(height: 8),
                           Text(
                             'Try searching by email, name, or phone number',
                             style: TextStyle(color: Colors.grey[500]),
@@ -259,13 +248,6 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     Center(
                       child: Column(
                         children: [
-                          Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
-                          SizedBox(height: 16),
-                          Text(
-                            'No drivers found for "${searchController.text}"',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey[600]),
-                          ),
-                          SizedBox(height: 8),
                           Text(
                             'Try a different search term',
                             style: TextStyle(color: Colors.grey[500]),

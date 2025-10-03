@@ -338,7 +338,7 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: 40, // Moved up by another 20px from 60px
+      top: -20, // Moved up by another 30px from 10px
       child: Container(
         width: double.infinity, // Full screen width
         height: 609.0.h, // Height from Figma using ScreenUtil
@@ -414,7 +414,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      top: 431.0.h,
+      top: 371.0.h, // Moved up by another 30px from 401.0.h
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(
