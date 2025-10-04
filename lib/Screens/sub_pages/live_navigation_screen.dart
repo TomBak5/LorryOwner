@@ -13,7 +13,7 @@ import '../../Api_Provider/api_provider.dart';
 import 'dart:math' as math;
 import 'dart:convert';
 import 'dart:async';
-import '../../AppConstData/typographyy.dart';
+import '../../AppConstData/typographyy.dart'; 
 import 'package:http/http.dart' as http;
 
 class LiveNavigationScreen extends StatefulWidget {
@@ -410,7 +410,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           _routePoints.isNotEmpty &&
           mounted) {
         
-        // Calculate bounds from all route points to ensure entire route is visible
+        // Calculate bounds from all route points
         double minLat = _routePoints.first.latitude;
         double maxLat = _routePoints.first.latitude;
         double minLng = _routePoints.first.longitude;
@@ -424,43 +424,34 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           maxLng = math.max(maxLng, point.longitude);
         }
         
-        // Calculate optimal padding based on route size to ensure full visibility
-        double latRange = maxLat - minLat;
-        double lngRange = maxLng - minLng;
+        // Add generous padding to ensure route fits
+        double latPadding = (maxLat - minLat) * 0.5; // 50% padding
+        double lngPadding = (maxLng - minLng) * 0.5; // 50% padding
         
-        // Dynamic padding based on route size - larger routes get more padding
-        double latPadding = latRange * 0.3; // Increased to 30% padding for latitude
-        double lngPadding = lngRange * 0.3; // Increased to 30% padding for longitude
+        // Ensure minimum padding
+        latPadding = math.max(latPadding, 0.1);
+        lngPadding = math.max(lngPadding, 0.1);
         
-        // Ensure minimum padding for very short routes
-        latPadding = math.max(latPadding, 0.02); // Increased minimum to 0.02 degrees
-        lngPadding = math.max(lngPadding, 0.02); // Increased minimum to 0.02 degrees
-        
-        // Create bounds with calculated padding
+        // Create bounds with padding
         final bounds = LatLngBounds(
           LatLng(minLat - latPadding, minLng - lngPadding),
           LatLng(maxLat + latPadding, maxLng + lngPadding),
         );
         
         print('📏 Route bounds calculated:');
-        print('   • Lat range: ${latRange.toStringAsFixed(6)} degrees');
-        print('   • Lng range: ${lngRange.toStringAsFixed(6)} degrees');
-        print('   • Applied padding: Lat=${latPadding.toStringAsFixed(6)}, Lng=${lngPadding.toStringAsFixed(6)}');
+        print('   • Min: $minLat, $minLng');
+        print('   • Max: $maxLat, $maxLng');
+        print('   • Padding: $latPadding, $lngPadding');
         
-        // Use fitCamera to ensure the entire route fits in the visible area
+        // Use fitCamera with bounds to ensure route fits
         _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
             bounds: bounds,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 80, // Increased side padding to avoid UI overlap
-              vertical: 120,  // Increased top/bottom padding for UI elements
-            ),
-            maxZoom: 15, // Reduced max zoom to ensure route fits comfortably
+            padding: const EdgeInsets.all(50), // Padding around the bounds
           ),
         );
         
-        print('✅ Route overview displayed successfully - Route points: ${_routePoints.length}');
-        print('📍 Bounds: Lat(${minLat.toStringAsFixed(6)} - ${maxLat.toStringAsFixed(6)}), Lng(${minLng.toStringAsFixed(6)} - ${maxLng.toStringAsFixed(6)})');
+        print('✅ Route overview displayed successfully with bounds fitting');
       } else {
         print('⚠️ Cannot show route overview: mapController=${_animatedMapController.mapController != null}, routePoints=${_routePoints.length}, mounted=$mounted');
       }
@@ -500,16 +491,16 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         double lngRange = maxLng - minLng;
         double maxRange = math.max(latRange, lngRange);
         
-        // Determine zoom level based on route size
+        // Determine zoom level based on route size - very close view for clear movement
         double zoomLevel;
         if (maxRange > 0.1) {
-          zoomLevel = 8.0; // Very large route
+          zoomLevel = 16.0; // Very large route - close view
         } else if (maxRange > 0.05) {
-          zoomLevel = 10.0; // Large route
+          zoomLevel = 18.0; // Large route - close view
         } else if (maxRange > 0.01) {
-          zoomLevel = 12.0; // Medium route
+          zoomLevel = 19.0; // Medium route - very close view
         } else {
-          zoomLevel = 14.0; // Small route
+          zoomLevel = 20.0; // Small route - extremely close view for clear movement
         }
         
         print('🔧 Fallback camera adjustment:');
@@ -975,8 +966,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       _currentLocation = _routePoints.first;
     });
 
-    // Start with manual movement by default
-    _isAutomaticMovement = false;
+    // Start with automatic movement simulation
+    _isAutomaticMovement = true;
     _updateNavigationInfo();
     
     // Auto-zoom to fit entire route in map boundaries
@@ -985,7 +976,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // Then zoom in by 8 levels
     _zoomInAfterOverview();
     
-    // Note: No rotation on Confirm & Go - rotation only happens during live navigation on turns
+    // Start automatic simulation after a short delay
+    Future.delayed(const Duration(milliseconds: 2000), () {
+      if (mounted && _isNavigating) {
+        _startFakeMovement();
+      }
+    });
   }
 
   // Auto-zoom in multiple times when navigation starts
@@ -1001,9 +997,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     print('✅ Auto-zoom completed');
   }
 
-  // Zoom in by 8 levels after route overview is shown, centered on truck location
+  // Zoom in to close view after route overview is shown, centered on truck location
   void _zoomInAfterOverview() async {
-    print('🔍 Starting smooth zoom in by 8 levels after route overview...');
+    print('🔍 Starting smooth zoom in to close view after route overview...');
     
     // Wait a bit for the route overview animation to complete
     await Future.delayed(const Duration(milliseconds: 1500)); // Increased delay
@@ -1012,17 +1008,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       // Use pickup location as center if current location is not set
       LatLng centerLocation = _currentLocation ?? _pickupLocation ?? LatLng(widget.pickupLat, widget.pickupLng);
       
-      // Get current zoom level and calculate target
-      double currentZoom = _animatedMapController.mapController!.camera.zoom;
-      double targetZoom = currentZoom + 8;
+      // Set a close zoom level for street-level view
+      double targetZoom = 20.0; // Very close view for clear movement visibility
       
-      // Cap the zoom level to avoid going too far
-      if (targetZoom > 20) {
-        targetZoom = 20;
-      }
-      
-      print('🔍 Current zoom level: $currentZoom');
-      print('🔍 Target zoom level: $targetZoom');
+      print('🔍 Target zoom level: $targetZoom (close street view)');
       print('🚛 Centering on location: ${centerLocation.latitude}, ${centerLocation.longitude}');
       
       // First center on location smoothly
@@ -1031,15 +1020,15 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       // Wait a bit for the centering animation to start
       await Future.delayed(const Duration(milliseconds: 500)); // Increased delay
       
-      // Then zoom in by 8 levels directly
-      print('🔍 Starting zoom animation...');
+      // Then zoom in to close view
+      print('🔍 Starting zoom animation to close view...');
       if (mounted) {
-        // Set zoom level directly to current + 8
+        // Set zoom level to close street view
         _animatedMapController.mapController!.move(centerLocation, targetZoom);
         print('🔍 Zoom set to $targetZoom - Current zoom: ${_animatedMapController.mapController!.camera.zoom}');
       }
       
-      print('✅ Smooth zoom in by 8 levels completed - Final zoom: ${_animatedMapController.mapController!.camera.zoom}');
+      print('✅ Smooth zoom in to close view completed - Final zoom: ${_animatedMapController.mapController!.camera.zoom}');
       print('🧭 No rotation applied - map stays in current orientation');
     } else {
       print('⚠️ Cannot zoom: missing required data');
@@ -1440,14 +1429,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         // Top navigation instruction bar
         if (_isNavigating) _buildTopNavigationBar(),
         
-        // Floating controls on the right
-        if (_isNavigating) _buildFloatingControls(),
+        // Floating controls on the right - removed
+        // if (_isNavigating) _buildFloatingControls(),
         
         // Bottom trip summary panel
         if (_isNavigating) _buildBottomTripPanel(),
         
-        // Re-center button
-        if (_isNavigating) _buildReCenterButton(),
+        // Re-center button - removed
+        // if (_isNavigating) _buildReCenterButton(),
         
         // Initial setup view (when not navigating)
         if (!_isNavigating) _buildInitialSetupView(),
@@ -1646,9 +1635,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                       Text(
                         _timeToDestination,
                         style: TextStyle(
-                          fontSize: 32,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green[700],
+                          color: Colors.grey[800],
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -1656,13 +1645,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                         '${_distanceToDestination} · $_estimatedArrival',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[800],
                         ),
                       ),
                     ],
                   ),
                 ),
-                
                 
                 // Exit navigation button
                 _buildFloatingButton(
@@ -1953,7 +1942,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         mapController: _animatedMapController.mapController,
         options: MapOptions(
           initialCenter: LatLng(widget.pickupLat, widget.pickupLng),
-          initialZoom: 10, // Lower zoom to reduce tile requests
+          initialZoom: 2, // Extremely low zoom for very wide overview
           initialRotation: 0, // Always north-up orientation
           rotationThreshold: 0, // Disable rotation threshold
           onMapReady: () {
