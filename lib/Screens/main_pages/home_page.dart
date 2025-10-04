@@ -38,6 +38,7 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _addressSuggestions = [];
   bool _isSearching = false;
   bool _showSuggestions = false;
+  LatLng? _selectedAddressLocation; // Store selected address coordinates
   
   // Set your real location coordinates here
   // You can update these with your actual coordinates
@@ -123,6 +124,8 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _searchController.text = address['address'];
       _showSuggestions = false;
+      // Store selected address coordinates for marker
+      _selectedAddressLocation = LatLng(address['latitude'], address['longitude']);
     });
     
     // Move map to selected address
@@ -567,6 +570,7 @@ class _HomePageState extends State<HomePage> {
                     print('🔗 Failed URL: https://maps.hereapi.com/v3/base/mc/${tile.coordinates.z}/${tile.coordinates.x}/${tile.coordinates.y}/png?apiKey=${ApiConfig.hereMapsApiKey.substring(0, 10)}...');
                   },
                 ),
+                // Current location marker
                 if (_currentPosition != null)
                   MarkerLayer(
                     markers: [
@@ -582,6 +586,22 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                   ),
+                // Selected address marker (pin/drop icon)
+                if (_selectedAddressLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _selectedAddressLocation!,
+                        width: 80,
+                        height: 80,
+                        child: const Icon(
+                          Icons.place,
+                          color: Colors.blue,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
               ],
             ),
       ),
@@ -591,7 +611,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      top: 431.0.h, // Moved down by 60px from 371.0.h
+      top: 371.0.h, // Lifted up by another 30px (401.0.h - 30 = 371.0.h)
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(
