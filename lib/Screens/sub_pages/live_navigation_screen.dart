@@ -424,13 +424,13 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           maxLng = math.max(maxLng, point.longitude);
         }
         
-        // Add generous padding to ensure route fits
-        double latPadding = (maxLat - minLat) * 0.5; // 50% padding
-        double lngPadding = (maxLng - minLng) * 0.5; // 50% padding
+        // Add generous padding to ensure route fits completely in visible area
+        double latPadding = (maxLat - minLat) * 0.3; // 30% padding
+        double lngPadding = (maxLng - minLng) * 0.3; // 30% padding
         
-        // Ensure minimum padding
-        latPadding = math.max(latPadding, 0.1);
-        lngPadding = math.max(lngPadding, 0.1);
+        // Ensure minimum padding for small routes
+        latPadding = math.max(latPadding, 0.01);
+        lngPadding = math.max(lngPadding, 0.01);
         
         // Create bounds with padding
         final bounds = LatLngBounds(
@@ -442,13 +442,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         print('   • Min: $minLat, $minLng');
         print('   • Max: $maxLat, $maxLng');
         print('   • Padding: $latPadding, $lngPadding');
+        print('   • Route points: ${_routePoints.length}');
         
-        // Use fitCamera with bounds to ensure route fits, but with closer zoom
+        // Use fitCamera with bounds to ensure route fits completely in visible area
         _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
             bounds: bounds,
-            padding: const EdgeInsets.all(50), // Padding around the bounds
-            maxZoom: 15, // Closer zoom for better movement visibility
+            padding: const EdgeInsets.all(80), // Increased padding around the bounds
+            maxZoom: 16, // Allow closer zoom for better visibility
           ),
         );
         
@@ -492,21 +493,28 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         double lngRange = maxLng - minLng;
         double maxRange = math.max(latRange, lngRange);
         
-        // Determine zoom level based on route size - close view for clear movement
+        // Add padding to the range to ensure route fits completely
+        double paddedRange = maxRange * 1.4; // 40% padding
+        
+        // Calculate zoom level based on route size with padding
+        // Use a more precise zoom calculation that ensures the route fits
         double zoomLevel;
-        if (maxRange > 0.1) {
-          zoomLevel = 15.0; // Very large route - close view (zoomed out by 3 levels)
-        } else if (maxRange > 0.05) {
-          zoomLevel = 16.0; // Large route - close view (zoomed out by 3 levels)
-        } else if (maxRange > 0.01) {
-          zoomLevel = 17.0; // Medium route - close view (zoomed out by 3 levels)
+        if (paddedRange > 0.2) {
+          zoomLevel = 8.0; // Very large route - far view
+        } else if (paddedRange > 0.1) {
+          zoomLevel = 10.0; // Large route - medium view
+        } else if (paddedRange > 0.05) {
+          zoomLevel = 12.0; // Medium route - closer view
+        } else if (paddedRange > 0.01) {
+          zoomLevel = 14.0; // Small route - close view
         } else {
-          zoomLevel = 18.0; // Small route - close view for clear movement (zoomed out by 3 levels)
+          zoomLevel = 16.0; // Very small route - very close view
         }
         
         print('🔧 Fallback camera adjustment:');
         print('   • Center: $centerLat, $centerLng');
         print('   • Max range: ${maxRange.toStringAsFixed(6)}');
+        print('   • Padded range: ${paddedRange.toStringAsFixed(6)}');
         print('   • Zoom level: $zoomLevel');
         
         // Move camera to center with calculated zoom
@@ -604,10 +612,16 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         scheduleMicrotask(() {
           if (mounted) {
             _showFullRouteOverview();
-            // Add a fallback to ensure route fits on screen
+            // Add a fallback to ensure route fits on screen with multiple attempts
             Future.delayed(const Duration(milliseconds: 500), () {
               if (mounted && _animatedMapController.mapController != null) {
                 _ensureRouteFitsOnScreen();
+              }
+            });
+            // Additional fallback with longer delay to ensure route fits
+            Future.delayed(const Duration(milliseconds: 1500), () {
+              if (mounted && _animatedMapController.mapController != null) {
+                _showFullRouteOverview(); // Try again with bounds fitting
               }
             });
           }
@@ -1955,6 +1969,16 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
             print('🗺️ Map is ready!');
             // Don't rotate map when it loads - only rotate when navigation starts
             setState(() {});
+            
+            // Ensure route fits on screen when map is ready
+            if (_routePoints.isNotEmpty) {
+              print('🗺️ Map ready - ensuring route fits on screen...');
+              Future.delayed(const Duration(milliseconds: 100), () {
+                if (mounted && _animatedMapController.mapController != null) {
+                  _showFullRouteOverview();
+                }
+              });
+            }
           },
           // PERFORMANCE OPTIMIZATION: Reduce tile requests by limiting zoom range
           maxZoom: 20, // Reduced to avoid 404 errors
