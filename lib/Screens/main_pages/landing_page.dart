@@ -37,11 +37,11 @@ class _LandingPageState extends State<LandingPage> {
                     // Main page content
                     landingPageController.pages[landingPageController.selectPageIndex],
                     
-                    // Bottom navigation lifted up by 30px
+                    // Bottom navigation at bottom edge
                     Positioned(
                       left: 0,
                       right: 0,
-                      bottom: 30, // Lifted up by 30px from bottom
+                      bottom: 5, // Moved down by another 5px (10 - 5 = 5)
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
