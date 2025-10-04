@@ -226,9 +226,6 @@ class LoginScreenController extends GetxController implements GetxService {
         OneSignal.User.addTagWithKey("user_id", userData["id"]);
       }
 
-      // Show success message
-      showCommonToast("Successfully signed in with Google!");
-
       // Navigate to the landing page (main screen)
       Get.offAllNamed(Routes.landingPage);
     } catch (e) {
