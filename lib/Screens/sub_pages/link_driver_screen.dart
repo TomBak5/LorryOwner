@@ -188,19 +188,29 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
               children: [
                 Expanded(
                   child: Container(
+                    width: 367,
+                    height: 84,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/gb/Frame 427320662 (1).png'),
-                        fit: BoxFit.fill,
+                        image: AssetImage('assets/bg/Frame 427320662 (2).png'),
+                        fit: BoxFit.fitWidth,
                       ),
                     ),
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
                         hintText: 'Search Driver email',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 16, top: 15),
+                          child: Icon(Icons.search),
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        errorBorder: InputBorder.none,
+                        focusedErrorBorder: InputBorder.none,
+                        disabledBorder: InputBorder.none,
+                        contentPadding: EdgeInsets.only(left: 32, right: 16, top: 27, bottom: 12),
                       ),
                       onChanged: (value) {
                         if (value.length > 2) searchDrivers(value);
