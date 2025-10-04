@@ -186,7 +186,9 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
               SizedBox(height: 36), // Increased from 16 to 36 (20px more)
             Row(
               children: [
-                Expanded(
+                SizedBox(
+                  width: 375,
+                  height: 84,
                   child: Container(
                     width: 367,
                     height: 84,
@@ -198,10 +200,11 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     ),
                     child: TextField(
                       controller: searchController,
+                      style: TextStyle(height: 1.0), // Fixed line height
                       decoration: InputDecoration(
                         hintText: 'Search Driver email',
                         prefixIcon: Padding(
-                          padding: EdgeInsets.only(left: 16, top: 15),
+                          padding: EdgeInsets.only(left: 16, top: 18),
                           child: Icon(Icons.search),
                         ),
                         border: InputBorder.none,
@@ -210,7 +213,8 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                         errorBorder: InputBorder.none,
                         focusedErrorBorder: InputBorder.none,
                         disabledBorder: InputBorder.none,
-                        contentPadding: EdgeInsets.only(left: 32, right: 16, top: 27, bottom: 12),
+                        contentPadding: EdgeInsets.only(left: 32, right: 16, top: 30, bottom: 12),
+                        isDense: true, // Prevents height changes
                       ),
                       onChanged: (value) {
                         if (value.length > 2) searchDrivers(value);
@@ -219,15 +223,6 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 8),
-                if (searchController.text.isNotEmpty)
-                  IconButton(
-                    icon: Icon(Icons.clear),
-                    onPressed: () {
-                      searchController.clear();
-                      setState(() { suggestions = []; notFoundMsg = ''; });
-                    },
-                  ),
               ],
             ),
             Expanded(
