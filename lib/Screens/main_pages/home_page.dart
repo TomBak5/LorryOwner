@@ -330,6 +330,62 @@ class _HomePageState extends State<HomePage> {
             fit: BoxFit.contain,
           ),
         ),
+        // Search field
+        Positioned(
+          top: 134, // Y position as specified
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Container(
+              width: 375, // Set width as specified
+              height: 82, // Set height as specified
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage("assets/bg/Frame 6.png"),
+                  fit: BoxFit.fill,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  // Search icon
+                  Positioned(
+                    left: 30, // X position as specified
+                    top: 26, // Moved down by 5px from 21px
+                    child: Image.asset(
+                      "assets/icons/Frame (3).png",
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  // Text
+                  Positioned(
+                    left: 61, // X position as specified
+                    top: 28, // Moved down by 5px from 23px
+                    child: Text(
+                      "Enter delivery address",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                  // Right side icon
+                  Positioned(
+                    right: 30, // Aligned to the right with 30px margin
+                    top: 28, // Same vertical position as text for alignment
+                    child: Image.asset(
+                      "assets/icons/Frame (4).png",
+                      width: 20,
+                      height: 20,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -338,7 +394,7 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: -20, // Moved up by another 30px from 10px
+      top: 40, // Moved down by 60px from -20px
       child: Container(
         width: double.infinity, // Full screen width
         height: 609.0.h, // Height from Figma using ScreenUtil
@@ -414,7 +470,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      top: 371.0.h, // Moved up by another 30px from 401.0.h
+      top: 431.0.h, // Moved down by 60px from 371.0.h
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(
