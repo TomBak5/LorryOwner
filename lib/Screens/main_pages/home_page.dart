@@ -518,10 +518,10 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: -20, // Lifted up by another 30px (10 - 30 = -20)
+      top: 40, // Reset to original position
       child: Container(
         width: double.infinity, // Full screen width
-        height: 609.0.h, // Height from Figma using ScreenUtil
+        height: 669.0.h, // Increased height by 60px (609.0.h + 60 = 669.0.h)
         decoration: BoxDecoration(
           border: Border.all(
             color: Colors.grey.withOpacity(0.3),
@@ -611,7 +611,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      top: 371.0.h, // Lifted up by another 30px (401.0.h - 30 = 371.0.h)
+      top: 461.0.h, // Moved down by another 30px (431.0.h + 30 = 461.0.h)
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(
