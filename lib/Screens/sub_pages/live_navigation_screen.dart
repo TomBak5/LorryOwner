@@ -1736,14 +1736,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(8),
-            topRight: Radius.circular(8),
+            topLeft: Radius.circular(12),
+            topRight: Radius.circular(12),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
@@ -1761,30 +1761,34 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
             ),
             const SizedBox(height: 20),
             
-            // Trip summary
+            // Header
             Row(
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _timeToDestination,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green[700],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${_distanceToDestination} · $_estimatedArrival',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                Text(
+                  "Delivery",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                    fontFamily: fontFamilyBold,
+                  ),
+                ),
+                const Spacer(),
+                // Close button
+                GestureDetector(
+                  onTap: () => Get.back(),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.grey[600],
+                      size: 20,
+                    ),
                   ),
                 ),
               ],
@@ -1792,24 +1796,35 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
             
             const SizedBox(height: 20),
             
-            // Addresses
-            _buildAddressCard(
+            // Distance section
+            _buildInfoSection(
+              icon: Icons.access_time,
+              iconColor: const Color(0xFF4964D8),
+              title: 'Distance',
+              content: '${_timeToDestination} (${_distanceToDestination}) total',
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Pick up address section
+            _buildInfoSection(
               icon: Icons.location_on,
-              iconColor: Colors.orange[600]!,
+              iconColor: const Color(0xFF4964D8),
               title: 'Pick up address',
-              address: _pickupAddress,
+              content: _pickupAddress,
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             
-            _buildAddressCard(
+            // Drop off address section
+            _buildInfoSection(
               icon: Icons.flag,
-              iconColor: Colors.red[600]!,
+              iconColor: const Color(0xFF4964D8),
               title: 'Drop off address',
-              address: _dropoffAddress,
+              content: _dropoffAddress,
             ),
             
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
             
             // Start navigation button
             SizedBox(
@@ -1835,64 +1850,62 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                 ),
               ),
             ),
-            
-
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAddressCard({
+  Widget _buildInfoSection({
     required IconData icon,
     required Color iconColor,
     required String title,
-    required String address,
+    required String content,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Icon
+        Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: iconColor,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  address,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black,
-                  ),
-                ),
-              ],
-            ),
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 18,
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        // Content
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: iconColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                content,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
