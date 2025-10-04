@@ -1455,8 +1455,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         // Top navigation instruction bar
         if (_isNavigating) _buildTopNavigationBar(),
         
-        // Floating controls on the right
-        if (_isNavigating) _buildFloatingControls(),
+        // Floating controls on the right - removed
+        // if (_isNavigating) _buildFloatingControls(),
         
         // Bottom trip summary panel
         if (_isNavigating) _buildBottomTripPanel(),
@@ -1467,8 +1467,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         // Initial setup view (when not navigating)
         if (!_isNavigating) _buildInitialSetupView(),
         
-        // Zoom controls for initial setup view
-        if (!_isNavigating) _buildInitialZoomControls(),
+        // Zoom controls for initial setup view - removed
+        // if (!_isNavigating) _buildInitialZoomControls(),
       ],
     );
   }
@@ -1619,44 +1619,6 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     );
   }
 
-  Widget _buildInitialZoomControls() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 80,
-      right: 16,
-      child: Column(
-        children: [
-          _buildFloatingButton(
-            icon: Icons.zoom_in,
-            onTap: () {
-              _animatedMapController.animatedZoomIn();
-            },
-            backgroundColor: Colors.white,
-            iconColor: Colors.grey[700]!,
-          ),
-          const SizedBox(height: 8),
-          _buildFloatingButton(
-            icon: Icons.zoom_out,
-            onTap: () {
-              _animatedMapController.animatedZoomOut();
-            },
-            backgroundColor: Colors.white,
-            iconColor: Colors.grey[700]!,
-          ),
-          const SizedBox(height: 8),
-          _buildFloatingButton(
-            icon: Icons.fit_screen,
-            onTap: () {
-              if (_routePoints.isNotEmpty) {
-                _showFullRouteOverview();
-              }
-            },
-            backgroundColor: Colors.white,
-            iconColor: Colors.grey[700]!,
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildBottomTripPanel() {
     return Positioned(

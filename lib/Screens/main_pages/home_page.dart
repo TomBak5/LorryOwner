@@ -610,73 +610,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
         
-        // Floating zoom controls
-        if (!_isLocationLoading)
-          Positioned(
-            top: 50.0.h,
-            right: 16.0.w,
-            child: Column(
-              children: [
-                _buildZoomButton(
-                  icon: Icons.zoom_in,
-                  onTap: () {
-                    _animatedMapController.animatedZoomIn();
-                  },
-                ),
-                const SizedBox(height: 8),
-                _buildZoomButton(
-                  icon: Icons.zoom_out,
-                  onTap: () {
-                    _animatedMapController.animatedZoomOut();
-                  },
-                ),
-                const SizedBox(height: 8),
-                _buildZoomButton(
-                  icon: Icons.my_location,
-                  onTap: () {
-                    if (_currentPosition != null) {
-                      _animatedMapController.animateTo(
-                        dest: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                        zoom: 15.0,
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
       ],
     );
   }
 
-  Widget _buildZoomButton({
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.grey[700],
-          size: 24,
-        ),
-      ),
-    );
-  }
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
