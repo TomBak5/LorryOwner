@@ -424,19 +424,38 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           maxLng = math.max(maxLng, point.longitude);
         }
         
-        // Add padding to ensure route isn't at the very edge
-        double latPadding = (maxLat - minLat) * 0.15;
-        double lngPadding = (maxLng - minLng) * 0.15;
+        // Calculate optimal padding based on route size to ensure full visibility
+        double latRange = maxLat - minLat;
+        double lngRange = maxLng - minLng;
         
-        // Use smooth animated fit camera for route overview
+        // Dynamic padding based on route size - larger routes get more padding
+        double latPadding = latRange * 0.3; // Increased to 30% padding for latitude
+        double lngPadding = lngRange * 0.3; // Increased to 30% padding for longitude
+        
+        // Ensure minimum padding for very short routes
+        latPadding = math.max(latPadding, 0.02); // Increased minimum to 0.02 degrees
+        lngPadding = math.max(lngPadding, 0.02); // Increased minimum to 0.02 degrees
+        
+        // Create bounds with calculated padding
+        final bounds = LatLngBounds(
+          LatLng(minLat - latPadding, minLng - lngPadding),
+          LatLng(maxLat + latPadding, maxLng + lngPadding),
+        );
+        
+        print('📏 Route bounds calculated:');
+        print('   • Lat range: ${latRange.toStringAsFixed(6)} degrees');
+        print('   • Lng range: ${lngRange.toStringAsFixed(6)} degrees');
+        print('   • Applied padding: Lat=${latPadding.toStringAsFixed(6)}, Lng=${lngPadding.toStringAsFixed(6)}');
+        
+        // Use fitCamera to ensure the entire route fits in the visible area
         _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
-            bounds: LatLngBounds(
-              LatLng(minLat - latPadding, minLng - lngPadding),
-              LatLng(maxLat + latPadding, maxLng + lngPadding),
+            bounds: bounds,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 80, // Increased side padding to avoid UI overlap
+              vertical: 120,  // Increased top/bottom padding for UI elements
             ),
-            padding: const EdgeInsets.all(50),
-            maxZoom: 20, // Increased max zoom to allow +8 zoom after overview
+            maxZoom: 15, // Reduced max zoom to ensure route fits comfortably
           ),
         );
         
@@ -447,6 +466,67 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       }
     } catch (e) {
       print('❌ Error showing route overview: $e');
+    }
+  }
+
+  // Fallback method to ensure route fits on screen
+  void _ensureRouteFitsOnScreen() {
+    try {
+      if (_animatedMapController.mapController != null && 
+          _routePoints.isNotEmpty &&
+          mounted) {
+        
+        print('🔧 Ensuring route fits on screen with fallback method...');
+        
+        // Calculate bounds from all route points
+        double minLat = _routePoints.first.latitude;
+        double maxLat = _routePoints.first.latitude;
+        double minLng = _routePoints.first.longitude;
+        double maxLng = _routePoints.first.longitude;
+        
+        for (var point in _routePoints) {
+          minLat = math.min(minLat, point.latitude);
+          maxLat = math.max(maxLat, point.latitude);
+          minLng = math.min(minLng, point.longitude);
+          maxLng = math.max(maxLng, point.longitude);
+        }
+        
+        // Calculate center point
+        double centerLat = (minLat + maxLat) / 2;
+        double centerLng = (minLng + maxLng) / 2;
+        
+        // Calculate distance and determine appropriate zoom level
+        double latRange = maxLat - minLat;
+        double lngRange = maxLng - minLng;
+        double maxRange = math.max(latRange, lngRange);
+        
+        // Determine zoom level based on route size
+        double zoomLevel;
+        if (maxRange > 0.1) {
+          zoomLevel = 8.0; // Very large route
+        } else if (maxRange > 0.05) {
+          zoomLevel = 10.0; // Large route
+        } else if (maxRange > 0.01) {
+          zoomLevel = 12.0; // Medium route
+        } else {
+          zoomLevel = 14.0; // Small route
+        }
+        
+        print('🔧 Fallback camera adjustment:');
+        print('   • Center: $centerLat, $centerLng');
+        print('   • Max range: ${maxRange.toStringAsFixed(6)}');
+        print('   • Zoom level: $zoomLevel');
+        
+        // Move camera to center with calculated zoom
+        _animatedMapController.mapController!.move(
+          LatLng(centerLat, centerLng),
+          zoomLevel,
+        );
+        
+        print('✅ Fallback route fitting completed');
+      }
+    } catch (e) {
+      print('❌ Error in fallback route fitting: $e');
     }
   }
   
@@ -532,6 +612,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         scheduleMicrotask(() {
           if (mounted) {
             _showFullRouteOverview();
+            // Add a fallback to ensure route fits on screen
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted && _animatedMapController.mapController != null) {
+                _ensureRouteFitsOnScreen();
+              }
+            });
           }
         });
       } else {
