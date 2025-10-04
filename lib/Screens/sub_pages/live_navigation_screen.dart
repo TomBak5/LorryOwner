@@ -2016,13 +2016,11 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
                 point: _dropoffLocation!,
                 width: 40,
                 height: 40,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.red[600],
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: const Icon(Icons.flag, color: Colors.white, size: 24),
+                child: Image.asset(
+                  'assets/icons/Building Icon Container.png',
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
                 ),
               ),
             
