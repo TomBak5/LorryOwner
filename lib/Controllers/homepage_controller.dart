@@ -166,13 +166,22 @@ class HomePageController extends GetxController implements GetxService {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? encodedMap = prefs.getString('userData');
 
-    if (encodedMap!.isNotEmpty) {
+    print("📱 Loading user data from SharedPreferences...");
+    print("📱 Raw data: $encodedMap");
+
+    if (encodedMap != null && encodedMap.isNotEmpty) {
       var decodedata = jsonDecode(encodedMap);
+      print("📱 Decoded data: $decodedata");
+      print("📱 User role in decoded data: '${decodedata["userRole"]}'");
+      
       userData = UserLogin.fromJson(decodedata);
+      print("📱 UserLogin object created. Role: '${userData?.userRole}'");
 
       prefs.setString("uid", userData?.id ?? '');
 
       update();
+    } else {
+      print("📱 No user data found in SharedPreferences");
     }
     
     // Always set loading to false after checking local data

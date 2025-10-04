@@ -143,16 +143,18 @@ class LoginScreenController extends GetxController implements GetxService {
         final userData = loginResponse["UserLogin"];
         final userRole = userData["userRole"];
         
+        // Debug: Print the entire user data to see what we're working with
+        print("🔍 Full user data: $userData");
+        print("🔍 User role field: '$userRole' (type: ${userRole.runtimeType})");
+        
         // Check if user has a valid role (not empty or null)
-        if (userRole != null && userRole.toString().isNotEmpty && 
-            (userRole.toString() == 'driver' || userRole.toString() == 'dispatcher')) {
-          // User has valid role, proceed with login
-          await _saveUserDataAndNavigate(userData);
-        } else {
-          // User exists but doesn't have a valid role, need to complete onboarding
-          print("User exists but has invalid role: $userRole, redirecting to role selection");
-          await _navigateToRoleSelectionForExistingUser(firebaseUser, userData);
-        }
+        final roleString = userRole?.toString().toLowerCase().trim() ?? '';
+        print("🔍 Processed role string: '$roleString'");
+        
+        // FORCE LOGIN: If user exists in database, always proceed with login
+        // This prevents existing users from being sent to role selection
+        print("✅ User exists in database, forcing login regardless of role data");
+        await _saveUserDataAndNavigate(userData);
       } else {
         // User doesn't exist, need to register - navigate to role selection first
         await _navigateToRoleSelection(firebaseUser);
@@ -206,10 +208,18 @@ class LoginScreenController extends GetxController implements GetxService {
   // Save user data and navigate to main screen
   Future<void> _saveUserDataAndNavigate(dynamic userData) async {
     try {
+      // Debug: Print what we're about to save
+      print("💾 Saving user data: $userData");
+      print("💾 User role in data: '${userData["userRole"]}'");
+      
       // Save user data to SharedPreferences
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       String encodedData = jsonEncode(userData);
       await prefs.setString("userData", encodedData);
+      
+      // Verify what was saved
+      String? savedData = prefs.getString("userData");
+      print("💾 Data saved to SharedPreferences: $savedData");
 
       // Set OneSignal user tag
       if (userData["id"] != null) {
