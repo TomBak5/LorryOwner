@@ -517,10 +517,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         print('   • Padded range: ${paddedRange.toStringAsFixed(6)}');
         print('   • Zoom level: $zoomLevel');
         
-        // Move camera to center with calculated zoom
-        _animatedMapController.mapController!.move(
-          LatLng(centerLat, centerLng),
-          zoomLevel,
+        // Move camera to center with calculated zoom using smooth animation
+        _animatedMapController.animateTo(
+          dest: LatLng(centerLat, centerLng),
+          zoom: zoomLevel,
         );
         
         print('✅ Fallback route fitting completed');
@@ -1035,11 +1035,14 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       // Wait a bit for the centering animation to start
       await Future.delayed(const Duration(milliseconds: 500)); // Increased delay
       
-      // Then zoom in to close view
+      // Then zoom in to close view with smooth animation
       print('🔍 Starting zoom animation to close view...');
       if (mounted) {
-        // Set zoom level to close street view
-        _animatedMapController.mapController!.move(centerLocation, targetZoom);
+        // Set zoom level to close street view with smooth animation
+        _animatedMapController.animateTo(
+          dest: centerLocation,
+          zoom: targetZoom,
+        );
         print('🔍 Zoom set to $targetZoom - Current zoom: ${_animatedMapController.mapController!.camera.zoom}');
       }
       
@@ -1347,9 +1350,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // if (_currentLocation != null && _mapController != null) {
     //   _mapController!.move(_currentLocation!, 15.0);
     // }
-    // Use closer zoom for navigation movement visibility
+    // Use closer zoom for navigation movement visibility with smooth animation
     if (_animatedMapController.mapController != null && _currentLocation != null) {
-      _animatedMapController.mapController!.move(_currentLocation!, 18.0); // Zoomed out by 3 levels
+      _animatedMapController.animateTo(
+        dest: _currentLocation!,
+        zoom: 18.0, // Zoomed out by 3 levels
+      );
     } else {
       _animatedMapController.animateTo(dest: _currentLocation!);
     }
@@ -1449,8 +1455,8 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         // Top navigation instruction bar
         if (_isNavigating) _buildTopNavigationBar(),
         
-        // Floating controls on the right - removed
-        // if (_isNavigating) _buildFloatingControls(),
+        // Floating controls on the right
+        if (_isNavigating) _buildFloatingControls(),
         
         // Bottom trip summary panel
         if (_isNavigating) _buildBottomTripPanel(),
@@ -1460,6 +1466,9 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         
         // Initial setup view (when not navigating)
         if (!_isNavigating) _buildInitialSetupView(),
+        
+        // Zoom controls for initial setup view
+        if (!_isNavigating) _buildInitialZoomControls(),
       ],
     );
   }
@@ -1606,6 +1615,45 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
           ],
         ),
         child: Icon(icon, color: iconColor, size: 24),
+      ),
+    );
+  }
+
+  Widget _buildInitialZoomControls() {
+    return Positioned(
+      top: MediaQuery.of(context).padding.top + 80,
+      right: 16,
+      child: Column(
+        children: [
+          _buildFloatingButton(
+            icon: Icons.zoom_in,
+            onTap: () {
+              _animatedMapController.animatedZoomIn();
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.grey[700]!,
+          ),
+          const SizedBox(height: 8),
+          _buildFloatingButton(
+            icon: Icons.zoom_out,
+            onTap: () {
+              _animatedMapController.animatedZoomOut();
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.grey[700]!,
+          ),
+          const SizedBox(height: 8),
+          _buildFloatingButton(
+            icon: Icons.fit_screen,
+            onTap: () {
+              if (_routePoints.isNotEmpty) {
+                _showFullRouteOverview();
+              }
+            },
+            backgroundColor: Colors.white,
+            iconColor: Colors.grey[700]!,
+          ),
+        ],
       ),
     );
   }

@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:movers_lorry_owner/constants/app_dimensions.dart';
 import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
@@ -25,9 +26,10 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   HomePageController homePageController = Get.put(HomePageController());
   MapController? _mapController;
+  late final _animatedMapController = AnimatedMapController(vsync: this);
   Position? _currentPosition;
   bool _isLocationLoading = true;
   Timer? _debounceTimer;
@@ -70,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _debounceTimer?.cancel();
     _mapController?.dispose();
+    _animatedMapController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -128,13 +131,11 @@ class _HomePageState extends State<HomePage> {
       _selectedAddressLocation = LatLng(address['latitude'], address['longitude']);
     });
     
-    // Move map to selected address
-    if (_mapController != null) {
-      _mapController!.move(
-        LatLng(address['latitude'], address['longitude']),
-        15.0,
-      );
-    }
+    // Move map to selected address with smooth animation
+    _animatedMapController.animateTo(
+      dest: LatLng(address['latitude'], address['longitude']),
+      zoom: 15.0,
+    );
   }
 
   Future<void> _getCurrentLocation() async {
@@ -200,11 +201,11 @@ class _HomePageState extends State<HomePage> {
       debugPrint('Getting address from coordinates...');
       await _getAddressFromCoordinates(position.latitude, position.longitude);
 
-      // Move camera to current location if map controller is available
-      if (_mapController != null && _currentPosition != null) {
-        _mapController!.move(
-          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          15.0,
+      // Move camera to current location with smooth animation
+      if (_currentPosition != null) {
+        _animatedMapController.animateTo(
+          dest: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          zoom: 15.0,
         );
       }
     } catch (e) {
@@ -515,24 +516,26 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildMapView() {
-    return Positioned(
-      left: 0, // Start from left edge
-      right: 0, // Extend to right edge (full width)
-      top: 40, // Reset to original position
-      child: Container(
-        width: double.infinity, // Full screen width
-        height: 669.0.h, // Increased height by 60px (609.0.h + 60 = 669.0.h)
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: Colors.grey.withOpacity(0.3),
-          ),
-        ),
-        child: _isLocationLoading
-        ? const Center(
-            child: CircularProgressIndicator(),
-          )
-        : FlutterMap(
-              mapController: _mapController ?? MapController(),
+    return Stack(
+      children: [
+        Positioned(
+          left: 0, // Start from left edge
+          right: 0, // Extend to right edge (full width)
+          top: 40, // Reset to original position
+          child: Container(
+            width: double.infinity, // Full screen width
+            height: 669.0.h, // Increased height by 60px (609.0.h + 60 = 669.0.h)
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.3),
+              ),
+            ),
+            child: _isLocationLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : FlutterMap(
+              mapController: _animatedMapController.mapController,
               options: MapOptions(
                 initialCenter: _currentPosition != null
                     ? LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
@@ -540,11 +543,11 @@ class _HomePageState extends State<HomePage> {
                 initialZoom: _currentPosition != null ? 15.0 : 10.0,
                 onMapReady: () {
                   print('🗺️ Home page map is ready!');
-                  // Move camera to current location if available
-                  if (_currentPosition != null && _mapController != null) {
-                    _mapController!.move(
-                      LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                      15.0,
+                  // Move camera to current location if available with smooth animation
+                  if (_currentPosition != null) {
+                    _animatedMapController.animateTo(
+                      dest: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                      zoom: 15.0,
                     );
                   }
                 },
@@ -604,10 +607,76 @@ class _HomePageState extends State<HomePage> {
                   ),
               ],
             ),
-      ),
+          ),
+        ),
+        
+        // Floating zoom controls
+        if (!_isLocationLoading)
+          Positioned(
+            top: 50.0.h,
+            right: 16.0.w,
+            child: Column(
+              children: [
+                _buildZoomButton(
+                  icon: Icons.zoom_in,
+                  onTap: () {
+                    _animatedMapController.animatedZoomIn();
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildZoomButton(
+                  icon: Icons.zoom_out,
+                  onTap: () {
+                    _animatedMapController.animatedZoomOut();
+                  },
+                ),
+                const SizedBox(height: 8),
+                _buildZoomButton(
+                  icon: Icons.my_location,
+                  onTap: () {
+                    if (_currentPosition != null) {
+                      _animatedMapController.animateTo(
+                        dest: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                        zoom: 15.0,
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
+  Widget _buildZoomButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: Colors.grey[700],
+          size: 24,
+        ),
+      ),
+    );
+  }
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
