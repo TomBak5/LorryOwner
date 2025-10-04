@@ -443,11 +443,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         print('   • Max: $maxLat, $maxLng');
         print('   • Padding: $latPadding, $lngPadding');
         
-        // Use fitCamera with bounds to ensure route fits
+        // Use fitCamera with bounds to ensure route fits, but with closer zoom
         _animatedMapController.mapController!.fitCamera(
           CameraFit.bounds(
             bounds: bounds,
             padding: const EdgeInsets.all(50), // Padding around the bounds
+            maxZoom: 15, // Closer zoom for better movement visibility
           ),
         );
         
@@ -491,16 +492,16 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         double lngRange = maxLng - minLng;
         double maxRange = math.max(latRange, lngRange);
         
-        // Determine zoom level based on route size - very close view for clear movement
+        // Determine zoom level based on route size - close view for clear movement
         double zoomLevel;
         if (maxRange > 0.1) {
-          zoomLevel = 16.0; // Very large route - close view
+          zoomLevel = 15.0; // Very large route - close view (zoomed out by 3 levels)
         } else if (maxRange > 0.05) {
-          zoomLevel = 18.0; // Large route - close view
+          zoomLevel = 16.0; // Large route - close view (zoomed out by 3 levels)
         } else if (maxRange > 0.01) {
-          zoomLevel = 19.0; // Medium route - very close view
+          zoomLevel = 17.0; // Medium route - close view (zoomed out by 3 levels)
         } else {
-          zoomLevel = 20.0; // Small route - extremely close view for clear movement
+          zoomLevel = 18.0; // Small route - close view for clear movement (zoomed out by 3 levels)
         }
         
         print('🔧 Fallback camera adjustment:');
@@ -1009,7 +1010,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
       LatLng centerLocation = _currentLocation ?? _pickupLocation ?? LatLng(widget.pickupLat, widget.pickupLng);
       
       // Set a close zoom level for street-level view
-      double targetZoom = 20.0; // Very close view for clear movement visibility
+      double targetZoom = 18.0; // Close view for clear movement visibility (zoomed out by 3 levels)
       
       print('🔍 Target zoom level: $targetZoom (close street view)');
       print('🚛 Centering on location: ${centerLocation.latitude}, ${centerLocation.longitude}');
@@ -1332,7 +1333,12 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
     // if (_currentLocation != null && _mapController != null) {
     //   _mapController!.move(_currentLocation!, 15.0);
     // }
-    _animatedMapController.animateTo(dest: _currentLocation!);
+    // Use closer zoom for navigation movement visibility
+    if (_animatedMapController.mapController != null && _currentLocation != null) {
+      _animatedMapController.mapController!.move(_currentLocation!, 18.0); // Zoomed out by 3 levels
+    } else {
+      _animatedMapController.animateTo(dest: _currentLocation!);
+    }
   }
 
   void _showArrivalDialog() {
@@ -1942,7 +1948,7 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
         mapController: _animatedMapController.mapController,
         options: MapOptions(
           initialCenter: LatLng(widget.pickupLat, widget.pickupLng),
-          initialZoom: 2, // Extremely low zoom for very wide overview
+          initialZoom: 12, // Closer zoom for better movement visibility
           initialRotation: 0, // Always north-up orientation
           rotationThreshold: 0, // Disable rotation threshold
           onMapReady: () {
