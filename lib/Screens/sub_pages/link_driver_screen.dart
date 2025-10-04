@@ -234,11 +234,6 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     Center(
                       child: Column(
                         children: [
-                          Text(
-                            'Try searching by email, name, or phone number',
-                            style: TextStyle(color: Colors.grey[500]),
-                            textAlign: TextAlign.center,
-                          ),
                         ],
                       ),
                     ),
@@ -258,8 +253,6 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                   ],
                   if (suggestions.isNotEmpty) ...[
                     SizedBox(height: 8),
-                    Text('Available Drivers:', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                    SizedBox(height: 8),
                     ...suggestions.map((driver) => Card(
                       margin: EdgeInsets.symmetric(vertical: 4),
                       child: ListTile(
@@ -275,15 +268,7 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                             if (driver['mobile'] != null) Text(driver['mobile']),
                           ],
                         ),
-                        trailing: ElevatedButton(
-                          onPressed: () => addDriver(driver),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
-                          child: Text('Add'),
-                        ),
+                        onTap: () => addDriver(driver),
                       ),
                     )),
                   ],
@@ -374,7 +359,7 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                   side: BorderSide(color: Colors.grey[400]!),
                 ),
                 child: Text(
-                  'Skip - Continue without linking drivers',
+                  'Skip now',
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[700],
