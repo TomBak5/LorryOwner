@@ -16,6 +16,7 @@ import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
 import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
 import '../../AppConstData/api_config.dart';
+import '../../Api_Provider/api_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -31,6 +32,12 @@ class _HomePageState extends State<HomePage> {
   bool _isLocationLoading = true;
   Timer? _debounceTimer;
   String _currentAddress = 'Getting location...';
+  
+  // Address search variables
+  TextEditingController _searchController = TextEditingController();
+  List<Map<String, dynamic>> _addressSuggestions = [];
+  bool _isSearching = false;
+  bool _showSuggestions = false;
   
   // Set your real location coordinates here
   // You can update these with your actual coordinates
@@ -62,7 +69,69 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _debounceTimer?.cancel();
     _mapController?.dispose();
+    _searchController.dispose();
     super.dispose();
+  }
+  
+  // Address search methods
+  void _onSearchChanged(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _addressSuggestions = [];
+        _showSuggestions = false;
+        _isSearching = false;
+      });
+      return;
+    }
+    
+    // Cancel previous timer
+    _debounceTimer?.cancel();
+    
+    // Set up new timer for debounced search
+    _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+      _searchAddresses(query);
+    });
+  }
+  
+  Future<void> _searchAddresses(String query) async {
+    if (query.length < 3) return;
+    
+    setState(() {
+      _isSearching = true;
+    });
+    
+    try {
+      final apiProvider = ApiProvider();
+      final suggestions = await apiProvider.getAddressSuggestions(query);
+      
+      setState(() {
+        _addressSuggestions = suggestions;
+        _showSuggestions = suggestions.isNotEmpty;
+        _isSearching = false;
+      });
+    } catch (e) {
+      print('Error searching addresses: $e');
+      setState(() {
+        _addressSuggestions = [];
+        _showSuggestions = false;
+        _isSearching = false;
+      });
+    }
+  }
+  
+  void _selectAddress(Map<String, dynamic> address) {
+    setState(() {
+      _searchController.text = address['address'];
+      _showSuggestions = false;
+    });
+    
+    // Move map to selected address
+    if (_mapController != null) {
+      _mapController!.move(
+        LatLng(address['latitude'], address['longitude']),
+        15.0,
+      );
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -336,53 +405,105 @@ class _HomePageState extends State<HomePage> {
           left: 0,
           right: 0,
           child: Center(
-            child: Container(
-              width: 375, // Set width as specified
-              height: 82, // Set height as specified
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage("assets/bg/Frame 6.png"),
-                  fit: BoxFit.fill,
-                ),
-              ),
-              child: Stack(
-                children: [
-                  // Search icon
-                  Positioned(
-                    left: 30, // X position as specified
-                    top: 26, // Moved down by 5px from 21px
-                    child: Image.asset(
-                      "assets/icons/Frame (3).png",
-                      width: 20,
-                      height: 20,
-                      fit: BoxFit.contain,
+            child: Column(
+              children: [
+                Container(
+                  width: 375, // Set width as specified
+                  height: 82, // Set height as specified
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage("assets/bg/Frame 6.png"),
+                      fit: BoxFit.fill,
                     ),
                   ),
-                  // Text
-                  Positioned(
-                    left: 61, // X position as specified
-                    top: 28, // Moved down by 5px from 23px
-                    child: Text(
-                      "Enter delivery address",
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                  child: Stack(
+                    children: [
+                      // Search icon
+                      Positioned(
+                        left: 30, // X position as specified
+                        top: 26, // Moved down by 5px from 21px
+                        child: Image.asset(
+                          "assets/icons/Frame (3).png",
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                        ),
                       ),
+                      // Text input field
+                      Positioned(
+                        left: 61, // X position as specified
+                        top: 9, // Lifted up by 3px (12 - 3 = 9)
+                        right: 60, // Leave space for right icon
+                        child: TextField(
+                          controller: _searchController,
+                          onChanged: _onSearchChanged,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: "Enter delivery address",
+                            hintStyle: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
+                              height: 1.5, // line-height: 21px / font-size: 14px = 1.5
+                              color: Color(0xFF929292),
+                            ),
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ),
+                      // Right side icon
+                      Positioned(
+                        right: 30, // Aligned to the right with 30px margin
+                        top: 28, // Same vertical position as text for alignment
+                        child: Image.asset(
+                          "assets/icons/Frame (4).png",
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Address suggestions dropdown
+                if (_showSuggestions && _addressSuggestions.isNotEmpty)
+                  Container(
+                    width: 375,
+                    margin: EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: _addressSuggestions.map((suggestion) {
+                        return ListTile(
+                          leading: Icon(Icons.location_on, color: Colors.blue),
+                          title: Text(
+                            suggestion['address'],
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          onTap: () => _selectAddress(suggestion),
+                        );
+                      }).toList(),
                     ),
                   ),
-                  // Right side icon
-                  Positioned(
-                    right: 30, // Aligned to the right with 30px margin
-                    top: 28, // Same vertical position as text for alignment
-                    child: Image.asset(
-                      "assets/icons/Frame (4).png",
-                      width: 20,
-                      height: 20,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ),
@@ -394,7 +515,7 @@ class _HomePageState extends State<HomePage> {
     return Positioned(
       left: 0, // Start from left edge
       right: 0, // Extend to right edge (full width)
-      top: 40, // Moved down by 60px from -20px
+      top: -20, // Lifted up by another 30px (10 - 30 = -20)
       child: Container(
         width: double.infinity, // Full screen width
         height: 609.0.h, // Height from Figma using ScreenUtil

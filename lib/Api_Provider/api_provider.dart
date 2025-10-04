@@ -1796,6 +1796,58 @@ class ApiProvider {
     return degrees * (math.pi / 180);
   }
 
+  // Get address suggestions using HERE Autocomplete API
+  Future<List<Map<String, dynamic>>> getAddressSuggestions(String query) async {
+    try {
+      debugPrint("Getting address suggestions for: $query");
+      
+      // Check if API key is properly configured
+      if (ApiConfig.hereApiKey == 'YOUR_VALID_HERE_API_KEY_HERE') {
+        debugPrint("❌ HERE API key not configured properly");
+        return [];
+      }
+      
+      if (query.length < 3) {
+        return []; // Don't search for very short queries
+      }
+      
+      debugPrint("✅ Using API key for autocomplete request");
+      
+      final response = await api.sendRequest.get(
+        ApiConfig.hereGeocodingBaseUrl,
+        queryParameters: {
+          'q': query,
+          'limit': 5, // Get up to 5 suggestions
+          'apiKey': ApiConfig.hereApiKey,
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = response.data;
+        debugPrint("Autocomplete response: $data");
+        
+        if (data['items'] != null && data['items'].isNotEmpty) {
+          return data['items'].map<Map<String, dynamic>>((item) {
+            return {
+              'address': item['address']['label'] ?? '',
+              'latitude': item['position']['lat'] ?? 0.0,
+              'longitude': item['position']['lng'] ?? 0.0,
+              'title': item['title'] ?? item['address']['label'] ?? '',
+            };
+          }).toList();
+        } else {
+          return [];
+        }
+      } else {
+        debugPrint("Autocomplete failed with status: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      debugPrint("Error getting address suggestions: $e");
+      return [];
+    }
+  }
+
   // Get coordinates from address using HERE Geocoding API with API key
   Future<Map<String, dynamic>> getCoordinatesFromAddress(String address) async {
     try {
