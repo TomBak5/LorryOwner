@@ -534,6 +534,10 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
   @override
   void initState() {
     super.initState();
+    print('🚀 LiveNavigationScreen initState called');
+    print('   • Pickup: ${widget.pickupLat}, ${widget.pickupLng}');
+    print('   • Dropoff: ${widget.dropoffLat}, ${widget.dropoffLng}');
+    print('   • Order data: ${widget.orderData}');
     _mapController = MapController();
     _initializeNavigation();
   }
@@ -555,18 +559,22 @@ class _LiveNavigationScreenState extends State<LiveNavigationScreen> with Ticker
 
   Future<void> _initializeNavigation() async {
     try {
+      print('🔐 Requesting location permission...');
       var locationStatus = await Permission.location.request();
+      print('🔐 Location permission status: $locationStatus');
       if (locationStatus.isGranted) {
+        print('✅ Location permission granted, setting up route...');
         setState(() => _hasLocationPermission = true);
         _setupRoute();
       } else {
+        print('❌ Location permission denied');
         setState(() {
           _hasLocationPermission = false;
           _isLoading = false;
         });
       }
     } catch (e) {
-      print('Error initializing navigation: $e');
+      print('❌ Error initializing navigation: $e');
       setState(() => _isLoading = false);
     }
   }

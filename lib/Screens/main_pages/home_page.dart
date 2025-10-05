@@ -18,6 +18,7 @@ import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
 import '../../AppConstData/api_config.dart';
 import '../../Api_Provider/api_provider.dart';
+import '../../widgets/new_delivery_modal.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -44,8 +45,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   
   // Set your real location coordinates here
   // You can update these with your actual coordinates
-  static const double _realLatitude = 54.6872;  // Change to your actual latitude
-  static const double _realLongitude = 25.2797; // Change to your actual longitude
+  static const double _realLatitude = 54.6864;  // Vilnius Cathedral latitude
+  static const double _realLongitude = 25.2872; // Vilnius Cathedral longitude
   
   @override
   void initState() {
@@ -136,6 +137,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       dest: LatLng(address['latitude'], address['longitude']),
       zoom: 15.0,
     );
+    
+    // Show New Delivery modal
+    _showNewDeliveryModal(address);
+  }
+  
+  void _showNewDeliveryModal(Map<String, dynamic> selectedAddress) {
+    print('🏠 HOME PAGE DEBUG - Opening delivery modal:');
+    print('   • Current Position: ${_currentPosition?.latitude}, ${_currentPosition?.longitude}');
+    print('   • Current Address: $_currentAddress');
+    print('   • Selected Address: ${selectedAddress['address']}');
+    print('   • Selected Coordinates: ${selectedAddress['latitude']}, ${selectedAddress['longitude']}');
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => NewDeliveryModal(
+        selectedAddress: selectedAddress['address'],
+        selectedLat: selectedAddress['latitude'],
+        selectedLng: selectedAddress['longitude'],
+        currentAddress: _currentAddress,
+        currentLat: _currentPosition?.latitude,
+        currentLng: _currentPosition?.longitude,
+      ),
+    );
   }
 
   Future<void> _getCurrentLocation() async {
@@ -210,10 +236,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       }
     } catch (e) {
       debugPrint('Error getting location: $e');
-      // Fallback to a default location if GPS fails
-      debugPrint('Using fallback location...');
+      // Fallback to Vilnius Cathedral if GPS fails
+      debugPrint('Using Vilnius Cathedral as fallback location...');
       Position fallbackPosition = Position(
-        latitude: _realLatitude, // Your real location
+        latitude: _realLatitude, // Vilnius Cathedral
         longitude: _realLongitude,
         timestamp: DateTime.now(),
         accuracy: 10.0,
@@ -229,6 +255,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         setState(() {
           _currentPosition = fallbackPosition;
           _isLocationLoading = false;
+          _currentAddress = 'Vilnius Cathedral, Vilnius, Lithuania';
         });
       }
       

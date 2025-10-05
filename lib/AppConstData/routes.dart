@@ -27,6 +27,7 @@ import '../Screens/sub_pages/assign_order_screen.dart';
 import '../Screens/sub_pages/fuel_stations_screen.dart';
 import '../Screens/sub_pages/navigation_test_screen.dart';
 import '../Screens/sub_pages/account_info_screen.dart';
+import '../Screens/sub_pages/live_navigation_screen.dart';
 import '../Screens/role_selection_screen.dart';
 
 
@@ -55,6 +56,7 @@ class Routes {
   static const String assignedOrders = '/assignedOrders';
   static const String fuelStations = '/fuel-stations';
   static const String navigationTest = '/navigation-test';
+  static const String liveNavigation = '/live-navigation';
   static const String roleSelection = '/roleSelection';
   static const String accountInfo = '/accountInfo';
 
@@ -158,6 +160,19 @@ final getpage = [
   GetPage(
     name: Routes.navigationTest,
     page: () => const NavigationTestScreen(),
+  ),
+  GetPage(
+    name: Routes.liveNavigation,
+    page: () {
+      final arguments = Get.arguments as Map<String, dynamic>?;
+      return LiveNavigationScreen(
+        orderData: arguments?['orderData'] ?? {},
+        pickupLat: arguments?['pickupLat'] ?? 0.0,
+        pickupLng: arguments?['pickupLng'] ?? 0.0,
+        dropoffLat: arguments?['dropoffLat'] ?? 0.0,
+        dropoffLng: arguments?['dropoffLng'] ?? 0.0,
+      );
+    },
   ),
   GetPage(
     name: Routes.roleSelection,
