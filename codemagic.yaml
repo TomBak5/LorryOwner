@@ -1,0 +1,205 @@
+workflows:
+  # iOS Simulator Build (Quick Testing - No App Store)
+  ios-simulator:
+    name: iOS Simulator Build
+    max_build_duration: 30
+    instance_type: mac_mini_m1
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Build iOS Simulator
+        script: |
+          flutter build ios --simulator
+      - name: Package Simulator App
+        script: |
+          mkdir -p build/ios/ipa
+          cd build/ios/iphonesimulator
+          zip -r ../ipa/Runner.app.zip Runner.app
+    artifacts:
+      - build/ios/ipa/Runner.app.zip
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: false
+
+  # Android Release Build
+  android-release:
+    name: Android Release
+    max_build_duration: 60
+    environment:
+      android_signing:
+        - truckbuddy_keystore
+      groups:
+        - google_play
+      vars:
+        PACKAGE_NAME: "com.truckbuddy.app"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          flutter test
+        ignore_failure: true
+      - name: Build APK
+        script: |
+          flutter build apk --release
+      - name: Build AAB (App Bundle)
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
+        submit_as_draft: true
+
+  # iOS Release Build (Real Devices + App Store)
+  ios-release:
+    name: iOS Release
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.truckbuddy.app
+      vars:
+        APP_STORE_APPLE_ID: 1234567890  # Replace with your App Store Connect ID
+        BUNDLE_ID: "com.truckbuddy.app"
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up code signing settings on Xcode project
+        script: |
+          xcode-project use-profiles
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Flutter unit tests
+        script: |
+          flutter test
+        ignore_failure: true
+      - name: Build iOS IPA (Real Devices)
+        script: |
+          flutter build ipa --release
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+        submit_to_app_store: false
+
+  # Both Android & iOS
+  all-platforms:
+    name: Build All Platforms
+    max_build_duration: 120
+    instance_type: mac_mini_m1
+    environment:
+      android_signing:
+        - truckbuddy_keystore
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.truckbuddy.app
+      groups:
+        - google_play
+      vars:
+        PACKAGE_NAME: "com.truckbuddy.app"
+        BUNDLE_ID: "com.truckbuddy.app"
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: 'master'
+          include: true
+          source: true
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Flutter analyze
+        script: |
+          flutter analyze
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+      - name: Build Android AAB
+        script: |
+          flutter build appbundle --release
+      - name: Build iOS
+        script: |
+          flutter build ipa --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - build/**/outputs/**/*.aab
+      - build/ios/ipa/*.ipa
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+      slack:
+        channel: '#builds'
+        notify_on_build_start: true
+
