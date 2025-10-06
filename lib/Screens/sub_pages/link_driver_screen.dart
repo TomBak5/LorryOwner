@@ -194,7 +194,7 @@ class _LinkDriverScreenState extends State<LinkDriverScreen> {
                     height: 84,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/bg/Frame 427320662 (2).png'),
+                        image: AssetImage('assets/bg/Frame_427320662_2.png'),
                         fit: BoxFit.fitWidth,
                       ),
                     ),

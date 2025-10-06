@@ -1365,18 +1365,18 @@ class ApiProvider {
     }
   }
 
-  // Get fuel stations directly from HERE Search API v7
+  // Get fuel stations using HERE Discover API v1
   Future<Map<String, dynamic>> getFuelStations({
     required double lat,
     required double lng,
     int radius = 5000,
   }) async {
     try {
-      debugPrint("Getting fuel stations directly from HERE Search API v7 for location: $lat, $lng");
+      debugPrint("Getting fuel stations using HERE Discover API v1 for location: $lat, $lng");
       
-      // Use the same API key approach as the routing API
+      // Use HERE Discover API v1 as per documentation
       final response = await api.sendRequest.get(
-        'https://browse.search.hereapi.com/v1/browse',
+        ApiConfig.hereDiscoverBaseUrl,
         queryParameters: {
           'at': '$lat,$lng',
           'categories': 'fuel-station,gas-station,charging-station',
@@ -1391,9 +1391,9 @@ class ApiProvider {
         ),
       );
       
-      debugPrint("HERE Search API v7 response: ${response.data}");
+      debugPrint("HERE Discover API v1 response: ${response.data}");
       
-      // Transform HERE Search API v7 response to our expected format
+      // Transform HERE Discover API v1 response to our expected format
       if (response.data != null && response.data['items'] != null) {
         final items = response.data['items'] as List?;
         if (items != null && items.isNotEmpty) {
@@ -1412,7 +1412,7 @@ class ApiProvider {
           
           return {
             "Result": "true",
-            "ResponseMsg": "Fuel stations found via HERE Search API v7",
+            "ResponseMsg": "Fuel stations found via HERE Discover API v1",
             "fuelStations": fuelStations
           };
         }
@@ -1426,7 +1426,7 @@ class ApiProvider {
       };
       
     } catch (e) {
-      debugPrint('Error getting fuel stations from HERE Search API v7: $e');
+      debugPrint('Error getting fuel stations from HERE Discover API v1: $e');
       return {
         "Result": "false",
         "ResponseMsg": "Failed to get fuel stations: $e"

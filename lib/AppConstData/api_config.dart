@@ -23,6 +23,7 @@ class ApiConfig {
   static const String hereRoutingBaseUrl = 'https://router.hereapi.com/v8/routes';
   static const String hereGeocodingBaseUrl = 'https://geocode.search.hereapi.com/v1/geocode';
   static const String hereSearchBaseUrl = 'https://browse.search.hereapi.com/v1/browse';
+  static const String hereDiscoverBaseUrl = 'https://discover.search.hereapi.com/v1/discover';
   
   // Fuel stations search endpoint
   static const String fuelStationsEndpoint = 'Api/get_fuel_stations.php';

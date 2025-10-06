@@ -43,6 +43,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _showSuggestions = false;
   LatLng? _selectedAddressLocation; // Store selected address coordinates
   
+  // Fuel stations variables
+  List<Map<String, dynamic>> _fuelStations = [];
+  bool _showFuelStations = false;
+  bool _isFuelButtonPressed = false;
+  
   // Set your real location coordinates here
   // You can update these with your actual coordinates
   static const double _realLatitude = 54.6864;  // Vilnius Cathedral latitude
@@ -316,8 +321,70 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<void> _searchNearbyFuelStations() async {
-    // Navigate to the dedicated fuel stations screen
-    Get.toNamed(Routes.fuelStations);
+    print('⛽ Fuel button pressed - Current state: $_showFuelStations');
+    
+    if (_showFuelStations) {
+      // Hide fuel stations and reset button state
+      setState(() {
+        _showFuelStations = false;
+        _isFuelButtonPressed = false;
+        _fuelStations.clear();
+      });
+      print('⛽ Fuel stations hidden');
+    } else {
+      // Show fuel stations and highlight button
+      setState(() {
+        _isFuelButtonPressed = true;
+      });
+      
+      await _fetchNearbyFuelStations();
+      
+      if (_fuelStations.isNotEmpty) {
+        setState(() {
+          _showFuelStations = true;
+        });
+        print('⛽ Showing ${_fuelStations.length} fuel stations');
+      }
+    }
+  }
+  
+  Future<void> _fetchNearbyFuelStations() async {
+    try {
+      print('⛽ Fetching nearby fuel stations...');
+      
+      // Use current position or fallback to Vilnius Cathedral
+      double lat = _currentPosition?.latitude ?? _realLatitude;
+      double lng = _currentPosition?.longitude ?? _realLongitude;
+      
+      print('⛽ Searching around: $lat, $lng');
+      
+      final apiProvider = ApiProvider();
+      final result = await apiProvider.getFuelStations(
+        lat: lat,
+        lng: lng,
+        radius: 10000, // 10km radius
+      );
+      
+      print('⛽ Fuel stations API result: $result');
+      
+      if (result['Result'] == 'true' && result['fuelStations'] != null) {
+        setState(() {
+          _fuelStations = List<Map<String, dynamic>>.from(result['fuelStations']);
+        });
+        print('⛽ Found ${_fuelStations.length} fuel stations');
+      } else {
+        print('⛽ No fuel stations found: ${result['ResponseMsg']}');
+        setState(() {
+          _fuelStations = [];
+        });
+      }
+    } catch (e) {
+      print('❌ Error fetching fuel stations: $e');
+      setState(() {
+        _fuelStations = [];
+        _isFuelButtonPressed = false;
+      });
+    }
   }
 
   @override
@@ -632,6 +699,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
+                // Fuel station markers
+                if (_showFuelStations && _fuelStations.isNotEmpty)
+                  MarkerLayer(
+                    markers: _fuelStations.map((station) {
+                      return Marker(
+                        point: LatLng(
+                          station['latitude'] ?? 0.0,
+                          station['longitude'] ?? 0.0,
+                        ),
+                        width: 60,
+                        height: 60,
+                        child: GestureDetector(
+                          onTap: () {
+                            print('⛽ Fuel station tapped: ${station['name']}');
+                            // You can add more functionality here like showing station details
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.orange,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white, width: 2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(
+                              Icons.local_gas_station,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
               ],
             ),
           ),
@@ -821,6 +927,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           imagePath: 'assets/icons/fuel icon.png',
           label: 'Fuel',
           onTap: _searchNearbyFuelStations,
+          isPressed: _isFuelButtonPressed,
         ),
         _buildActionButton(
           imagePath: 'assets/icons/truck stops.png',
@@ -850,6 +957,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     required String imagePath,
     required String label,
     required VoidCallback onTap,
+    bool isPressed = false,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -859,17 +967,31 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Container(
             width: AppDimensions.buttonSize,
             height: AppDimensions.buttonSize,
+            decoration: isPressed 
+              ? BoxDecoration(
+                  color: Colors.blue[600],
+                  borderRadius: BorderRadius.circular(AppDimensions.buttonSize / 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                )
+              : null,
             child: imagePath.endsWith('.svg') 
               ? Image.asset(
                   imagePath,
                   width: AppDimensions.iconSize,
                   height: AppDimensions.iconSize,
-                  color: Colors.blue[600],
+                  color: isPressed ? Colors.white : Colors.blue[600],
                 )
               : Image.asset(
                   imagePath,
                   width: AppDimensions.iconSize,
                   height: AppDimensions.iconSize,
+                  color: isPressed ? Colors.white : null,
                 ),
           ),
           SizedBox(height: AppDimensions.spacingSmall),
@@ -878,7 +1000,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             style: TextStyle(
               fontSize: AppDimensions.textSmall,
               fontWeight: FontWeight.w500,
-              color: Colors.black87,
+              color: isPressed ? Colors.blue[600] : Colors.black87,
             ),
           ),
         ],
