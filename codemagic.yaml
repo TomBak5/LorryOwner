@@ -92,10 +92,10 @@ workflows:
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.truckbuddy.app
+        bundle_identifier: com.moverslorryowner
       vars:
         APP_STORE_APPLE_ID: 1234567890  # Replace with your App Store Connect ID
-        BUNDLE_ID: "com.truckbuddy.app"
+        BUNDLE_ID: "com.moverslorryowner"
         XCODE_WORKSPACE: "Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
       flutter: stable
@@ -151,12 +151,12 @@ workflows:
         - truckbuddy_keystore
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.truckbuddy.app
+        bundle_identifier: com.moverslorryowner
       groups:
         - google_play
       vars:
         PACKAGE_NAME: "com.truckbuddy.app"
-        BUNDLE_ID: "com.truckbuddy.app"
+        BUNDLE_ID: "com.moverslorryowner"
       flutter: stable
       xcode: latest
       cocoapods: default
