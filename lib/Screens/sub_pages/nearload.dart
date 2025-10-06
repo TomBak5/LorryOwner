@@ -4,10 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Controllers/bid_bottomsheet_controller.dart';
-import 'package:movers_lorry_owner/Controllers/near_load_controller.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/trans_profile.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/Controllers/bid_bottomsheet_controller.dart';
+import 'package:truckbuddy/Controllers/near_load_controller.dart';
+import 'package:truckbuddy/Screens/sub_pages/trans_profile.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Api_Provider/imageupload_api.dart';

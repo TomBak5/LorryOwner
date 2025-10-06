@@ -4,8 +4,8 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Screens/otp_screen.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/Screens/otp_screen.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 // import 'package:onesignal_flutter/onesignal_flutter.dart';

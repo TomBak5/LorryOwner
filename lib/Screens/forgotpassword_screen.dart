@@ -6,10 +6,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/AppConstData/routes.dart';
-import 'package:movers_lorry_owner/Controllers/creatnew_pass_controller.dart';
-import 'package:movers_lorry_owner/Screens/otp_screen.dart';
-import 'package:movers_lorry_owner/models/contry_code_model.dart';
+import 'package:truckbuddy/AppConstData/routes.dart';
+import 'package:truckbuddy/Controllers/creatnew_pass_controller.dart';
+import 'package:truckbuddy/Screens/otp_screen.dart';
+import 'package:truckbuddy/models/contry_code_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../Api_Provider/api_provider.dart';

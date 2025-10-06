@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:movers_lorry_owner/Api_Provider/api_provider.dart';
-import 'package:movers_lorry_owner/models/fuel_station_model.dart';
+import 'package:truckbuddy/Api_Provider/api_provider.dart';
+import 'package:truckbuddy/models/fuel_station_model.dart';
 import 'package:flutter/foundation.dart'; // Added for debugPrint
 
 class FuelStationsController extends GetxController {

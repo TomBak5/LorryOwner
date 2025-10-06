@@ -6,8 +6,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:movers_lorry_owner/AppConstData/app_colors.dart';
-import 'package:movers_lorry_owner/models/contry_code_model.dart';
+import 'package:truckbuddy/AppConstData/app_colors.dart';
+import 'package:truckbuddy/models/contry_code_model.dart';
 
 import '../Api_Provider/api_provider.dart';
 import '../AppConstData/managepage.dart';

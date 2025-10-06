@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/trans_profile.dart';
+import 'package:truckbuddy/Screens/sub_pages/trans_profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../Api_Provider/imageupload_api.dart';
@@ -17,7 +17,7 @@ import '../../AppConstData/typographyy.dart';
 import '../../Controllers/loadsdeatils_controller.dart';
 
 import '../../widgets/widgets.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/load_route_map_screen.dart';
+import 'package:truckbuddy/Screens/sub_pages/load_route_map_screen.dart';
 
 class LoadsDetails extends StatefulWidget {
   final String uid;

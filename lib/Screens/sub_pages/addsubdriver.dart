@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Controllers/addsubdriver_cont.dart';
-import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
+import 'package:truckbuddy/Controllers/addsubdriver_cont.dart';
+import 'package:truckbuddy/Controllers/homepage_controller.dart';
 
 import '../../Api_Provider/api_provider.dart';
 import '../../AppConstData/app_colors.dart';

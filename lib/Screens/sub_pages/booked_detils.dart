@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/trans_profile.dart';
+import 'package:truckbuddy/Screens/sub_pages/trans_profile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:url_launcher/url_launcher.dart';

@@ -11,8 +11,9 @@ import 'package:geocoding/geocoding.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:movers_lorry_owner/constants/app_dimensions.dart';
-import 'package:movers_lorry_owner/Controllers/homepage_controller.dart';
+import 'package:truckbuddy/constants/app_dimensions.dart';
+import 'package:truckbuddy/Controllers/homepage_controller.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 import '../../AppConstData/managepage.dart';
 import '../../AppConstData/routes.dart';
@@ -615,10 +616,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Positioned(
           left: 0, // Start from left edge
           right: 0, // Extend to right edge (full width)
-          top: 40, // Reset to original position
+          top: -20, // Lifted up by 60px (40 - 60 = -20)
           child: Container(
             width: double.infinity, // Full screen width
-            height: 669.0.h, // Increased height by 60px (609.0.h + 60 = 669.0.h)
+            height: 729.0.h, // Increased height to compensate for lifted position
             decoration: BoxDecoration(
               border: Border.all(
                 color: Colors.grey.withOpacity(0.3),
@@ -750,7 +751,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Widget _buildBottomInfoPanel(HomePageController homePageController) {
     return Positioned(
-      top: 461.0.h, // Moved down by another 30px (431.0.h + 30 = 461.0.h)
+      top: 401.0.h, // Lifted up by 60px (461.0.h - 60 = 401.0.h)
       left: AppDimensions.cardMarginHorizontal,
       right: AppDimensions.cardMarginHorizontal,
       child: Container(

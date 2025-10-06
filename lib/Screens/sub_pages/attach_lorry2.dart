@@ -10,8 +10,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:movers_lorry_owner/AppConstData/routes.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/AppConstData/routes.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Api_Provider/imageupload_api.dart';

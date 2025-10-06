@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/models/transport_profile_model.dart';
+import 'package:truckbuddy/models/transport_profile_model.dart';
 
 class ProfileDetilsController extends GetxController implements GetxService {
   String? uid;

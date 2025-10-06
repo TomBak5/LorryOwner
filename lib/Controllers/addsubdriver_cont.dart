@@ -1,11 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Api_Provider/api_provider.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/subdrivers.dart';
-import 'package:movers_lorry_owner/firebase/auth_services.dart';
-import 'package:movers_lorry_owner/models/lorrylistmodel.dart';
-import 'package:movers_lorry_owner/models/subdriverlist_model.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/Api_Provider/api_provider.dart';
+import 'package:truckbuddy/Screens/sub_pages/subdrivers.dart';
+import 'package:truckbuddy/firebase/auth_services.dart';
+import 'package:truckbuddy/models/lorrylistmodel.dart';
+import 'package:truckbuddy/models/subdriverlist_model.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 class AddSubdriverController extends GetxController implements GetxService {
 

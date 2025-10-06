@@ -1,4 +1,4 @@
-name: movers_lorry_owner
+name: truckbuddy
 description: A new Flutter project.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -86,6 +86,7 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/logo/truckbuddy_logo.png"
   min_sdk_android: 21
+  remove_alpha_ios: true
   web:
     generate: true
     image_path: "assets/logo/truckbuddy_logo.png"

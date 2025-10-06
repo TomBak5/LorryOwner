@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 import '../../Api_Provider/imageupload_api.dart';
 import '../../AppConstData/app_colors.dart';

@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Api_Provider/imageupload_api.dart';
-import 'package:movers_lorry_owner/Controllers/earning_controller.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/Api_Provider/imageupload_api.dart';
+import 'package:truckbuddy/Controllers/earning_controller.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 import '../../Api_Provider/api_provider.dart';
 import '../../AppConstData/app_colors.dart';

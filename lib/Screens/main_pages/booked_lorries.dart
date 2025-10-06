@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/models/bookedLoads_model.dart';
+import 'package:truckbuddy/models/bookedLoads_model.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Api_Provider/imageupload_api.dart';

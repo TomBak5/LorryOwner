@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/AppConstData/setlanguage.dart';
-import 'package:movers_lorry_owner/AppConstData/string_file.dart';
-import 'package:movers_lorry_owner/Screens/splash_screen.dart';
+import 'package:truckbuddy/AppConstData/setlanguage.dart';
+import 'package:truckbuddy/AppConstData/string_file.dart';
+import 'package:truckbuddy/Screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

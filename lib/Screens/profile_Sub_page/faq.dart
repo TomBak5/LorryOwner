@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/models/faq_model.dart';
+import 'package:truckbuddy/models/faq_model.dart';
 
 import '../../Api_Provider/api_provider.dart';
 import '../../AppConstData/app_colors.dart';

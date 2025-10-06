@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/models/myloads_model.dart';
+import 'package:truckbuddy/models/myloads_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Api_Provider/api_provider.dart';
 import 'dart:convert';

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/models/near_load_model.dart';
+import 'package:truckbuddy/models/near_load_model.dart';
 
 import '../models/find_load_model.dart';
 

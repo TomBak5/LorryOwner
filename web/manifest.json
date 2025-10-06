@@ -1,6 +1,6 @@
 {
-    "name": "LorryOwner",
-    "short_name": "LorryOwner",
+    "name": "TruckBuddy",
+    "short_name": "TruckBuddy",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#hexcode",

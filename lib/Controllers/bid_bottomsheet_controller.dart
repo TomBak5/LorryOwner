@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Api_Provider/api_provider.dart';
-import 'package:movers_lorry_owner/AppConstData/app_colors.dart';
-import 'package:movers_lorry_owner/AppConstData/typographyy.dart';
-import 'package:movers_lorry_owner/models/lorry_list_model.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/Api_Provider/api_provider.dart';
+import 'package:truckbuddy/AppConstData/app_colors.dart';
+import 'package:truckbuddy/AppConstData/typographyy.dart';
+import 'package:truckbuddy/models/lorry_list_model.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 class BidBottomsheetController extends GetxController implements GetxService {
   TextEditingController amount = TextEditingController();

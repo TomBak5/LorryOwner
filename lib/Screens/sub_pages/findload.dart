@@ -8,9 +8,9 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 // import 'package:google_places_flutter/google_places_flutter.dart'; // Temporarily disabled - switching to HERE Maps
 // import 'package:google_places_flutter/model/prediction.dart'; // Temporarily disabled - switching to HERE Maps
-import 'package:movers_lorry_owner/Controllers/bid_bottomsheet_controller.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/trans_profile.dart';
-import 'package:movers_lorry_owner/models/lorry_list_model.dart';
+import 'package:truckbuddy/Controllers/bid_bottomsheet_controller.dart';
+import 'package:truckbuddy/Screens/sub_pages/trans_profile.dart';
+import 'package:truckbuddy/models/lorry_list_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../Api_Provider/imageupload_api.dart';
 import '../../Api_Provider/api_provider.dart';

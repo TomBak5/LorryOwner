@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Screens/login_screen.dart';
-import 'package:movers_lorry_owner/Screens/onboarding_screens.dart';
-import 'package:movers_lorry_owner/Screens/splash_screen.dart';
-import 'package:movers_lorry_owner/Screens/welcome_screen.dart';
+import 'package:truckbuddy/Screens/login_screen.dart';
+import 'package:truckbuddy/Screens/onboarding_screens.dart';
+import 'package:truckbuddy/Screens/splash_screen.dart';
+import 'package:truckbuddy/Screens/welcome_screen.dart';
 
 import '../Screens/main_pages/notification.dart';
 import '../Screens/profile_Sub_page/contactus.dart';

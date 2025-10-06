@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:movers_lorry_owner/Controllers/attach_lorry_controller.dart';
-import 'package:movers_lorry_owner/Screens/sub_pages/attach_lorry1.dart';
+import 'package:truckbuddy/Controllers/attach_lorry_controller.dart';
+import 'package:truckbuddy/Screens/sub_pages/attach_lorry1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../Api_Provider/imageupload_api.dart';

@@ -1,5 +1,5 @@
 import 'package:get/get_state_manager/get_state_manager.dart';
-import 'package:movers_lorry_owner/widgets/widgets.dart';
+import 'package:truckbuddy/widgets/widgets.dart';
 
 import '../Screens/main_pages/booked_lorries.dart';
 import '../Screens/main_pages/home_page.dart';
