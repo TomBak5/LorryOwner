@@ -12,8 +12,10 @@ workflows:
       - name: Update CocoaPods repository
         script: |
           pod repo update
-      - name: Install pods
+      - name: Clean and install pods
         script: |
+          find . -name "Podfile.lock" -delete
+          find . -name "Pods" -type d -exec rm -rf {} + 2>/dev/null || true
           find . -name "Podfile" -execdir pod install --repo-update \;
       - name: Build iOS Simulator
         script: |
