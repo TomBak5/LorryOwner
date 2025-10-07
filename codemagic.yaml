@@ -4,9 +4,24 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+      cocoapods: default
     scripts:
-      - flutter build ios --simulator
-      - mkdir -p build/ios/ipa
-      - zip -r build/ios/ipa/Runner.app.zip build/ios/iphonesimulator/Runner.app
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Update CocoaPods repository
+        script: |
+          pod repo update
+      - name: Install pods
+        script: |
+          find . -name "Podfile" -execdir pod install --repo-update \;
+      - name: Build iOS Simulator
+        script: |
+          flutter build ios --simulator
+      - name: Package Simulator App
+        script: |
+          mkdir -p build/ios/ipa
+          cd build/ios/iphonesimulator
+          zip -r ../ipa/Runner.app.zip Runner.app
     artifacts:
       - build/ios/ipa/Runner.app.zip
